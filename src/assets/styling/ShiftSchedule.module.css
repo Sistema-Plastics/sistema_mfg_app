@@ -1,0 +1,104 @@
+.shiftScheduleTable table,
+td,
+th {
+  /* border: 3px solid red; */
+  border: 0px;
+  /* margin: 10px; */
+}
+table {
+  width: 100%;
+}
+
+.machineRow {
+  background-color: rgb(66, 66, 66);
+  padding: 5px;
+  color: rgb(245, 245, 245);
+}
+
+.machineRowNonProd {
+  background-color: rgb(212, 102, 102);
+  padding: 5px;
+  color: rgb(245, 245, 245);
+}
+
+.machineRowDown {
+  background-color: rgb(206, 198, 83);
+  padding: 5px;
+  color: rgb(245, 245, 245);
+}
+
+.jobheaderRow {
+  background-color: rgb(133, 133, 133);
+  padding: 5px;
+}
+
+.jobRow td {
+  background-color: rgb(150, 192, 150);
+}
+
+.jobColumn {
+  /* border: 2px solid green; */
+  min-width: 120px;
+  padding-left: 30px;
+}
+
+.partnumColumn {
+  /* border: 2px solid rgb(236, 214, 11); */
+  min-width: 120px;
+}
+.partdescColumn {
+  /* border: 2px solid rgb(255, 0, 0); */
+  min-width: 350px;
+}
+.crewsizeColumn {
+  /* border: 2px solid rgb(40, 216, 24); */
+  min-width: 100px;
+}
+.moldidColumn {
+  /* border: 2px solid rgb(190, 10, 115); */
+  min-width: 90px;
+}
+.schedqtyColumn {
+  /* border: 2px solid violet; */
+  min-width: 90px;
+}
+.mbatchpnColumn {
+  /* border: 2px solid violet; */
+  min-width: 130px;
+}
+.mbatchqtyColumn {
+  /* border: 2px solid violet; */
+  min-width: 100px;
+}
+.resinpnColumn {
+  /* border: 2px solid violet; */
+  min-width: 150px;
+}
+.resinqtyColumn {
+  /* border: 2px solid violet; */
+  min-width: 120px;
+}
+.timetogoColumn {
+  /* border: 2px solid violet; */
+  min-width: 110px;
+}
+.startdatetimeColumn {
+  /* border: 2px solid violet; */
+  width: 100%;
+}
+.jobRow td:first-child {
+  padding-left: 10px;
+}
+
+td:first-child,
+th:first-child {
+  border-left-style: solid;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+td:last-child,
+th:last-child {
+  border-right-style: solid;
+  border-bottom-right-radius: 10px;
+  border-top-right-radius: 10px;
+}

@@ -1,0 +1,49 @@
+button,
+input,
+optgroup,
+select,
+textarea {
+  color: inherit;
+  font: inherit;
+}
+li {
+  float: left;
+  margin: 10px 10px 10px 10px;
+  padding: 0px 0px 10px;
+}
+div {
+  margin-bottom: 10px;
+}
+
+table,
+td,
+th {
+  border-collapse: collapse;
+}
+
+th {
+  font-weight: 700;
+  background-color: #e9ecef;
+  text-align: left;
+}
+
+th,
+td {
+  vertical-align: top;
+  padding: 5px;
+}
+tr {
+  border: 1px solid #dddddd;
+}
+
+h2 {
+  text-align: center;
+}
+.container {
+  overflow-x: auto;
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 50px;
+  padding: 10px;
+  margin: 10px;
+}

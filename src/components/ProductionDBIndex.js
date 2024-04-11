@@ -1,105 +1,125 @@
-// import { Container } from "react-bootstrap";
-// import { SistemaContext } from "../assets/components/SistemaHeader";
+
+import { SistemaContext } from "../assets/components/SistemaHeader";
 import React, { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
+import Box from "@mui/material/Box"
+ //TODO: remove  import Typography from "@mui/material/Typography"
+
+import { styled } from "@mui/material/styles";
+
+const BlankLink = styled(Link)(({ theme }) => ({
+  textDecoration: "none",
+
+}));
 
 export default function Index() {
   //==========================================================
   // Initialize data for Sistema Toolbar and Filtering options
   //==========================================================
- 
-  // const sistemaContext = useContext(SistemaContext);
-  // useEffect(() => {
-  //   sistemaContext.setPageTitle("");
-  //   sistemaContext.setPageFilters([]);
-  // }, []);
+
+  const sistemaContext = useContext(SistemaContext);
+  useEffect(() => {
+    sistemaContext.setPageTitle("");
+    sistemaContext.setPageFilters([]);
+  }, []);
 
   return (
-    // <Container fluid>
-      <div>
-        <h3>Manufacturing</h3>
-        <Link to="/McCellDb?cell=8&sb=true">
-          Main Injection machine Cell Dashboard - Cell 1
-        </Link>
-        <br />
-        <Link to="/EndActivity">End Production Activity</Link>
-        <br />
+    <Box>
+      <h3>Manufacturing</h3>
+      <BlankLink to="/McCellDb?cell=8&sb=true">
+        Main Injection machine Cell Dashboard - Cell 1
+      </BlankLink>
+      <br />
+      <BlankLink to="/EndActivity">End Production Activity</BlankLink>
+      <br />
 
-        <Link to="/ShiftSchedule">Shift Schedule</Link>
-        <br />
-        <h3>Assembly</h3>
-        <Link
-          to="/Assembly/EmployeeCellCurrentDB?cell=005_007_008_009"
-          target="_blank"
-        >
-          Main Assembly Dashboard - Employee Assignment
-        </Link>
-        <br />
-        <Link
-          to="/Assembly/JobsCellDB?cell=005&showConstraintsOnly=false"
-          target="_blank"
-        >
-          Main Assembly - Schedule
-        </Link>
-        <br />
-        <Link to="/TestJobsDB?cell=005">Test Jobs DB</Link>
-        {/* <Link to="/Assembly/FastPkg">
+      <BlankLink to="/ShiftSchedule">Shift Schedule</BlankLink>
+      <br />
+      <BlankLink to="/Clock">Clock</BlankLink>
+      <br />
+      <h3>Assembly</h3>
+      <BlankLink
+        to="/Assembly/EmployeeCellCurrentDB?cell=005_007_008_009"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Main Assembly Dashboard - Employee Assignment
+      </BlankLink>
+      <br />
+      <BlankLink
+        to="/Assembly/JobsCellDB?cell=005&showConstraintsOnly=false"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Main Assembly - Schedule
+      </BlankLink>
+      <br />
+      <BlankLink to="/TestJobsDB?cell=005">Test Jobs DB</BlankLink>
+      {/* <BlankLink to="/Assembly/FastPkg">
         Main Assembly Dashboard - Fast Packaging
-      </Link>*/}
-        <br />
-        {/* <Link to="/Assembly/AssemblyNav?shift=5"> */}
-        <Link to="/Assembly/AssemblyNav">
-          Main Assembly Dashboard - Labour Rostering
-        </Link>
-        <br />
-        <Link to="/Assembly/ProductionBooking">
-          Main Assembly - Production Booking
-        </Link>
-        <br />
-        <h3>QA Dashboards</h3>
-        <Link to="/QA">Job Startup Inspection</Link>
-        <br />
-        <h3>Raw Material Handling</h3>
-        {/* <Link to="/RawMats/Picking">Picking Schedule</Link> */}
-        <a
-          href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/Pickingandstaging.html"
-          target="_blank"
-        >
-          Picking Schedule
-        </a>
-        <br />
-        {/* <Link to="/RawMats/PO">PO Delivery Schedule</Link> */}
-        <a
-          href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/DeliverySchedule.html"
-          target="_blank"
-        >
-          PO Delivery Schedule
-        </a>
-        <br />
-        {/* <Link to="/RawMats/Premix">Premix Schedule</Link> */}
-        <a
-          href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/PremixSchedule.html"
-          target="_blank"
-        >
-          Premix Schedule
-        </a>
-        <br />
-        {/* <Link to="/RawMats/Regrind">Regrind Schedule</Link> */}
-        <a
-          href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/RegrindSchedule.html"
-          target="_blank"
-        >
-          Regrind Schedule
-        </a>
-        <br />
-        <a href="https:\\aauc3spwnmat001.nr.ad.newellco.com" target="_blank">
-          Mattec HMI
-        </a>
-        <br />
-        <h3>Purchase Orders</h3>
-        <Link to="/PendingPOs">PO Approval Dashboard</Link>
-        <br />
-      </div>
-    // </Container>
+      </BlankLink>*/}
+      <br />
+      {/* <BlankLink to="/Assembly/AssemblyNav?shift=5"> */}
+      <BlankLink to="/Assembly/AssemblyNav">
+        Main Assembly Dashboard - Labour Rostering
+      </BlankLink>
+      <br />
+      <BlankLink to="/Assembly/ProductionBooking">
+        Main Assembly - Production Booking
+      </BlankLink>
+      <br />
+      <h3>QA Dashboards</h3>
+      <BlankLink to="/QA">Job Startup Inspection</BlankLink>
+      <br />
+      <h3>Raw Material Handling</h3>
+      {/* <BlankLink to="/RawMats/Picking">Picking Schedule</BlankLink> */}
+      <BlankLink
+        href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/Pickingandstaging.html"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Picking Schedule
+      </BlankLink>
+      <br />
+      {/* <BlankLink to="/RawMats/PO">PO Delivery Schedule</BlankLink> */}
+      <BlankLink
+        href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/DeliverySchedule.html"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        PO Delivery Schedule
+      </BlankLink>
+      <br />
+      {/* <BlankLink to="/RawMats/Premix">Premix Schedule</BlankLink> */}
+      <BlankLink
+        href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/PremixSchedule.html"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Premix Schedule
+      </BlankLink>
+      <br />
+      {/* <BlankLink to="/RawMats/Regrind">Regrind Schedule</BlankLink> */}
+      <BlankLink
+        href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/RegrindSchedule.html"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Regrind Schedule
+      </BlankLink>
+      <br />
+      <BlankLink
+        to="https:\\aauc3spwnmat001.nr.ad.newellco.com"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Mattec HMI
+      </BlankLink>
+      <br />
+      <h3>Purchase Orders</h3>
+      <BlankLink to="/PendingPOs">PO Approval Dashboard</BlankLink>
+      <br />
+    </Box>
+    
   );
 }

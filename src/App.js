@@ -1,20 +1,8 @@
-import "./App.css";
-import React from "react";
-import { ThemeProvider, createTheme } from "@mui/material";
-//import { styled } from "@mui/material/styles";
-
-//import { Container } from "react-bootstrap";
 //import { QueryClient, QueryClientProvider } from "react-query";
 //import { Connector } from "mqtt-react-hooks";
-//import Title from "./assets/components/Title";
 import "./App.css";
-import "./index.css";
-//import "./assets/styling/Element.css";
-
-// --- Main Page
-import Index from "./components/ProductionDBIndex";
-import SistemaHeader from "./assets/components/SistemaHeader";
-
+import React from "react";
+import {blue} from "@mui/material/colors"
 import {
   //createBrowserRouter,
   BrowserRouter,
@@ -24,12 +12,37 @@ import {
   //Link,
 } from "react-router-dom";
 
-/**
-// --- Digital Clock
-import DigitalClock from "./assets/components/Clock";
+import { ThemeProvider, createTheme } from "@mui/material";
+import { Container, Box } from "@mui/material";
+import "@fontsource/roboto";
+
+//#region Import Components & Styles
+
+//Style Sheets
+import "./App.css";
+import "./index.css";
+import "./assets/styling/Element.css";
 
 // --- Main Page
 import Index from "./components/ProductionDBIndex";
+import SistemaHeader from "./assets/components/SistemaHeader";
+
+//General
+// --- Digital Clock
+import DigitalClock from "./assets/components/Clock";
+
+
+// --- Manufacturing
+import ShiftSchedule from "./components/shiftSchedule/ShiftSchedule";
+
+
+//#endregion
+
+
+
+/**
+// --- Digital Clock
+import DigitalClock from "./assets/components/Clock";
 
 // --- Manufacturing
 import ShiftSchedule from "./components/shiftSchedule/ShiftSchedule";
@@ -66,6 +79,28 @@ const queryClient = new QueryClient();
 
 // Link to how to use https://muhimasri.com/blogs/mui-textfield-colors-styles/#using-the-theme
 const sistemaTheme = createTheme({
+  typography: {
+    fontFamily: [
+      "-apple-system",
+      "BlinkMacSystemFont",
+      '"Segoe UI"',
+      "Roboto",
+      '"Helvetica Neue"',
+      "Arial",
+      "sans-serif",
+      '"Apple Color Emoji"',
+      '"Segoe UI Emoji"',
+      '"Segoe UI Symbol"',
+    ].join(","),
+    htmlFontSize: 10,
+  },
+  palette:{
+    action:{
+      active:blue[500],
+      visited:blue[500],
+    }
+  },
+
   components: {
     MuiTextField: {
       styleOverrides: {
@@ -78,43 +113,28 @@ const sistemaTheme = createTheme({
   },
 });
 
-
-
-//link to se how old JSS is converted to below https://mui.com/material-ui/migration/migrating-from-jss/ 
+sistemaTheme.typography.body1 = { fontFamily: "Roboto" };
+//link to se how old JSS is converted to below https://mui.com/material-ui/migration/migrating-from-jss/
 //note css specificty is advised against, better to use in line sx or custom type
 
 function App() {
   return (
-    /**  
-   * Default App header
-   *  <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-    */
     <React.Fragment>
       <ThemeProvider theme={sistemaTheme}>
         <BrowserRouter>
-          <SistemaHeader>
-            {" "}
-            <h1>Hello World Sistema</h1>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/Index" element={<Index />} />
-            </Routes>
-          </SistemaHeader>
+          <Container maxWidth="false">
+            {/* //false disables maxwidth setting */}
+            <Box component={"section"}>
+              <SistemaHeader>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/Index" element={<Index />} /> 
+                  <Route path="/Clock" element={<DigitalClock />} />
+                  <Route path="/ShiftSchedule" element={<ShiftSchedule />} />
+                </Routes>
+              </SistemaHeader>
+            </Box>
+          </Container>
         </BrowserRouter>
       </ThemeProvider>
     </React.Fragment>

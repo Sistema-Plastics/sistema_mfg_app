@@ -193,7 +193,7 @@ export default function SistemaHeader(props) {
               </IconButton>
             </span>
           </Tooltip>
-          <Typography variant="h3" sx={{ ...title }}>
+          <Typography variant="h4" sx={{ ...title }}>
             <Link
               component="button"
               sx={{
@@ -212,8 +212,7 @@ export default function SistemaHeader(props) {
           <Typography variant="h5" sx={{ ...title }}>
             {pageTitle}
           </Typography>
-          {/* <CurrentDate className={classes.title} /> */}
-          <CurrentDate sx={{ ...title }} />
+             <CurrentDate sx={{ ...title }} />
           <Tooltip
             title={user.userid === "" ? "Login" : "Logout"}
             placement="bottom"

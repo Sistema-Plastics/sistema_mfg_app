@@ -2,6 +2,8 @@ import appConfig from "../Config.json";
 import * as Cookies from "../assets/components/CookieFunctions.js";
 import axios from "axios";
 
+import {createTheme} from "@mui/material"
+
 import React, { useState, useEffect } from "react";
 import {
   Backdrop,
@@ -16,12 +18,20 @@ import {
   Box,
 } from "@mui/material";
 
+
+const theme = createTheme();
+
+
 const pwdTextFieldStyling = {
   "& > label": {
-    backgroundColor: "secondary.main",
-    border: "error.main",
+    backgroundColor: theme.palette.background.paper,
+    border: theme.palette.background.paper,
   },
 };
+const backdrop = {
+  zIndex: theme.zIndex.drawer + 1,
+  color: "#fff",
+}
 
 const noUser = {
   userid: "",
@@ -206,7 +216,7 @@ export default function UserLogin({
           </Button>
         </DialogActions>
       </Dialog>
-      <Backdrop sx={{ color: "#fff" }} open={isValidating}>
+      <Backdrop sx={{ ...backdrop }} open={isValidating}>
         <CircularProgress color="primary" />
       </Backdrop>
     </React.Fragment>
