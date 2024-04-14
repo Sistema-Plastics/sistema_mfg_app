@@ -9,6 +9,8 @@ import {
   TableCell,
   //TODO: remove TablePagination,
   TableHead,
+  FormControlLabel,
+  Grid,
 } from "@mui/material";
 
 import { CSVLink } from "react-csv";
@@ -20,8 +22,9 @@ import { mqttFunctions } from "./../../helpers/HelperScripts";
 
 import { styled } from "@mui/material/styles";
 import { muiThemes } from "../../assets/styling/muiThemes";
+import useTheme from "@mui/material/styles/useTheme";
 import { tableCellClasses } from "@mui/material/TableCell";
-import mqtt from "mqtt"
+import mqtt from "mqtt";
 
 // https://mui.com/material-ui/customization/default-theme/?expand-path=$.palette.info
 // https://mui.com/material-ui/customization/color/#2014-material-design-color-palettes
@@ -44,8 +47,6 @@ const CellsTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 // var mqtt = require("mqtt");
-
-
 
 const ShiftSchedule = (props) => {
   //#region  variables
@@ -74,8 +75,8 @@ const ShiftSchedule = (props) => {
   });
 
   const [datasets, setDatasets] = useState();
-   //TODO: remove  const params = new URLSearchParams(document.location.search);
-   //TODO: remove  const machineID = params.get("cellID"); //.toLowerCase();
+  //TODO: remove  const params = new URLSearchParams(document.location.search);
+  //TODO: remove  const machineID = params.get("cellID"); //.toLowerCase();
 
   //#endregion
 
@@ -96,11 +97,9 @@ const ShiftSchedule = (props) => {
     epicorJobs: tpcRoot + "systemdata/dashboards/epicor/jobs",
     activeLabour: tpcRoot + "systemdata/dashboards/epicor/activelabour",
   };
-
-
-
+  const sistTheme = useTheme();
   const mqttConnect = (host, mqttOption) => {
-    setClient(     mqtt.connect(host, mqttOption));
+    setClient(mqtt.connect(host, mqttOption));
   };
 
   useEffect(() => {
@@ -722,37 +721,58 @@ const ShiftSchedule = (props) => {
         jobFilterCallBack={handleJobFiltersCallback}
         shiftFilterCallBack={handleShiftFiltersCallback}
       />
-      <CSVLink
-        data={datasets.jobList}
-        filename={"SHiftSchedule.csv"}
-        className="btn btn-primary"
-        target="_blank"
-      >
-        Download Machine Data
-      </CSVLink>
-
-      <Typography component="h2" variant="h6" color="primary" gutterBottom>
-        <Paper sx={{ width: "100%", overflow: "hidden" }}>
-          <TableContainer sx={{ maxHeight: 640 }}>
-            <Table size="small" stickyHeader aria-label="sticky table">
-              <TableHead>
-                <TableRow sx={{ width: "100%" }}>
-                  <CellsTableCell>
-                    Max Crew Size :<b>{crewReq}</b> - Total Tool Changes :
-                    <b>{toolchgs}</b> - Total MasterBatch Changes :
-                    <b>{mbatchchgs}</b>
-                  </CellsTableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody sx={{ width: "100%" }}>
-                <TableRow sx={{ width: "100%" }}>
-                  {<CellList datasets={datasets} />}
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-      </Typography>
+      <Grid container>
+        <Typography component="h2" variant="h6" color="primary" gutterBottom>
+          <Grid
+            item
+            sx={{ marginBottom: 2, justifyItems: "start", alignItems: "start" }}
+            xl={2}
+            lg={3}
+            md={3}
+            sm={3}
+            xs={3}
+          >
+            <FormControlLabel
+              control={
+                <CSVLink
+                  data={datasets.jobList}
+                  filename={"SHiftSchedule.csv"}
+                  target="_blank"
+                >
+                  Download Machine Data
+                </CSVLink>
+              }
+              sx={{
+                "& > a": {
+                  //backgroundColor: sistTheme.palette.sistema.microwave.main,
+                  color: sistTheme.palette.sistema.klipit.contrastText,
+                  textDecorationLine: "none",
+                },
+              }}
+            ></FormControlLabel>
+          </Grid>
+          <Paper sx={{ width: "100%", overflow: "hidden" }}>
+            <TableContainer sx={{ maxHeight: 640 }}>
+              <Table size="small" stickyHeader aria-label="sticky table">
+                <TableHead>
+                  <TableRow sx={{ width: "100%" }}>
+                    <CellsTableCell>
+                      Max Crew Size :<b>{crewReq}</b> - Total Tool Changes :
+                      <b>{toolchgs}</b> - Total MasterBatch Changes :
+                      <b>{mbatchchgs}</b>
+                    </CellsTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody sx={{ width: "100%" }}>
+                  <TableRow sx={{ width: "100%" }}>
+                    {<CellList datasets={datasets} />}
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Typography>
+      </Grid>
     </React.Fragment>
   ) : (
     <React.Fragment>{/* {console.log("Empty Render")} */}</React.Fragment>

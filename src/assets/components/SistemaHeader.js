@@ -71,7 +71,7 @@ const root = {
   flexGrow: 1,
   marginBottom: "0px",
 };
-const title = { marginLeft: theme.spacing(2), flexGrow: 1 };
+const title = { marginLeft: theme.spacing(2), flexGrow: 1,margin:0,padding:0};
 
 const menuButton = {
   marginRight: theme.spacing(2),
@@ -110,6 +110,8 @@ const drawer = {
 };
 const drawerPaper = {
   width: drawerWidth,
+
+
 };
 const drawerHeader = {
   display: "flex",
@@ -130,9 +132,6 @@ const toolBar = {
   alignItems: "baseline",
   marginBottom: "0px",
 };
-
-
-
 
 
   useEffect(() => {
@@ -182,6 +181,7 @@ const toolBar = {
       <CssBaseline />
       <AppBar
         position="static"
+        sx={{padding:0,margin:0}}
         // className={clsx(classes.appBar, {
         //   [classes.appBarShift]: drawerOpen,
         // })}
@@ -190,8 +190,8 @@ const toolBar = {
           <Tooltip title="Filters">
             <span>
               <IconButton
-                sx={{ ...menuButton }}
-                color="inherit"
+                sx={{ ...menuButton , color:theme.palette.sistema.klipit.contrastText}}
+                //color="inherit"
                 onClick={handleDrawerOpen}
                 disabled={pageFilters.length === 0}
                 // className={clsx(classes.menuButton, drawerOpen && classes.hide)}
@@ -200,14 +200,15 @@ const toolBar = {
               </IconButton>
             </span>
           </Tooltip>
+          <Tooltip title="Go To Homepage">
           <Typography variant="h4" sx={{ ...title }}>
             <Link
               component="button"
               sx={{
                 ...title,
+                color:theme.palette.sistema.klipit.contrastText,
               }}
               variant="h3"
-              color="inherit"
               underline="none"
               onClick={() => {
                 history("/");
@@ -216,6 +217,7 @@ const toolBar = {
               sistema
             </Link>
           </Typography>
+          </Tooltip >
           <Typography variant="h5" sx={{ ...title }}>
             {pageTitle}
           </Typography>
@@ -250,6 +252,9 @@ const toolBar = {
           variant="persistent"
           anchor="left"
           open={drawerOpen}
+          sx={{
+            paper:drawerPaper
+          }}
           // classes={{
           //   root: classes.drawer,
           //   paper: classes.drawerPaper,
