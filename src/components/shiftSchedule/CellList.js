@@ -73,19 +73,19 @@ const CellList = ({ datasets }) => {
             <TableBody sx={{ width: "100%" }}>
               {datasets.cellList.map((cl, key) => (
                 <>
-                  <TableHead>
-                    <TableRow>
+                  <TableHead key={key}>
+                    <TableRow key = {key}>
                       <CellTableCell colSpan={4}>
-                        Cell: {cl.DeptDesc}
+                        Cell:- {cl.DeptDesc}
                       </CellTableCell>
                       <CellTableCell colSpan={2}>
-                        Cell Crew Size :{cl.CellCrewSize}
+                        Cell Crew Size :-{cl.CellCrewSize}
                       </CellTableCell>
                       <CellTableCell colSpan={4}>
-                        Cell Tool Changes :{cl.CellToolChanges}
+                        Cell Tool Changes :-{cl.CellToolChanges}
                       </CellTableCell>
                       <CellTableCell colSpan={4}>
-                        Cell Master Batch Change :{cl.CellMBatchChanges}
+                        Cell Master Batch Change :-{cl.CellMBatchChanges}
                       </CellTableCell>
                     </TableRow>
                   </TableHead>

@@ -3,7 +3,7 @@ import UserLogin from "../../components/UserLogin";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CurrentDate from "./Date";
-import { createTheme} from "@mui/material";
+import { useTheme} from "@mui/material/styles";
 
 import {
   AppBar,
@@ -32,10 +32,40 @@ import {
 
 //import clsx from "clsx";
 
-//const drawerWidth = 300;
-const theme = createTheme();
+
+
 //MOVED OLD styles code below to App.cs to erpa entireity
 //note css specificty is advised against, better to use in line sx or custom type
+
+
+export const SistemaContext = React.createContext({});
+
+export default function SistemaHeader(props) {
+  const noUser = {
+    userid: "",
+    avatar: "/broken-image.jpg",
+  };
+
+  const defaultAvatar = "/broken-image.jpg";
+  const epicorToken = Cookies.getCookie("epicorToken");
+  const epicorUserID = Cookies.getCookie("epicorUserID");
+
+  // const classes = useStyles();
+  // const theme = useTheme();
+  const theme = useTheme();
+  const  history = useNavigate();
+
+  const [pageTitle, setPageTitle] = useState("");
+  const [pageFilters, setPageFilters] = useState([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [loginStatusTrigger, setLoginStatusTrigger] = useState(0);
+  const [logoutOption, setLogoutOption] = useState(false);
+  const [user, setUser] = useState(noUser);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarDuration, setSnackbarDuration] = useState(6000);
+
+const drawerWidth = 300;
 
 const root = {
   flexGrow: 1,
@@ -47,38 +77,40 @@ const menuButton = {
   marginRight: theme.spacing(2),
 };
 
-// const titleLink = {
-//   marginLeft: theme.spacing(2),
-//   flexGrow: 1,
-// };
+const titleLink = {
+  marginLeft: theme.spacing(2),
+  flexGrow: 1,
+};
+
 const accountIcon = {
   marginLeft: theme.spacing(10),
   marginRight: theme.spacing(1),
 };
-// const appBar = {
-//   transition: theme.transitions.create(["margin", "width"], {
-//     easing: theme.transitions.easing.sharp,
-//     duration: theme.transitions.duration.leavingScreen,
-//   }),
-// };
-// const appBarShift = {
-//   width: `calc(100% - ${drawerWidth}px)`,
-//   marginLeft: drawerWidth,
-//   transition: theme.transitions.create(["margin", "width"], {
-//     easing: theme.transitions.easing.easeOut,
-//     duration: theme.transitions.duration.enteringScreen,
-//   }),
-// };
-// const hide = {
-//   display: "none",
-// };
-// const drawer = {
-//   width: drawerWidth,
-//   flexShrink: 0,
-// };
-// const drawerPaper = {
-//   width: drawerWidth,
-// };
+
+const appBar = {
+  transition: theme.transitions.create(["margin", "width"], {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+};
+const appBarShift = {
+  width: `calc(100% - ${drawerWidth}px)`,
+  marginLeft: drawerWidth,
+  transition: theme.transitions.create(["margin", "width"], {
+    easing: theme.transitions.easing.easeOut,
+    duration: theme.transitions.duration.enteringScreen,
+  }),
+};
+const hide = {
+  display: "none",
+};
+const drawer = {
+  width: drawerWidth,
+  flexShrink: 0,
+};
+const drawerPaper = {
+  width: drawerWidth,
+};
 const drawerHeader = {
   display: "flex",
   alignItems: "center",
@@ -99,34 +131,9 @@ const toolBar = {
   marginBottom: "0px",
 };
 
-const noUser = {
-  userid: "",
-  avatar: "/broken-image.jpg",
-};
 
-export const SistemaContext = React.createContext({});
 
-export default function SistemaHeader(props) {
-  const defaultAvatar = "/broken-image.jpg";
-  const epicorToken = Cookies.getCookie("epicorToken");
-  const epicorUserID = Cookies.getCookie("epicorUserID");
 
-  // const classes = useStyles();
-  // const theme = useTheme();
-
-  //const history = useHistory();
-
-  let history = useNavigate();
-
-  const [pageTitle, setPageTitle] = useState("");
-  const [pageFilters, setPageFilters] = useState([]);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [loginStatusTrigger, setLoginStatusTrigger] = useState(0);
-  const [logoutOption, setLogoutOption] = useState(false);
-  const [user, setUser] = useState(noUser);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarDuration, setSnackbarDuration] = useState(6000);
 
   useEffect(() => {
     console.log(
@@ -171,7 +178,7 @@ export default function SistemaHeader(props) {
 
   return (
     // <div className={classes.root}>
-    <div sx={{ ...root }}>
+    <div sx={{ ...theme.root }}>
       <CssBaseline />
       <AppBar
         position="static"

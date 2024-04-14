@@ -13,6 +13,8 @@ import InputLabel from "@mui/material/InputLabel";
 
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
+import useTheme from "@mui/material/styles/useTheme";
+
  //TODO: remove import FormLabel from "@mui/material/FormLabel";
 
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
@@ -49,21 +51,22 @@ const JobLabel = styled(InputLabel)(({ theme }) => ({
 // }));
 
 const JobInput = styled(Input)(({ theme }) => ({
-  backgroundColor: "none",
-  ...theme.typography.h6,
-  padding: theme.spacing(0.5),
-  border: 0,
-  textAlign: "left",
-  color: theme.palette.text.secondary,
+  // backgroundColor: "none",
+  // ...theme.typography.h6,
+  // padding: theme.spacing(0.5),
+  // border: 0,
+  // textAlign: "left",
+  // color: theme.palette.text.secondary,
+  
 }));
 
 const HeaderButton = styled(Button)(({ theme }) => ({
-  backgroundColor: "#005DA1",
-  ...theme.typography.body2,
-  padding: theme.spacing(0),
-  border: 0,
-  textAlign: "left",
-  color: theme.palette.text.secondary.contrast,
+  // backgroundColor: "#005DA1",
+  // ...theme.typography.body2,
+  // padding: theme.spacing(0),
+  // border: 0,
+  // textAlign: "left",
+  // color: theme.palette.text.secondary.contrast,
 }));
 
 // const ColorButton =
@@ -99,6 +102,11 @@ const ShiftScheduleHeader = ({
   const jobNo = useRef();
   const shiftData = useRef({ shiftDate: null, shift: null });
 
+  //get the theme defined in App.js\
+  const sistTheme = useTheme()
+  
+
+  
   useEffect(() => {
     //console.log("ShiftScheduleHeader.js 1st");
   }, []);
@@ -188,16 +196,16 @@ const ShiftScheduleHeader = ({
   return !cellList ? (
     <React.Fragment>
       <Grid container spacing={2}>
-        <Grid xs={6} md={8}>
+        <Grid item xs={6} md={8}>
           <Item>xs=6 md=8</Item>
         </Grid>
-        <Grid xs={6} md={4}>
+        <Grid item xs={6} md={4}>
           <Item>xs=6 md=4</Item>
         </Grid>
-        <Grid xs={6} md={4}>
+        <Grid item xs={6} md={4}>
           <Item>xs=6 md=4</Item>
         </Grid>
-        <Grid xs={6} md={8}>
+        <Grid item xs={6} md={8}>
           <Item>xs=6 md=8</Item>
         </Grid>
       </Grid>
@@ -233,7 +241,7 @@ const ShiftScheduleHeader = ({
                   key={cl.DeptNo}
                   id={cl.DeptNo}
                   checked={cellFilter.includes(cl.DeptNo.toString())}
-                  sx={{ padding: 0.5 }}
+
                 />
               }
               label={cl.DeptDesc}
@@ -242,7 +250,7 @@ const ShiftScheduleHeader = ({
         </FormGroup>
       </Grid>
       <Grid container spacing={2}>
-        <Grid xs={12} sm={12} md={12} lg={3} xl={2}>
+        <Grid item xs={12} sm={12} md={12} lg={3} xl={2}>
           <FormControl variant="standard">
             <JobLabel htmlFor="component-simple">Filter Job Number</JobLabel>
             <JobInput
@@ -252,21 +260,22 @@ const ShiftScheduleHeader = ({
             />
           </FormControl>
           <FormControl variant="standard" sx={{ alignItems: "flex-start" }}>
-            <HeaderButton
+            {/* <HeaderButton
               variant="contained"
               size="small"
               onClick={handleJobIDChange}
               sx={{
                 marginTop: 2,
               }}
-            >
-              Filter
-            </HeaderButton>
+            > */}
+            <FormControlLabel control={<Button sx={{color:sistTheme.palette.sistema.klipit.contrastText}}>Filter</Button>}/>
+              
+            {/* </HeaderButton> */}
           </FormControl>
         </Grid>
         {/* </Grid>
       <Grid container spacing={2}> */}
-        <Grid xs={6} sm={3} md={3} lg={3} xl={3}>
+        <Grid item xs={6} sm={3} md={3} lg={3} xl={3} sx={{padding:0,margin:0}}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DemoContainer components={["DatePicker"]}>
               <DatePicker
@@ -274,30 +283,27 @@ const ShiftScheduleHeader = ({
                 label="Select Shift Date"
                 sx={{
                   width: "250px",
-                  "& .MuiInputLabel-root": {
-                    color: "#000",
+                  // "& .MuiInputLabel-root": {
+                  //   color: "#000",
+                  //   backgroundColor: "transparent",
+                  //   border: "none",
+                  // }, 
+
+                    "& .MuiButtonBase-root": {
+                      padding:0,marginTop:5,
+                    color: sistTheme.palette.sistema.klipit.main,
                     backgroundColor: "transparent",
                     border: "none",
-                  }, //styles the label
-                  // "& .MuiOutlinedInput-root": {
-                  //   "&:hover > fieldset": { borderColor: "#C7C8CD" },
-                  //   height: "48px",
-                  //   borderRadius: "6px",
-                  // },
+                  }, 
                 }}
               />
             </DemoContainer>
           </LocalizationProvider>
         </Grid>
 
-        <Grid xs={6} sm={4} md={4} lg={4} xl={4}>
+        <Grid item xs={6} sm={4} md={4} lg={4} xl={4}>
           <FormControl>
-            {/* <ShiftsLabel
-              sx={{ alignSelf: "center", fontSize: "14px" }}
-              id="demo-row-radio-buttons-group-label"
-            >
-              Shift
-            </ShiftsLabel> */}
+  
             <RadioGroup
               row
               aria-labelledby="demo-row-radio-buttons-group-label"
@@ -306,17 +312,17 @@ const ShiftScheduleHeader = ({
               <FormControlLabel
                 control={<Radio {...controlProps("M")} size="small" />}
                 label="Morning"
-                sx={{ padding: 0, alignSelf: "center" }}
+                sx={{  alignSelf: "center" }}
               />
               <FormControlLabel
                 control={<Radio {...controlProps("A")} size="small" />}
                 label="Afternoon"
-                sx={{ padding: 0 }}
+                //sx={{ padding: 0 }}
               />
               <FormControlLabel
                 control={<Radio {...controlProps("N")} size="small" />}
                 label="Night"
-                sx={{ padding: 0 }}
+               // sx={{ padding: 0 }}
               />
             </RadioGroup>
           </FormControl>

@@ -77,8 +77,8 @@ const NextJobs = ({ datasets, machNo, incomingMB, incomingTool }) => {
     <React.Fragment>
       {datasets.jobList
         .filter((jl) => jl.MachNo === machNo && jl.lvl !== 0)
-        .map((nj) => (
-          <TableRow>
+        .map((nj,key) => (
+          <TableRow key={key}>
             <NextJobCell colSpan={2}></NextJobCell>
             <NextJobCell></NextJobCell>
             <NextJobCell>

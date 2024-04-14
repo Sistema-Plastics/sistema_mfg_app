@@ -111,52 +111,52 @@ const MachineList = ({ datasets, cell }) => {
       <TableBody sx={{width:"100%"}} >
         {mcList.map((mcl, key) => (
           <>
-            <TableRow>
+            <TableRow key={key}>
               {mcl.DownDesc == null ? (
-                <RunningMCHeaderCell colSpan={4}>
-                  Machine: {mcl.MachID}
+                <RunningMCHeaderCell colSpan={4} >
+                  Machine:- {mcl.MachID}
                 </RunningMCHeaderCell>
               ) : (
                 <NonRunningMCHeaderCell colSpan={4}>
-                  Machine: {mcl.MachID}
+                  Machine:- {mcl.MachID}
                 </NonRunningMCHeaderCell>
               )}
               {mcl.DownDesc == null ? (
                 <RunningMCHeaderCell>
-                  Status: {mcl.DownDesc}
+                  Status:- {mcl.DownDesc}
                 </RunningMCHeaderCell>
               ) : (
                 <NonRunningMCHeaderCell>
-                  Status: {mcl.DownDesc}
+                  Status:- {mcl.DownDesc}
                 </NonRunningMCHeaderCell>
               )}
               {mcl.DownDesc == null ? (
                 <RunningMCHeaderCell>
-                  Max Crew: {mcl.MaxCrewSize}
+                  Max Crew:- {mcl.MaxCrewSize}
                 </RunningMCHeaderCell>
               ) : (
                 <NonRunningMCHeaderCell>
-                  Max Crew: {mcl.MaxCrewSize}
+                  Max Crew:- {mcl.MaxCrewSize}
                 </NonRunningMCHeaderCell>
               )}
 
               {mcl.DownDesc == null ? (
                 <RunningMCHeaderCell colSpan={2}>
-                  Tool Changes: {mcl.ToolChanges}
+                  Tool Changes:- {mcl.ToolChanges}
                 </RunningMCHeaderCell>
               ) : (
                 <NonRunningMCHeaderCell colSpan={2}>
-                  Tool Changes: {mcl.ToolChanges}
+                  Tool Changes:- {mcl.ToolChanges}
                 </NonRunningMCHeaderCell>
               )}
 
               {mcl.DownDesc == null ? (
                 <RunningMCHeaderCell colSpan={6}>
-                  Master Batch Changes: {mcl.MBatchChanges}
+                  Master Batch Changes:- {mcl.MBatchChanges}
                 </RunningMCHeaderCell>
               ) : (
                 <NonRunningMCHeaderCell colSpan={6}>
-                  Master Batch Changes: {mcl.MBatchChanges}
+                  Master Batch Changes:- {mcl.MBatchChanges}
                 </NonRunningMCHeaderCell>
               )}
             </TableRow>
