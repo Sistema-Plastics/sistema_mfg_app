@@ -3,7 +3,7 @@ import UserLogin from "../../components/UserLogin";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CurrentDate from "./Date";
-import { useTheme} from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles";
 
 import {
   AppBar,
@@ -32,11 +32,8 @@ import {
 
 //import clsx from "clsx";
 
-
-
 //MOVED OLD styles code below to App.cs to erpa entireity
 //note css specificty is advised against, better to use in line sx or custom type
-
 
 export const SistemaContext = React.createContext({});
 
@@ -51,9 +48,9 @@ export default function SistemaHeader(props) {
   const epicorUserID = Cookies.getCookie("epicorUserID");
 
   // const classes = useStyles();
-  // const theme = useTheme();
   const theme = useTheme();
-  const  history = useNavigate();
+
+  const history = useNavigate();
 
   const [pageTitle, setPageTitle] = useState("");
   const [pageFilters, setPageFilters] = useState([]);
@@ -65,74 +62,76 @@ export default function SistemaHeader(props) {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarDuration, setSnackbarDuration] = useState(6000);
 
-const drawerWidth = 300;
+  const drawerWidth = 300;
 
-const root = {
-  flexGrow: 1,
-  marginBottom: "0px",
-};
-const title = { marginLeft: theme.spacing(2), flexGrow: 1,margin:0,padding:0};
+  const root = {
+    flexGrow: 1,
+    marginBottom: "0px",
+  };
+  const title = {
+    marginLeft: theme.spacing(2),
+    flexGrow: 1,
+    margin: 0,
+    padding: 0,
+  };
 
-const menuButton = {
-  marginRight: theme.spacing(2),
-};
+  const menuButton = {
+    marginRight: theme.spacing(2),
+  };
 
-const titleLink = {
-  marginLeft: theme.spacing(2),
-  flexGrow: 1,
-};
+  const titleLink = {
+    marginLeft: theme.spacing(2),
+    flexGrow: 1,
+  };
 
-const accountIcon = {
-  marginLeft: theme.spacing(10),
-  marginRight: theme.spacing(1),
-};
+  const accountIcon = {
+    marginLeft: theme.spacing(10),
+    marginRight: theme.spacing(1),
+  };
 
-const appBar = {
-  transition: theme.transitions.create(["margin", "width"], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-};
-const appBarShift = {
-  width: `calc(100% - ${drawerWidth}px)`,
-  marginLeft: drawerWidth,
-  transition: theme.transitions.create(["margin", "width"], {
-    easing: theme.transitions.easing.easeOut,
-    duration: theme.transitions.duration.enteringScreen,
-  }),
-};
-const hide = {
-  display: "none",
-};
-const drawer = {
-  width: drawerWidth,
-  flexShrink: 0,
-};
-const drawerPaper = {
-  width: drawerWidth,
+  const appBar = {
+    transition: theme.transitions.create(["margin", "width"], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  };
+  const appBarShift = {
+    width: `calc(100% - ${drawerWidth}px)`,
+    marginLeft: drawerWidth,
+    transition: theme.transitions.create(["margin", "width"], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  };
+  const hide = {
+    display: "none",
+  };
+  const drawer = {
+    width: drawerWidth,
+    flexShrink: 0,
+  };
+  const drawerPaper = {
+    width: drawerWidth,
+  };
+  const drawerHeader = {
+    display: "flex",
+    alignItems: "center",
+    padding: theme.spacing(0, 1),
+    // necessary for content to be below app bar
+    ...theme.mixins.toolbar,
+    justifyContent: "flex-end",
+  };
 
-
-};
-const drawerHeader = {
-  display: "flex",
-  alignItems: "center",
-  padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
-  ...theme.mixins.toolbar,
-  justifyContent: "flex-end",
-};
-
-const formField = {
-  "& > label": {
-    backgroundColor: theme.palette.background.paper,
-    border: theme.palette.background.paper,
-  },
-};
-const toolBar = {
-  alignItems: "baseline",
-  marginBottom: "0px",
-};
-
+  const formField = {
+    "& > label": {
+      backgroundColor: theme.palette.background.paper,
+      border: theme.palette.background.paper,
+    },
+  };
+  const toolBar = {
+    alignItems: "baseline",
+    marginBottom: "0px",
+  };
 
   useEffect(() => {
     console.log(
@@ -181,7 +180,11 @@ const toolBar = {
       <CssBaseline />
       <AppBar
         position="static"
-        sx={{padding:0,margin:0}}
+        sx={{
+          "& > div": {
+            marginBottom: 0,
+          },
+        }}
         // className={clsx(classes.appBar, {
         //   [classes.appBarShift]: drawerOpen,
         // })}
@@ -190,7 +193,10 @@ const toolBar = {
           <Tooltip title="Filters">
             <span>
               <IconButton
-                sx={{ ...menuButton , color:theme.palette.sistema.klipit.contrastText}}
+                sx={{
+                  ...menuButton,
+                  color: theme.palette.sistema.klipit.contrastText,
+                }}
                 //color="inherit"
                 onClick={handleDrawerOpen}
                 disabled={pageFilters.length === 0}
@@ -201,27 +207,34 @@ const toolBar = {
             </span>
           </Tooltip>
           <Tooltip title="Go To Homepage">
-          <Typography variant="h4" sx={{ ...title }}>
-            <Link
-              component="button"
+            <Typography
+              variant="h4"
               sx={{
                 ...title,
-                color:theme.palette.sistema.klipit.contrastText,
-              }}
-              variant="h3"
-              underline="none"
-              onClick={() => {
-                history("/");
+                color: theme.palette.sistema.klipit.contrastText,
               }}
             >
-              sistema
-            </Link>
-          </Typography>
-          </Tooltip >
+              <Link
+                component="button"
+                sx={{
+                  ...title,
+                  color: theme.palette.sistema.klipit.contrastText,
+                  //backgroundColor:'yellow'
+                }}
+                variant="h3"
+                underline="none"
+                onClick={() => {
+                  history("/");
+                }}
+              >
+                sistema
+              </Link>
+            </Typography>
+          </Tooltip>
           <Typography variant="h5" sx={{ ...title }}>
             {pageTitle}
           </Typography>
-             <CurrentDate sx={{ ...title }} />
+          <CurrentDate sx={{ ...title }} />
           <Tooltip
             title={user.userid === "" ? "Login" : "Logout"}
             placement="bottom"
@@ -253,7 +266,7 @@ const toolBar = {
           anchor="left"
           open={drawerOpen}
           sx={{
-            paper:drawerPaper
+            paper: drawerPaper,
           }}
           // classes={{
           //   root: classes.drawer,
@@ -315,8 +328,8 @@ const toolBar = {
       //   [classes.contentShift]: drawerOpen,
       // })}
       >
-        <Box display="flex">
-          <Box width="4%" />
+        <Box display="flex" >
+          <Box width="1%"/>
           <SistemaContext.Provider
             value={{
               setPageTitle,

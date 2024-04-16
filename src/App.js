@@ -1,4 +1,4 @@
-//import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClient, QueryClientProvider } from "react-query";
 //import { Connector } from "mqtt-react-hooks";
 import "./App.css";
 import React from "react";
@@ -14,9 +14,12 @@ import {
 
 import { ThemeProvider, createTheme } from "@mui/material";
 
+import { muiThemes } from "./assets/styling/muiThemes";
+
 import CssBaseline from "@mui/material/CssBaseline";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
+
 /** 
 import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar from '@mui/material/AppBar';
@@ -54,6 +57,13 @@ import ThemesCheck from "./assets/components/ThemesCheck";
 
 // --- Manufacturing
 import ShiftSchedule from "./components/shiftSchedule/ShiftSchedule";
+import InventoryBooking from "./components/inventoryBooking/InventoryBooking";
+
+// --- Purchase Orders
+import POApprovalDashboard from "./components/purchaseOrders/POApprovalDashboard";
+// import POApproval from "./components/purchaseOrders/POApproval";
+
+// import InventoryMovements from "./components/inventoryDashboards/inventoryMovements/InventoryMovements";
 
 //#endregion
 
@@ -73,8 +83,6 @@ import EmployeeJobPlanDnd from "./components/assembly/assyPages/EmployeeJobPlanD
 import EmployeeJobCurrentDnd from "./components/assembly/assyPages/EmployeeJobCurrentDnd";
 import JobsCellDB from "./components/assembly/assyPages/JobsCellDB";
 import JobsLineDB from "./components/assembly/assyPages/JobsLineDB";
-import InventoryBooking from "./components/inventoryBooking/InventoryBooking";
-import InventoryMovements from "./components/inventoryDashboards/inventoryMovements/InventoryMovements";
 
 
 // --- Automation
@@ -83,14 +91,12 @@ import AutomationStatusDashboard from "./components/automationStatusDB/Automatio
 // --- General
 import CellAssignmentCheck from "./components/general/CellAssignmentCheck";
 import OpAssignment from "./components/general/ScanOperator";
-// --- Purchase Orders
-import POApprovalDashboard from "./components/purchaseOrders/POApprovalDashboard";
-import POApproval from "./components/purchaseOrders/POApproval";
+/
 import McCellDB from "./components/machineDashboards/CellDashboard";
 import JobsDB from "./components/assembly/assyPages/JobsDB";
 import JobsTable from "./components/assembly/assyComponents/JobsTable";
 
-const queryClient = new QueryClient();
+
 
  */
 
@@ -149,183 +155,18 @@ Recycled Ocean Bound Plastic Recycled Teal (RGB 100 / 143 / 150) Reflex Blue (Lo
 
 //#endregion
 
-const sistemaTheme = createTheme({
-  typography: {
-    fontFamily: [
-      "-apple-system",
-      "BlinkMacSystemFont",
-      '"Segoe UI"',
-      "Roboto",
-      '"Helvetica Neue"',
-      "Arial",
-      "sans-serif",
-      '"Apple Color Emoji"',
-      '"Segoe UI Emoji"',
-      '"Segoe UI Symbol"',
-    ].join(","),
-    button: {},
-  },
-  palette: {
-    paper: {
-      background: "#fcf6e4",
-    },
-    action: {
-      active: blue[500],
-      visited: blue[500],
-    },
-    jobStatus: {
-      running: green[500],
-      nextjob: yellow[500],
-      notrunning: red[200],
-    },
-    sistema: {
-      klipit: { main: "#0032A0", light: "#1976d2", dark: "", contrastText: grey[50] },
-      microwave:{ main:"#C8102E",light: "", dark: "", contrastText: grey[50]},
-    },
-  },
 
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: `
-        h1 {
-          color: blue;
-        }, 
-      `,
-    },
-    MuiFormControl: {
-      styleOverrides: {
-        root: {
-          // backgroundColor: "red",
-        },
-      },
-    },
+//#region  THEME
 
-    MuiFormControlLabel: {
-      //controls button backgrounds
 
-      styleOverrides: {
-        label: { placeSelf: "top" },
-        root:({ownerState,theme})=>(  {
-          backgroundColor:theme.palette.sistema.klipit.light,
-          color: theme.palette.sistema.klipit.contrastText,
-          borderRadius: 10,
-          paddingRight: 10,
-          paddingLeft: 10,
-          margin: 2,
-        }),
-      },
-    },
-
-    MuiButtonBase: {
-      styleOverrides: {
-        root: ({ ownerState, theme }) => ({
-          backgroundColor: theme.palette.sistema.klipit.light,
-          alignSelf: "end",
-
-          paddingLeft: 10,
-          paddingRight: 10,
-          margin: 0,
-          // "&.Mui-focused": {
-          //   backgroundColor: "yellow",
-          //   color:'red'
-          // },
-        }),
-      },
-    },
-    MuiCheckbox: {
-      styleOverrides: {
-        root: {
-          color: grey[50],
-          "&.Mui-checked": {
-            color: grey[400],
-          },
-        },
-      },
-    },
-    MuiRadio: {
-      styleOverrides: {
-        root: {
-          color: grey[50],
-          "&.Mui-checked": {
-            color: grey[400],
-          },
-        },
-      },
-    },
-
-    MuiOutlinedInput: {
-      // datepicker main box
-      styleOverrides: {
-        root: ({ ownerState, theme }) => ({
-          ...(ownerState.variant === "contained" &&
-            ownerState.color === "primary" && {
-              backgroundColor: "#202020",
-              color: "#fff",
-            }),
-          color: theme.palette.sistema.klipit.main,
-          padding: 0,
-          paddingLeft: 5,
-          paddingRight: 10,
-          margin: 0,
-          "&.Mui-focused": {
-            // backgroundColor: "yellow",
-          },
-        }),
-      },
-    },
-
-    MuiFormLabel: {
-      styleOverrides: {
-        root:({ownerState,theme})=>( {
-          //date picker text
-          color: theme.palette.sistema.klipit.main,
-          padding: 0,
-          margin: 0,
-          "&.Mui-focused": {
-            //backgroundColor: "purple",
-            color:  theme.palette.sistema.klipit.main,
-          },
-        }),
-      },
-    },
-    MuiGrid: {
-      defaultProps: {
-        // borderRadius: 10,
-        // borderColor: "blue",
-        // backgroundColor: "orange",
-      },
-      styleOverrides: {
-        root: {},
-      },
-    },
-    MuiInput: {
-      styleOverrides: {
-        root: ({ ownerState, theme }) => ({
-          color: theme.palette.sistema.klipit.main,
-        }),
-      },
-    },
-
-    MuiInputBase: {
-      styleOverrides: { root: { color: "white" } },
-    },
-
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          flexGrow: 1,
-          marginBottom: "0px",
-        },
-
-        shrink: true,
-      },
-    },
-  },
-});
-
-sistemaTheme.typography.body1 = { fontFamily: "Roboto" };
+const sistemaTheme =  muiThemes.getSistemaTheme();
+const queryClient = new QueryClient();
 //link to se how old JSS is converted to below https://mui.com/material-ui/migration/migrating-from-jss/
 //note css specificty is advised against, better to use in line sx or custom type
+
+
+//#endregion
+
 
 function App() {
   return (
@@ -334,17 +175,21 @@ function App() {
         <BrowserRouter>
           <Container maxWidth="false">
             {/* //false disables maxwidth setting */}
-            <Box component={"section"}>
+            <Box component={"section"} >
               <CssBaseline />
+              <QueryClientProvider client={queryClient}>
               <SistemaHeader>
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/Index" element={<Index />} />
                   <Route path="/Clock" element={<DigitalClock />} />
+                  <Route path="/InvBooking" element={<InventoryBooking />} />
                   <Route path="/ShiftSchedule" element={<ShiftSchedule />} />
                   <Route path="/ThemesCheck" element={<ThemesCheck />} />
+                  <Route path="/PendingPOs" element={<POApprovalDashboard />} />
+                  
                 </Routes>
-              </SistemaHeader>
+              </SistemaHeader></QueryClientProvider>
             </Box>
           </Container>
         </BrowserRouter>

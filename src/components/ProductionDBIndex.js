@@ -35,6 +35,8 @@ export default function Index() {
 
       <BlankLink to="/ShiftSchedule">Shift Schedule</BlankLink>
       <br />
+      <BlankLink to="/InvBooking">Book Inventory</BlankLink>
+      <br />
       <BlankLink to="/Clock">Clock</BlankLink>
       <br />
       <h3>Assembly</h3>

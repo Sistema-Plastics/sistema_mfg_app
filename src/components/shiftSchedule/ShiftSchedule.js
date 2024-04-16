@@ -29,7 +29,7 @@ import mqtt from "mqtt";
 // https://mui.com/material-ui/customization/default-theme/?expand-path=$.palette.info
 // https://mui.com/material-ui/customization/color/#2014-material-design-color-palettes
 
-const tableTheme = muiThemes.getShiftScheduleTableTheme();
+const tableTheme = muiThemes.getSistemaTheme();
 
 const CellsTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -98,13 +98,13 @@ const ShiftSchedule = (props) => {
     activeLabour: tpcRoot + "systemdata/dashboards/epicor/activelabour",
   };
   const sistTheme = useTheme();
-  const mqttConnect = (host, mqttOption) => {
+  const mqttConn = (host, mqttOption) => {
     setClient(mqtt.connect(host, mqttOption));
   };
 
   useEffect(() => {
     //only fire on initial load
-    mqttConnect(thisHost, options);
+    mqttConn(thisHost, options);
   }, []);
 
   useEffect(() => {

@@ -10,7 +10,7 @@ import { tableCellClasses } from "@mui/material/TableCell";
 // https://mui.com/material-ui/customization/default-theme/?expand-path=$.palette.info
 // https://mui.com/material-ui/customization/color/#2014-material-design-color-palettes
 
-const tableTheme = muiThemes.getShiftScheduleTableTheme();
+const tableTheme = muiThemes.getSistemaTheme();
 
 const RunningJobCell = styled(TableCell)(({ theme }) => ({
   // [`&.${tableCellClasses.head}`]: {

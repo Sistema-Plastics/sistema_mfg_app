@@ -5,7 +5,6 @@ export const connections = {
     const webPort = Number(window.location.port);
     switch (webPort) {
       case 5000:
-      case 5500:
       case 443:
         console.log(
           "Port " +
@@ -15,6 +14,25 @@ export const connections = {
         baseURL =
           "https://aauc3spwntsk001.nr.ad.newellco.com/epicorerp10/api/v1/";
         break;
+
+      //Test connection on iis001
+      case 5500:
+      case 5001:
+      case 5002:
+        console.log(
+          "Port " +
+            webPort +
+            " so API URL https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/help/v1/"
+        );
+        baseURL =
+          "https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/help/v1/";
+
+        break;
+      //typical local ports for VS Code testing
+      case 3000:
+      case 3001:
+      case 3002:
+      case 3003:
       default:
         console.log(
           "Port " +
@@ -28,7 +46,6 @@ export const connections = {
     }
     return baseURL;
   },
-  
 
   getBaseURLfromDebugCode: function (debugCodeNo) {
     let baseURL = "https://erp-test02.sistemaplastics.com/erp104/api/v1/";
@@ -61,8 +78,9 @@ export const connections = {
 
     const webPort = Number(window.location.port);
     switch (webPort) {
-      case 5000:
-      case 5500:
+      case 44301:
+      case 8080:
+      case 5001:
       case 443:
         {
           console.log(
@@ -71,7 +89,8 @@ export const connections = {
         }
         baseTopic = "food/st04/";
         break;
-      default:
+    
+        default:
         {
           console.log(
             "Port " + webPort + " so logging to test Topic Base test/food/st04"

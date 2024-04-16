@@ -11,44 +11,21 @@ import {
   TableHead,
 } from "@mui/material";
 import MachineList from "./MachineList";
-
-import { styled } from "@mui/material/styles";
+//TODO: check table cell format 
+//import { styled } from "@mui/material/styles";
 import { muiThemes } from "../../assets/styling/muiThemes";
-import { tableCellClasses } from "@mui/material/TableCell";
+import { CellTableCell } from "../../assets/styling/muiThemes";
+
+//import { tableCellClasses } from "@mui/material/TableCell";
+
+//TODO:   need to extricate from muiThemes
 
 // https://mui.com/material-ui/customization/default-theme/?expand-path=$.palette.info
 // https://mui.com/material-ui/customization/color/#2014-material-design-color-palettes
 
-const tableTheme = muiThemes.getShiftScheduleTableTheme();
+const tableTheme = muiThemes.getSistemaTheme();
 
-// const CellsTableCell = styled(TableCell)(({ theme }) => ({
-//   [`&.${tableCellClasses.head}`]: {
-//     backgroundColor: tableTheme.palette.cells.main,
-//     color: tableTheme.palette.cells.contrastText,
-//     // borderBottom: "none",
-//     borderBottom: "0.5rem solid",
-//     paddingBottom: 8,
-//     paddingTop: 8,
-//     fontSize: 18,
-//   },
-//   [`&.${tableCellClasses.body}`]: {
-//     fontSize: 14,
-//   },
-// }));
 
-const CellTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.head}`]: {
-    backgroundColor: tableTheme.palette.primary.dark,
-    color: tableTheme.palette.primary.contrastText,
-    borderBottom: "none",
-    paddingBottom: 4,
-    paddingTop: 4,
-    fontSize: 18,
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
-  },
-}));
 const CellList = ({ datasets }) => {
   const [init, setInit] = useState(false);
    //TODO: remove  const renderCellList = useRef();

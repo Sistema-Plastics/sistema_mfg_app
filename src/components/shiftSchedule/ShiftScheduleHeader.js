@@ -15,7 +15,7 @@ import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import useTheme from "@mui/material/styles/useTheme";
 
-//TODO: remove import FormLabel from "@mui/material/FormLabel";
+//TODO: Create collapsable section for header
 
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -38,44 +38,6 @@ const JobLabel = styled(InputLabel)(({ theme }) => ({
   textAlign: "left",
   color: theme.palette.text.secondary,
 }));
-
-//TODO: remove  const ShiftsLabel = styled(FormLabel)(({ theme }) => ({
-//   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
-//   ...theme.typography.h6,
-//   // padding: theme.spacing(2),
-//   border: 0,
-//   textAlign: "left",
-//   color: theme.palette.text.secondary,
-// }));
-
-const JobInput = styled(Input)(({ theme }) => ({
-  // backgroundColor: "none",
-  // ...theme.typography.h6,
-  // padding: theme.spacing(0.5),
-  // border: 0,
-  // textAlign: "left",
-  // color: theme.palette.text.secondary,
-}));
-
-const HeaderButton = styled(Button)(({ theme }) => ({
-  // backgroundColor: "#005DA1",
-  // ...theme.typography.body2,
-  // padding: theme.spacing(0),
-  // border: 0,
-  // textAlign: "left",
-  // color: theme.palette.text.secondary.contrast,
-}));
-
-// const ColorButton =
-//   styled(Button) <
-//   ButtonProps >
-//   (({ theme }) => ({
-//     color: theme.palette.getContrastText(purple[500]),
-//     backgroundColor: purple[500],
-//     "&:hover": {
-//       backgroundColor: purple[700],
-//     },
-//   }));
 
 const flexContainer = {
   display: "flex",
@@ -184,10 +146,6 @@ const ShiftScheduleHeader = ({
 
   //#endregion
 
-  //TODO: remove  const jbl = [
-  //   ...new Map(datasets.jobList.map((item) => [item["JobID"], item])).values(),
-  // ];
-
   return !cellList ? (
     <React.Fragment>
       <Grid container spacing={2}>
@@ -250,25 +208,18 @@ const ShiftScheduleHeader = ({
             sx={{
               "& > label": {
                 color: sistTheme.palette.sistema.klipit.main,
-                marginTop:0
+                marginTop: 0,
               },
             }}
           >
             <JobLabel htmlFor="component-simple">Filter Job Number</JobLabel>
-            <JobInput
+            <Input
               id="component-simple"
               // defaultValue="Composed TextField"
               inputRef={jobNo}
             />
           </FormControl>
           <FormControl variant="standard" sx={{ alignItems: "flex-start" }}>
-            {/* <HeaderButton
-              variant="contained"
-              size="small"
-              sx={{
-                marginTop: 2,
-              }}
-            > */}
             <FormControlLabel
               control={
                 <Button
@@ -281,12 +232,9 @@ const ShiftScheduleHeader = ({
               }
               sx={{ marginLeft: 2, marginTop: 0 }}
             />
-
-            {/* </HeaderButton> */}
           </FormControl>
         </Grid>
-        {/* </Grid>
-      <Grid container spacing={2}> */}
+
         <Grid
           item
           xs={6}

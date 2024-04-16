@@ -1,7 +1,7 @@
 import * as Cookies from "../../assets/components/CookieFunctions.js";
 import appConfig from "../../Config.json";
 import axios from "axios";
-import { GifRounded } from "@material-ui/icons";
+//import { GifRounded } from "@mui/icons-material";
 
 function mapPOHdr(
   company,
@@ -295,7 +295,7 @@ const apiConnection = (company) => {
       ContentType: "application/json",
     },
   };
-  if (company != null && company != "") {
+  if (company !== null && company !== "") {
     const CallSettings = JSON.stringify({
       Company: `${company}`,
       Plant: "",
@@ -319,7 +319,7 @@ export const getPO = async (poNum) => {
     `/BaqSvc/POsPendingApproval/?poNum=${poNum}`
   );
   console.log("[getPO] - response.data: ", response.data);
-  if (response.data.value.length == 0) {
+  if (response.data.value.length === 0) {
     throw new Error("PO is not avialable for Approval/Rejection");
   }
   return mapPOData(response.data.value).poList[0];
@@ -348,10 +348,10 @@ export const updatePOApvMsg = async (poApvMsgList) => {
   let isSuccess = false;
   const data = { ds: { POApvMsg: poApvMsgList, ExtensionTables: [] } };
   try {
-    const response = await apiConnection(poApvMsgList[0].Company).post(
-      "/Erp.BO.POApvMsgSvc/Update",
-      data
-    );
+    // const response = await apiConnection(poApvMsgList[0].Company).post(
+    //   "/Erp.BO.POApvMsgSvc/Update",
+    //   data
+    // );
     isSuccess = true;
   } catch (error) {
     console.log(
