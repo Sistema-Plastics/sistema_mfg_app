@@ -22,10 +22,10 @@ export const connections = {
         console.log(
           "Port " +
             webPort +
-            " so API URL https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/help/v1/"
+            " so API URL https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1"
         );
         baseURL =
-          "https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/help/v1/";
+          "https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1/";
 
         break;
       //typical local ports for VS Code testing
@@ -37,11 +37,11 @@ export const connections = {
         console.log(
           "Port " +
             webPort +
-            " so API URL https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/help/v1/"
+            " so API URL https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1"
         );
 
         baseURL =
-          "https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/help/v1/";
+        "https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1/";
         break;
     }
     return baseURL;

@@ -1,5 +1,6 @@
 import * as Cookies from "../../assets/components/CookieFunctions.js";
 import appConfig from "../../Config.json";
+import { connections } from "../../ConnectionBroker.js";
 import axios from "axios";
 //import { GifRounded } from "@mui/icons-material";
 
@@ -287,7 +288,8 @@ function mapPOData(poDataResponse) {
 
 const apiConnection = (company) => {
   const epicorToken = Cookies.getCookie("epicorToken");
-  const restServerURL = appConfig.ERPRestServerURL;
+  // const restServerURL = appConfig.ERPRestServerURL;
+  const restServerURL = connections.getBaseURLfromPort();
   let headerConfig = {
     baseURL: restServerURL,
     headers: {
@@ -295,7 +297,8 @@ const apiConnection = (company) => {
       ContentType: "application/json",
     },
   };
-  if (company !== null && company !== "") {
+
+  if (typeof company !== "undefined" && company !== null && company !== "") {
     const CallSettings = JSON.stringify({
       Company: `${company}`,
       Plant: "",
@@ -304,20 +307,20 @@ const apiConnection = (company) => {
     });
     headerConfig.headers = { ...headerConfig.headers, CallSettings };
   }
+  console.log("URL in Header " + headerConfig.baseURL)
   return axios.create(headerConfig);
 };
 
 export const getPOs = async (userID) => {
-  const response = await apiConnection().get(
-    `/BaqSvc/POsPendingApproval/?userID=${userID}`
-  );
+  const zz = apiConnection();
+  console.log('UrL ' + zz.defaults.baseURL + '/BaqSvc/POsPendingApproval/?userID=' + userID ) 
+  const response = await zz.get('/BaqSvc/POsPendingApproval/?userID=' + userID);
   return mapPOData(response.data.value);
 };
 
 export const getPO = async (poNum) => {
-  const response = await apiConnection().get(
-    `/BaqSvc/POsPendingApproval/?poNum=${poNum}`
-  );
+  const zz = apiConnection();
+  const response = await zz.get(`/BaqSvc/POsPendingApproval/?poNum=${poNum}`);
   console.log("[getPO] - response.data: ", response.data);
   if (response.data.value.length === 0) {
     throw new Error("PO is not avialable for Approval/Rejection");
@@ -348,10 +351,10 @@ export const updatePOApvMsg = async (poApvMsgList) => {
   let isSuccess = false;
   const data = { ds: { POApvMsg: poApvMsgList, ExtensionTables: [] } };
   try {
-    // const response = await apiConnection(poApvMsgList[0].Company).post(
-    //   "/Erp.BO.POApvMsgSvc/Update",
-    //   data
-    // );
+    const response = await apiConnection(poApvMsgList[0].Company).post(
+      "/Erp.BO.POApvMsgSvc/Update",
+      data
+    );
     isSuccess = true;
   } catch (error) {
     console.log(

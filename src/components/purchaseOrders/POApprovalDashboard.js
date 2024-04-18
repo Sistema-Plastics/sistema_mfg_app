@@ -115,19 +115,27 @@ const drawerWidth = 300;
 // }));
 
 function PORow({ po }) {
-  const history = useNavigate();
+  const navigate = useNavigate();
   // const classes = useStyles();
   const [openLines, setOpenLines] = React.useState(false);
 
   const handleOpenPOAction = () => {
-    history.push({
-      pathname: `/PendingPOs/${po.poNum}`,
-      search: `?company=${po.company}`,
-      state: {
-        company: po.company,
-        fromDashboard: true,
-      },
-    });
+
+navigate(`/PendingPOs/${po.poNum}?company=${po.company}`,{
+ 
+  state: {
+    company: po.company,
+    fromDashboard: true,
+  },
+});
+    // history.push({
+    //   pathname: `/PendingPOs/${po.poNum}`,
+    //   search: `?company=${po.company}`,
+    //   state: {
+    //     company: po.company,
+    //     fromDashboard: true,
+    //   },
+    // });
   };
 
   return (
@@ -398,7 +406,7 @@ const POApprovalDashboard = () => {
   return (
     <div>
     {/* <div className={classes.root}> */}
-      <CssBaseline />
+      {/* <CssBaseline /> */}
       <TableContainer
         // className={classes.container}
         component={Paper}

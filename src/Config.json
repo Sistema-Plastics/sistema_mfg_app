@@ -1,5 +1,5 @@
 {
   "ERPRestServerURL": "https://aauc3spwntsk001.nr.ad.newellco.com/epicorerp10/api/v1/",
-  "ERPRestServerURL-TEST": "https://dc1nwnepr001.nr.ad.newellco.com/erp10testO/api/v1/",
-  "ERPRestServerURL-LIVE": "https://aauc3spwntsk001.nr.ad.newellco.com/epicorerp10/api/v1/"
+  "ERPRestServerURL_TEST": "https://dc1nwnepr001.nr.ad.newellco.com/erp10testO/api/v1/",
+  "ERPRestServerURL_LIVE": "https://aauc3spwntsk001.nr.ad.newellco.com/epicorerp10/api/v1/"
 }

@@ -61,7 +61,7 @@ import InventoryBooking from "./components/inventoryBooking/InventoryBooking";
 
 // --- Purchase Orders
 import POApprovalDashboard from "./components/purchaseOrders/POApprovalDashboard";
-// import POApproval from "./components/purchaseOrders/POApproval";
+import POApproval from "./components/purchaseOrders/POApproval";
 
 // import InventoryMovements from "./components/inventoryDashboards/inventoryMovements/InventoryMovements";
 
@@ -186,7 +186,8 @@ function App() {
                   <Route path="/InvBooking" element={<InventoryBooking />} />
                   <Route path="/ShiftSchedule" element={<ShiftSchedule />} />
                   <Route path="/ThemesCheck" element={<ThemesCheck />} />
-                  <Route path="/PendingPOs" element={<POApprovalDashboard />} />
+                  <Route path="/PendingPOs/" element={<POApprovalDashboard />} />
+                  <Route path="/PendingPOs/:poNum" element={<POApproval />} />
                   
                 </Routes>
               </SistemaHeader></QueryClientProvider>

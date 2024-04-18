@@ -83,6 +83,8 @@ export const muiThemes = {
           nextjob: yellow[500],
           notrunning: red[200],
         },
+        approveButton: { main: red[400], contrastText: grey[50] },
+        rejectButton: { main: green[400], contrastText: grey[50] },
         sistema: {
           klipit: {
             main: sistColours["klipit-Main"],
@@ -113,9 +115,9 @@ export const muiThemes = {
           '"Segoe UI Symbol"',
         ].join(","),
 
-body1:{
-color:sistColours["klipit-Text"]
-},
+        body1: {
+          color: sistColours["klipit-Text"],
+        },
 
         tableCellHeading: {
           fontSize: "1rem",
@@ -167,7 +169,6 @@ color:sistColours["klipit-Text"]
             root: {
               // backgroundColor: "red",
             },
-            
           },
         },
 
@@ -176,12 +177,12 @@ color:sistColours["klipit-Text"]
 
           styleOverrides: {
             label: { placeSelf: "top" },
-            
+
             root: ({ ownerState, theme }) => ({
               backgroundColor: theme.palette.sistema.klipit.light,
               color: theme.palette.sistema.klipit.contrastText,
               borderRadius: 5,
-              
+
               paddingRight: 10,
               paddingLeft: 10,
               margin: 2,
@@ -212,12 +213,34 @@ color:sistColours["klipit-Text"]
             }),
           },
         },
+        MuiSvgIcon: {
+          styleOverrides: {
+            root: {
+              backgroundColor: "transparent",
+              color: sistColours["klipit-Text"],
+            },
+          },
+        },
+
+        MuiTab: {
+          styleOverrides: {
+            root: {
+              color: grey[500],
+              "&.Mui-selected": { color: sistColours["klipit-Text"] },
+            },
+          },
+        },
+        MuiFab: {
+          styleOverrides: {
+            root: { color: sistColours["klipit-Text"], margin: 1 },
+          },
+        },
         MuiCheckbox: {
           styleOverrides: {
             root: {
               color: sistColours["klipit-Text"],
               "&.Mui-checked": {
-                color:sistColours["klipit-Text"],
+                color: sistColours["klipit-Text"],
               },
             },
           },

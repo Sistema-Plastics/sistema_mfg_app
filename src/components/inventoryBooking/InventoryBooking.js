@@ -26,13 +26,13 @@ import Content from "./Content";
 //   TableRow,
 //   TextField,
 //   Typography,
-// } from "@material-ui/core";
+// } from "@mui/material";
 // import {
 //   ThumbUp as ThumbUpIcon,
 //   ThumbDown as ThumbDownIcon,
 // // } from "@material-ui/icons";
-// import { makeStyles } from "@material-ui/core/styles";
-// import { grey, green, red } from "@material-ui/core/colors";
+// import { makeStyles } from "@mui/material/styles";
+// import { grey, green, red } from "@mui/material/colors";
 
 // const useStyles = makeStyles((theme) => ({
 //   root: {
