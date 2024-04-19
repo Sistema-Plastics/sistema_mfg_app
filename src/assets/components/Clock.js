@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-
+import { Grid, Typography, Box, Container, Paper } from "@mui/material";
 export class Clock extends Component {
   constructor() {
     super();
@@ -30,11 +30,67 @@ export class Clock extends Component {
       minute: "numeric",
     };
     return (
-      <div className="clock">
-        <h6 className="clockText">
-          {time.toLocaleTimeString("en-US", timeOpts)}
-        </h6>
-      </div>
+      <React.Fragment>
+        <Box
+          sx={{
+            width: "100%",
+            height: "100%",
+            // display: "flex",
+            // justifyContent: "center",
+            // alignItems: "center",
+          }}
+        >
+          <Container
+            style={{
+              minWidth: "100%",
+              height: "100vh",
+              paddingTop: 10,
+              // border: "solid",
+              // backgroundColor: "yellow",
+            }}
+          >
+            <Grid
+              container
+              style={{
+                minWidth: "100%",
+                height: "100vh",
+                // border: "solid",
+                // padding: 10,
+                // backgroundColor: "green",
+              }}
+            >
+              <Grid
+                item
+                style={{
+                  minWidth: "100%",
+                  height: "100%",
+                  // border: "solid",
+                  // padding: 10,
+                  // backgroundColor: "orange",
+                }}
+              >
+                <Paper
+                  elevation={16}
+                  style={{
+                    minWidth: "90%",
+                    height: "80vh",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    // border: "solid",
+                    // padding: 10,
+                    // backgroundColor: "purple",
+                  }}
+                >
+                  <Typography variant="h2">
+                    Current Time :- {time.toLocaleTimeString("en-US", timeOpts)}
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+      </React.Fragment>
     );
   }
 }

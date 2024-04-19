@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRef } from "react";
-import { Grid,  TextField, useForkRef } from "@mui/material";
+import { Grid, TextField, useForkRef } from "@mui/material";
 import {
   Dialog,
   DialogTitle,
@@ -11,28 +11,31 @@ import {
 
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
-import Button from "@mui/material/Button"
+import Button from "@mui/material/Button";
 import {
   mqttFunctions,
   mfgDashboardFunctions,
 } from "./../../helpers/HelperScripts";
 
-import { connections } from "../../ConnectionBroker";
+import { connections } from "../../config/ConnectionBroker";
 
 import mqtt from "mqtt";
 
 import { muiThemes } from "../../assets/styling/muiThemes";
 import { TableRowTypography } from "../../assets/styling/muiThemes";
-const tableTheme = muiThemes.getSistemaTheme();
+const sistTheme = muiThemes.getSistemaTheme();
 
 const Actions = ({ fetchJobDetails }) => {
   //#region MQTT Connect
+  const [client, setClient] = useState(null); 
+
   const thisHost = mqttFunctions.getHostname();
-  const [client, setClient] = useState(null);
-  var options = mqttFunctions.getOptions();
+  const options = mqttFunctions.getOptions("actions",Math.random().toString(16).substring(2, 8));
+  
   const mqttConn = (host, mqttOption) => {
     setClient(mqtt.connect(host, mqttOption));
   };
+  
   //#endregion
 
   const [partPalletErr, setPartPalletErr] = useState(true);
@@ -51,7 +54,7 @@ const Actions = ({ fetchJobDetails }) => {
   // const { employeeData, jobData,topic } = data;
   const basePalletTopic =
     connections.getBaseMQTTTopicFromPort() +
-    "/+/+/inventorymove/receivemfgparttoinventory";
+    "+/+/inventorymove/receivemfgparttoinventory";
 
   //#region  Dialog setups
 
@@ -128,12 +131,7 @@ const Actions = ({ fetchJobDetails }) => {
   useEffect(() => {
     if (client) {
       client.on("connect", () => {
-        // setConnectStatus("Connected");
-        // console.log("connection successful");
-        /*         mqttSub({
-          topic: "food/st04/operations/dashboards/epicor/jobs",
-          qos: 0,
-        }); */
+      
         mqttSub({
           topic: "food/st04/operations/dashboards/epicor/employeeslist",
           qos: 0,
@@ -159,7 +157,7 @@ const Actions = ({ fetchJobDetails }) => {
         client.end();
       });
       client.on("reconnect", () => {
-        // setConnectStatus("Reconnecting");
+        console.log("Re-Connection ");
       });
     }
   }, [client]);
@@ -167,7 +165,7 @@ const Actions = ({ fetchJobDetails }) => {
   let record = {
     topic:
       connections.getBaseMQTTTopicFromPort() +
-      "/cellRef/mcRef/inventorymove/receivemfgparttoinventory",
+      "cellRef/mcRef/inventorymove/receivemfgparttoinventory",
     qos: 0,
     retain: true,
     payload: Date.now().toString(),
@@ -229,6 +227,8 @@ const Actions = ({ fetchJobDetails }) => {
     }
     setEmployeeErr(emperr);
   };
+
+
   const mqttSub = (subscription) => {
     if (client) {
       // topic & QoS for MQTT subscribing
@@ -288,21 +288,28 @@ const Actions = ({ fetchJobDetails }) => {
             paddingTop: 1,
             paddingBottom: 1,
             marginBottom: 1,
-            backgroundColor: tableTheme.palette.sistema.klipit.light,
+            backgroundColor: sistTheme.palette.sistema.klipit.light,
           }}
         >
           <TableRowTypography
             variant="h2"
             paddingRight={16}
             alignSelf={"center"}
-            color={tableTheme.palette.sistema.klipit.contrastText}
+            color={sistTheme.palette.sistema.klipit.contrastText}
           >
             Job Booking
           </TableRowTypography>
         </Grid>
         <Grid item xs={6}>
           <FormControl>
-            <FormControlLabel sx={{margin:1}} control={<Button  onClick={handleEmployeeSetOpen}>Book Full Pallet</Button>} />
+            <FormControlLabel
+              sx={{ margin: 1 }}
+              control={
+                <Button onClick={handleEmployeeSetOpen}>
+                  Book Full Pallet
+                </Button>
+              }
+            />
           </FormControl>
           {/* <div>
             <Button variant="outlined" onClick={handleEmployeeSetOpen}>
@@ -311,8 +318,13 @@ const Actions = ({ fetchJobDetails }) => {
           </div> */}
         </Grid>
         <Grid item xs={6}>
-        <FormControl>
-            <FormControlLabel sx={{margin:1}} control={<Button onClick={handlePltQtySetOpen}>Book Part Pallet</Button>} />
+          <FormControl>
+            <FormControlLabel
+              sx={{ margin: 1 }}
+              control={
+                <Button onClick={handlePltQtySetOpen}>Book Part Pallet</Button>
+              }
+            />
           </FormControl>
           {/* <div>
             <Button variant="outlined" onClick={handlePltQtySetOpen}>
@@ -332,6 +344,28 @@ const Actions = ({ fetchJobDetails }) => {
           <DialogTitle>Employee Details</DialogTitle>
           <DialogContent style={{ height: "100px" }}>
             <DialogContentText>Enter your Employee Number</DialogContentText>
+            <FormControl>
+              <FormControlLabel
+                sx={{
+                  backgroundColor: "transparent",
+                  "& .MuiFilledInput-input": {
+                    color: sistTheme.palette.sistema.klipit.main,
+                  },
+                }}
+                control={
+                  <TextField
+                    error={employeeErr}
+                    id="outlined-error"
+                    defaultValue=""
+                    variant="filled"
+                    helperText={empHelperText.current}
+                    onChange={handleEmployeeChange}
+                  ></TextField>
+                }
+              />
+            </FormControl>
+
+            {/*             
             <TextField
               error={employeeErr}
               id="outlined-error"
@@ -340,7 +374,7 @@ const Actions = ({ fetchJobDetails }) => {
               variant="filled"
               helperText={empHelperText.current}
               onChange={handleEmployeeChange}
-            />
+            /> */}
           </DialogContent>
           <DialogActions>
             <Button onClick={handleEmployeeSetClose}>Cancel</Button>
@@ -361,15 +395,27 @@ const Actions = ({ fetchJobDetails }) => {
             <DialogContentText>
               Enter Quantity to book into Epicor in {jobData.ium} units
             </DialogContentText>
-            <TextField
-              error={partPalletErr}
-              id="outlined-error"
-              defaultValue="0"
-              color="primary"
-              variant="filled"
-              helperText={pltHelperText.current}
-              onChange={handlePltQtyChange}
-            />
+
+            <FormControl>
+              <FormControlLabel
+                sx={{
+                  backgroundColor: "transparent",
+                  "& .MuiFilledInput-input": {
+                    color: sistTheme.palette.sistema.klipit.main,
+                  },
+                }}
+                control={
+                  <TextField
+                    error={partPalletErr}
+                    id="outlined-error"
+                    defaultValue="0"
+                    variant="filled"
+                    helperText={pltHelperText.current}
+                    onChange={handlePltQtyChange}
+                  />
+                }
+              />
+            </FormControl>
           </DialogContent>
           <DialogActions>
             <Button onClick={handlePltQtySetClose}>Cancel</Button>

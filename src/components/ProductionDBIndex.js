@@ -1,16 +1,55 @@
-
 import { SistemaContext } from "../assets/components/SistemaHeader";
 import React, { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Box from "@mui/material/Box"
- //TODO: remove  import Typography from "@mui/material/Typography"
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Paper from "@mui/material/Paper";
+import Grid from "@mui/material/Grid";
+
+//TODO: remove  import Typography from "@mui/material/Typography"
+
+import FactoryIcon from "@mui/icons-material/Factory";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import WavingHandIcon from "@mui/icons-material/WavingHand";
+import HighQualityIcon from "@mui/icons-material/HighQuality";
+import HandymanIcon from "@mui/icons-material/Handyman";
 
 import { styled } from "@mui/material/styles";
+import { muiThemes } from "../assets/styling/muiThemes";
+import { tableCellClasses } from "@mui/material/TableCell";
+import { Typography } from "@mui/material";
+
+// https://mui.com/material-ui/customization/default-theme/?expand-path=$.palette.info
+// https://mui.com/material-ui/customization/color/#2014-material-design-color-palettes
+
+const sistTheme = muiThemes.getSistemaTheme();
 
 const BlankLink = styled(Link)(({ theme }) => ({
   textDecoration: "none",
-
+  color:sistTheme.palette.sistema.klipit.main,
+  "&:visited":{color:sistTheme.palette.sistema.klipit.main}
 }));
+
+const MyPaper = styled(Paper)(({theme} ) =>({
+  margin:5,  flexGrow:1,padding:5
+  // backgroundColor:'red'
+}))
+
+const GridContainer = styled(Grid)(({theme}) => ({
+  // backgroundColor:'yellow'
+  alignItems:'stretch', display:'flex'
+}))
+const GridItem = styled(Grid)(({theme}) => ({
+  // backgroundColor:'green', 
+  // width :'100%', height:'100%',
+flexGrow:1
+}))
+const HeadrTypography = styled(Typography)(({theme}) => ({
+  variant:'h4'
+}))
+const LinkTypography = styled(Typography)(({theme}) => ({
+  variant:'h6'
+}))
 
 export default function Index() {
   //==========================================================
@@ -24,104 +63,239 @@ export default function Index() {
   }, []);
 
   return (
-    <Box>
-      <h3>Manufacturing</h3>
-      <BlankLink to="/McCellDb?cell=8&sb=true">
-        Main Injection machine Cell Dashboard - Cell 1
-      </BlankLink>
-      <br />
-      <BlankLink to="/EndActivity">End Production Activity</BlankLink>
-      <br />
+    <Box sx={{ display: "flex", width: "100%" }}>
+      <Container maxWidth="false">
+        <GridContainer container >
+          
+          {/* //mfg */}
+         <GridContainer item xs={6}>
+            <MyPaper elevation={16}>
+              <GridItem xs={12}>
+                <HeadrTypography variant='h5'>
+                  <FactoryIcon
+                    sx={{
+                      color: sistTheme.palette.sistema.klipit.main,
+                      marginRight : 2,
+                      fontSize: 30,
+                    }}
+                  />
+                  Manufacturing
+                </HeadrTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6' >
+                  <BlankLink to="/McCellDb?cell=8&sb=true">
+                    Main Injection machine Cell Dashboard - Cell 1
+                  </BlankLink>
+                </LinkTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink to="/EndActivity">
+                    End Production Activity
+                  </BlankLink>
+                </LinkTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink to="/ShiftSchedule">Shift Schedule</BlankLink>
+                </LinkTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink to="/InvBooking">Book Inventory</BlankLink>
+                </LinkTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink to="/Clock">Clock</BlankLink>
+                </LinkTypography>
+              </GridItem>
+            </MyPaper>
+          </GridContainer>
 
-      <BlankLink to="/ShiftSchedule">Shift Schedule</BlankLink>
-      <br />
-      <BlankLink to="/InvBooking">Book Inventory</BlankLink>
-      <br />
-      <BlankLink to="/Clock">Clock</BlankLink>
-      <br />
-      <h3>Assembly</h3>
-      <BlankLink
-        to="/Assembly/EmployeeCellCurrentDB?cell=005_007_008_009"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Main Assembly Dashboard - Employee Assignment
-      </BlankLink>
-      <br />
-      <BlankLink
-        to="/Assembly/JobsCellDB?cell=005&showConstraintsOnly=false"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Main Assembly - Schedule
-      </BlankLink>
-      <br />
-      <BlankLink to="/TestJobsDB?cell=005">Test Jobs DB</BlankLink>
-      {/* <BlankLink to="/Assembly/FastPkg">
-        Main Assembly Dashboard - Fast Packaging
-      </BlankLink>*/}
-      <br />
-      {/* <BlankLink to="/Assembly/AssemblyNav?shift=5"> */}
-      <BlankLink to="/Assembly/AssemblyNav">
-        Main Assembly Dashboard - Labour Rostering
-      </BlankLink>
-      <br />
-      <BlankLink to="/Assembly/ProductionBooking">
-        Main Assembly - Production Booking
-      </BlankLink>
-      <br />
-      <h3>QA Dashboards</h3>
-      <BlankLink to="/QA">Job Startup Inspection</BlankLink>
-      <br />
-      <h3>Raw Material Handling</h3>
-      {/* <BlankLink to="/RawMats/Picking">Picking Schedule</BlankLink> */}
-      <BlankLink
-        href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/Pickingandstaging.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Picking Schedule
-      </BlankLink>
-      <br />
-      {/* <BlankLink to="/RawMats/PO">PO Delivery Schedule</BlankLink> */}
-      <BlankLink
-        href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/DeliverySchedule.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        PO Delivery Schedule
-      </BlankLink>
-      <br />
-      {/* <BlankLink to="/RawMats/Premix">Premix Schedule</BlankLink> */}
-      <BlankLink
-        href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/PremixSchedule.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Premix Schedule
-      </BlankLink>
-      <br />
-      {/* <BlankLink to="/RawMats/Regrind">Regrind Schedule</BlankLink> */}
-      <BlankLink
-        href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/RegrindSchedule.html"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Regrind Schedule
-      </BlankLink>
-      <br />
-      <BlankLink
-        to="https:\\aauc3spwnmat001.nr.ad.newellco.com"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Mattec HMI
-      </BlankLink>
-      <br />
-      <h3>Purchase Orders</h3>
-      <BlankLink to="/PendingPOs">PO Approval Dashboard</BlankLink>
-      <br />
+          {/* Assy */}
+          <GridContainer item xs={6}>
+            <MyPaper elevation={16}  >
+              <GridItem xs={12}>
+                <HeadrTypography variant='h5'>
+                  <HandymanIcon
+                    sx={{
+                      color: sistTheme.palette.sistema.klipit.main,
+                      marginRight : 2,
+                      fontSize: 30,
+                    }}
+                  />
+                  Assembly
+                </HeadrTypography>
+              </GridItem>
+              <GridItem>
+                <HeadrTypography variant='h6'>
+                  <BlankLink
+                    to="/Assembly/EmployeeCellCurrentDB?cell=005_007_008_009"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Main Assembly Dashboard - Employee Assignment
+                  </BlankLink>
+                </HeadrTypography>
+              </GridItem>
+
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink
+                    to="/Assembly/JobsCellDB?cell=005&showConstraintsOnly=false"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Main Assembly - Schedule
+                  </BlankLink>
+                </LinkTypography>
+              </GridItem>
+
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink to="/TestJobsDB?cell=005">Test Jobs DB</BlankLink>
+                </LinkTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink to="/Assembly/AssemblyNav">
+                    Main Assembly Dashboard - Labour Rostering
+                  </BlankLink>
+                </LinkTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink to="/Assembly/ProductionBooking">
+                    Main Assembly - Production Booking
+                  </BlankLink>{" "}
+                </LinkTypography>
+              </GridItem>
+            </MyPaper>
+          </GridContainer>
+
+          {/* QA */}
+          <GridContainer item xs={6}>
+            <MyPaper elevation={16} >
+              <GridItem xs={12}>
+                <HeadrTypography variant='h5'>
+                  <HighQualityIcon
+                    sx={{
+                      color: sistTheme.palette.sistema.klipit.main,
+                      marginRight : 2,
+                      fontSize: 30,
+                    }}
+                  />
+                  Quality
+                </HeadrTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink to="/QA">Job Startup Inspection</BlankLink>
+                </LinkTypography>
+              </GridItem>
+            </MyPaper>
+          </GridContainer>
+
+          {/* Raw Matl */}
+          <GridContainer item xs={6}>
+            <MyPaper elevation={16} >
+              <GridItem xs={12}>
+                <HeadrTypography variant='h5'>
+                  <WavingHandIcon
+                    sx={{
+                      color: sistTheme.palette.sistema.klipit.main,
+                      marginRight : 2,
+                      fontSize: 30,
+                    }}
+                  />
+                  Raw Material Handling
+                </HeadrTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink
+                    href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/Pickingandstaging.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Picking Schedule
+                  </BlankLink>
+                </LinkTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink
+                    href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/DeliverySchedule.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    PO Delivery Schedule
+                  </BlankLink>
+                </LinkTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink
+                    href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/PremixSchedule.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Premix Schedule
+                  </BlankLink>
+                </LinkTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink
+                    href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/RegrindSchedule.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Regrind Schedule
+                  </BlankLink>
+                </LinkTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink
+                    to="https:\\aauc3spwnmat001.nr.ad.newellco.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Mattec HMI
+                  </BlankLink>
+                </LinkTypography>
+              </GridItem>
+            </MyPaper>
+          </GridContainer>
+
+          {/* PO's */}
+          <GridContainer item xs={6}>
+            <MyPaper elevation={16} >
+              <GridItem xs={12}>
+                <HeadrTypography variant='h5'>
+                  <ShoppingCartIcon
+                    sx={{
+                      color: sistTheme.palette.sistema.klipit.main,
+                      marginRight : 2,
+                      fontSize: 30,
+                    }}
+                  />
+                  Purchasing
+                </HeadrTypography>
+              </GridItem>
+              <GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink to="/PendingPOs">PO Approval Dashboard</BlankLink>
+                </LinkTypography>
+              </GridItem>
+            </MyPaper>
+          </GridContainer>
+
+        </GridContainer>
+      </Container>
     </Box>
-    
   );
 }

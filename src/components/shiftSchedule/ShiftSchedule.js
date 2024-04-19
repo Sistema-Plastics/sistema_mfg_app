@@ -17,14 +17,17 @@ import { CSVLink } from "react-csv";
 import ShiftScheduleHeader from "./ShiftScheduleHeader";
 import CellList from "./CellList";
 import { mattecHelpers } from "../../helpers/MattecHelper";
-import { connections } from "../../ConnectionBroker";
+import { connections } from "../../config/ConnectionBroker";
 import { mqttFunctions } from "./../../helpers/HelperScripts";
 
 import { styled } from "@mui/material/styles";
 import { muiThemes } from "../../assets/styling/muiThemes";
 import useTheme from "@mui/material/styles/useTheme";
 import { tableCellClasses } from "@mui/material/TableCell";
+
+
 import mqtt from "mqtt";
+//https://www.hivemq.com/blog/ultimate-guide-on-how-to-use-mqtt-with-node-js/ 
 
 // https://mui.com/material-ui/customization/default-theme/?expand-path=$.palette.info
 // https://mui.com/material-ui/customization/color/#2014-material-design-color-palettes
@@ -98,6 +101,7 @@ const ShiftSchedule = (props) => {
     activeLabour: tpcRoot + "systemdata/dashboards/epicor/activelabour",
   };
   const sistTheme = useTheme();
+  
   const mqttConn = (host, mqttOption) => {
     setClient(mqtt.connect(host, mqttOption));
   };
@@ -105,6 +109,11 @@ const ShiftSchedule = (props) => {
   useEffect(() => {
     //only fire on initial load
     mqttConn(thisHost, options);
+    return () => {
+      // cancel the subscription
+       console.log("need to disconnect client")
+       if(client) client.end()
+  };
   }, []);
 
   useEffect(() => {
@@ -186,6 +195,11 @@ const ShiftSchedule = (props) => {
       client.on("reconnect", () => {
         // setConnectStatus("Reconnecting");
       });
+      client.on("disconnect", () => {
+        console.log("disconnected")
+        // setConnectStatus("Reconnecting");
+      });
+      
     }
   }, [client]);
 
@@ -193,10 +207,11 @@ const ShiftSchedule = (props) => {
     if (client) {
       // topic & QoS for MQTT subscribing
       const { topic, qos } = subscription;
+      console.log(`Subscribing to : ${topic}`)
       // subscribe topic
       client.subscribe(topic, { qos }, (error) => {
         if (error) {
-          //console.log("Subscribe to topics error", error);
+          console.log("Subscribe to topics error", error);
           return;
         }
       });

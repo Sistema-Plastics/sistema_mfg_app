@@ -1,6 +1,6 @@
 import { createContext } from "react";
 import Axios from "axios";
-import { baseURL } from "../ConnectionBroker";
+import { baseURL } from "../config/ConnectionBroker";
 
 import "../App.css";
 
@@ -1005,9 +1005,10 @@ export const axiosConfigs = {
 };
 export const mqttFunctions = {
   getHostname: function (mode) {
-    return "mqtt://10.92.0.168:9001";
+    return "ws://10.92.0.168:9001";
   },
-  getOptions: function () {
+
+  getOptions: function (pageID,randomID) {
     return {
       protocol: "ws",
       username: "pub_client",
@@ -1015,7 +1016,7 @@ export const mqttFunctions = {
       keepalive: 60,
       // clientId uniquely identifies client
       // choose any string you wish
-      clientId: "mqttjs_" + Math.random().toString(16).substr(2, 8),
+      clientId: "mqttjs_" + pageID + '_' + randomID,
     };
   },
 };

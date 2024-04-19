@@ -20,7 +20,7 @@ const JobDetails = ({ mcID, feedback }) => {
 
   const [client, setClient] = useState(null);
 
-  var options = mqttFunctions.getOptions();
+  var options = mqttFunctions.getOptions('jobDetails',Math.random().toString(16).substring(2, 8));
 
   const mqttConn = (host, mqttOption) => {
     setClient(mqtt.connect(host, mqttOption));
@@ -34,6 +34,12 @@ const JobDetails = ({ mcID, feedback }) => {
   useEffect(() => {
     //only fire on initial load
     mqttConn(thisHost, options);
+
+    return () => {
+      // cancel the subscription
+       console.log("need to disconnect client")
+       if(client) client.end()
+  };
   }, []);
 
   useEffect(() => {
@@ -82,11 +88,13 @@ const JobDetails = ({ mcID, feedback }) => {
       };
 
       feedback(jd);
+      client.end()
     }
   });
 
   useEffect(() => {
     if (client) {
+      console.log(' ')
       client.on("connect", () => {
         // setConnectStatus("Connected");
         // console.log("connection successful");

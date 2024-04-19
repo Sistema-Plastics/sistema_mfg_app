@@ -24,8 +24,7 @@ export const connections = {
             webPort +
             " so API URL https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1"
         );
-        baseURL =
-          "https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1/";
+        baseURL = "https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1/";
 
         break;
       //typical local ports for VS Code testing
@@ -40,37 +39,39 @@ export const connections = {
             " so API URL https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1"
         );
 
-        baseURL =
-        "https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1/";
+        baseURL = "https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1/";
         break;
     }
     return baseURL;
   },
 
-  getBaseURLfromDebugCode: function (debugCodeNo) {
-    let baseURL = "https://erp-test02.sistemaplastics.com/erp104/api/v1/";
+  getMQTTServerFromPort: function (urlRef) {
+    const webPort = Number(window.location.port);
 
-    switch (debugCodeNo) {
-      case 0:
-        baseURL = "https://erp-task01.sistemaplastics.com/epicorerp10/api/v1";
-        break;
+    let srvr = "";
+
+    switch (webPort) {
+      case 44301:
+      case 8080:
+      case 5001:
+      case 443:
       default:
+        srvr = "ws://10.92.0.168:9001/ws";
     }
-    return baseURL;
   },
 
-  getBaseURLfromServerName: function (serverRef) {
-    let baseURL = "";
-
-    switch (String(serverRef).toLowerCase()) {
-      case "erp-task01":
-        baseURL = "https://erp-task01.sistemaplastics.com/epicorerp10/api/v1";
-        break;
-      case "erp-test02":
-        break;
-      default:
-    }
-    return baseURL;
+  getMQTTOptionnsWS: function () {
+    const options = {
+      port: 9001,
+      username: "pub_client",
+      password: "password",
+      clientId:
+        "mqttjs_" +
+        Number(window.location.port) +
+        "_" +
+        Math.random().toString(16).substr(2, 8),
+    };
+    return options;
   },
 
   getBaseMQTTTopicFromPort: function () {
@@ -89,8 +90,8 @@ export const connections = {
         }
         baseTopic = "food/st04/";
         break;
-    
-        default:
+
+      default:
         {
           console.log(
             "Port " + webPort + " so logging to test Topic Base test/food/st04"
@@ -102,4 +103,5 @@ export const connections = {
     return baseTopic;
   },
 };
+
 export const baseURL = connections.getBaseURLfromPort(window.location);

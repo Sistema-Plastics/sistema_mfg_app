@@ -28,6 +28,32 @@ const sistColours = {
   "paper-Background": "#fff", //"#fcf6e4",
 };
 
+
+//#region  Help Links
+/** 
++++++++++++++++++++++++++++++++++
+model for design theme https://mui.com/material-ui/getting-started/templates/dashboard/
+
+Link to how to use https://muhimasri.com/blogs/mui-textfield-colors-styles/#using-the-theme
+how to customie elements https://mui.com/material-ui/customization/how-to-customize/ 
+
+Colours https://mui.com/material-ui/customization/color/ 
+
+typography theme viewer https://mui.com/material-ui/customization/default-theme/?expand-path=$.typography
+
+//Base compt order Box/Container/Grid container/Grid ite/Paper/compt
+
+++++++++++++++++++++++++++++++++++++++ 
+ */
+
+
+
+
+//#endregion
+
+
+
+
 export const muiThemes = {
   getSistemaTheme: function () {
     const tableTheme = createTheme({
@@ -330,12 +356,16 @@ export const muiThemes = {
 };
 
 export const TableRowTypography = styled(Typography)(({ theme }) => ({
-  [`&.${typographyClasses.h2}`]: {
+  [`&.${typographyClasses.h1}`]: {
     // backgroundColor: muiThemes.getSistemaTheme().palette.sistema.klipit.light,
     // color: muiThemes.getSistemaTheme().palette.sistema.klipit.main,
     // borderBottom: "none",
     // paddingBottom: 4,
     // paddingTop: 4,
+    fontSize: "1.6rem",
+    fontWeight: 600,
+  },
+  [`&.${typographyClasses.h2}`]: {
     fontSize: "1.4rem",
     fontWeight: 600,
   },
@@ -349,6 +379,18 @@ export const TableRowTypography = styled(Typography)(({ theme }) => ({
     marginLeft: 10,
     marginRight: 10,
     fontSize: "1rem",
+  },
+  [`&.${typographyClasses.h5}`]: {
+    padding: 5,
+    marginLeft: 10,
+    marginRight: 10,
+    fontSize: "0.75rem",
+  },
+  [`&.${typographyClasses.h6}`]: {
+    padding: 5,
+    marginLeft: 10,
+    marginRight: 10,
+    fontSize: "0.625rem",
   },
 
   [`&.${typographyClasses.tableCellData}`]: {

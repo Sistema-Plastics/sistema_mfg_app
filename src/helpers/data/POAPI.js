@@ -1,6 +1,6 @@
 import * as Cookies from "../../assets/components/CookieFunctions.js";
 import appConfig from "../../Config.json";
-import { connections } from "../../ConnectionBroker.js";
+import { connections } from "../../config/ConnectionBroker.js";
 import axios from "axios";
 //import { GifRounded } from "@mui/icons-material";
 

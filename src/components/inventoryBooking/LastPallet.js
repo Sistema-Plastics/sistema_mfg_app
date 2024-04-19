@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@mui/material";
 import { mqttFunctions } from "./../../helpers/HelperScripts";
-import { connections } from "../../ConnectionBroker";
+import { connections } from "../../config/ConnectionBroker";
 import { muiThemes } from "../../assets/styling/muiThemes";
 import { TableRowTypography } from "../../assets/styling/muiThemes";
 
@@ -34,7 +34,7 @@ const LastPallet = ({ machineID }) => {
 
   const basePalletTopic =
     connections.getBaseMQTTTopicFromPort() +
-    "/+/+/inventorymove/receivemfgparttoinventory";
+    "+/+/inventorymove/receivemfgparttoinventory";
   //#endregion
 
   const [tableData, setTableData] = useState({

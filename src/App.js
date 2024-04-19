@@ -100,22 +100,6 @@ import JobsTable from "./components/assembly/assyComponents/JobsTable";
 
  */
 
-//#region  Help Links
-/** 
-+++++++++++++++++++++++++++++++++
-model for design theme https://mui.com/material-ui/getting-started/templates/dashboard/
-
-Link to how to use https://muhimasri.com/blogs/mui-textfield-colors-styles/#using-the-theme
-how to customie elements https://mui.com/material-ui/customization/how-to-customize/ 
-
-Colours https://mui.com/material-ui/customization/color/ 
-
-typography theme viewer https://mui.com/material-ui/customization/default-theme/?expand-path=$.typography
-++++++++++++++++++++++++++++++++++++++ 
- */
-
-//#endregion
-
 //#region Corp Colours
 /**
  * Range / Collection Colour Hex Colour

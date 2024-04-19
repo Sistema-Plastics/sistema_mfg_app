@@ -66,6 +66,7 @@ const ShiftScheduleHeader = ({
 
   useEffect(() => {
     //console.log("ShiftScheduleHeader.js 1st");
+    
   }, []);
 
   useEffect(() => {
