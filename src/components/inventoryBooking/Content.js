@@ -57,8 +57,8 @@ export default function Content({ machineID, ibdData }) {
         </Grid>
         <Grid item xs={5} padding={0}>
           <Paper elevation={10}>
-            <JobStatus machineID={machineID} datasets={ibdData} />
-            <LastPallet machineID={machineID} datasets={ibdData} />
+            <JobStatus machineID={machineID} datasets={datasets} />
+            <LastPallet machineID={machineID} datasets={datasets} />
           </Paper>
         </Grid>
         <Grid item xs={2} padding={0}>

@@ -1,35 +1,17 @@
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { SistemaContext } from "../../assets/components/SistemaHeader";
-import { Container, Alert } from "@mui/material";
+import { Container } from "@mui/material";
 import { connections } from "../../config/ConnectionBroker";
 import Content from "./Content";
 
 import mqttClient from "../../config/mqtt";
 
-const params = new URLSearchParams(window.location.pathname);
-
-const thisClient = create_UUID();
-
-function create_UUID() {
-  var dt = new Date().getTime();
-  var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
-    /[xy]/g,
-    function (c) {
-      var r = (dt + Math.random() * 16) % 16 | 0;
-      dt = Math.floor(dt / 16);
-      return (c == "x" ? r : (r & 0x3) | 0x8).toString(16);
-    }
-  );
-  return uuid;
-}
-
 const InventoryBooking = () => {
-  // const [datasets, setDatasets] = useState();
-  const [messages, setMessages] = useState([]);
+
   const [isConnected, setIsConnected] = useState(false);
   const [dataComplete, setDataComplete] = useState(false);
-  const opt = { clientId: thisClient };
-  const [refreshSwitch, setRefreshSwitch] = useState(false);
+
+  
   const params = new URLSearchParams(document.location.search);
   const machineID = params.get("mcID"); //.toLowerCase();
 
@@ -40,28 +22,6 @@ const InventoryBooking = () => {
     machinedata: null,
     palletdata: null,
   });
-
-  const tmpDatasets = useRef({
-    employees: null,
-    realtime: null,
-    jobs: null,
-    machinedata: null,
-    palletdata: null,
-  });
-  // useEffect(() => {
-  //   console.log("InventoryBooking.js useEffct fire every time");
-
-  // });
-  // useEffect(() => {
-  //   mqttClient.on('connect', function () {
-  //     setIsConnected(true);
-  //     console.log('connected');
-  //   });
-  //   return () => {
-  //     // cancel the subscription
-  //     console.log("closing");
-  //   };
-  // }, []);
 
   //get base topic from config
   const baseTopic = connections.getBaseMQTTTopicFromPort();
@@ -75,8 +35,6 @@ const InventoryBooking = () => {
     "systemdata/dashboards/epicor/jobs",
     "systemdata/dashboards/mattec/machinedata",
     pltTopic,
-    // "systemdata/dashboards/epicor/jobs",
-    // "systemdata/dashboards/epicor/jobs",
   ];
 
   //now add bse topic as prefx
@@ -133,16 +91,6 @@ const InventoryBooking = () => {
 
       // console.log("Received  '" + topic + "'");
     });
-
-    // return () => {
-    //   console.log("logging out InvBooking");
-    //   mqttClient.end({
-    //     reasonCode: 0x04, // Disconnect with Will Message
-    //     properties: {
-    //       reasonString: "Closing connection with Will Message",
-    //     },
-    //   });
-    // };
   }, []);
   useEffect(() => {
     if (
@@ -155,8 +103,10 @@ const InventoryBooking = () => {
       setDataComplete(true);
     }
   }, [datasets]);
+
   useEffect(() => {
     if (isConnected) {
+      
       for (var i = 0; i < routingKeys.length; i++) {
         mqttClient.subscribe(routingKeys[i], function () {
           console.log("subscribed to ", routingKeys[i]);

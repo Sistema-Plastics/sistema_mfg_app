@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
-// import { useRef } from "react";
-// import { Container, Row, Col } from "react-bootstrap";
-import styles from "../../assets/styling/ShiftSchedule.module.css";
-import { Grid, Paper, makeStyles } from "@mui/material";
+import { Grid, Paper, } from "@mui/material";
 import {
   TableContainer,
   Table,
@@ -11,32 +8,13 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { mqttFunctions } from "./../../helpers/HelperScripts";
-import { connections } from "../../config/ConnectionBroker";
 import { muiThemes } from "../../assets/styling/muiThemes";
 import { TableRowTypography } from "../../assets/styling/muiThemes";
 
-import mqtt from "mqtt";
 
 const tableTheme = muiThemes.getSistemaTheme();
 
 const LastPallet = ({ machineID, datasets }) => {
-  //const classes = useStyles();
-
-  //#region  MQTT Connect
-  // const thisHost = "mqtt://10.92.0.168:9001";
-  // const [client, setClient] = useState(null);
-  // var options = mqttFunctions.getOptions();
-
-  // const mqttConnect = (host, mqttOption) => {
-  //   // setClient(mqtt.connect(host, mqttOption));
-  // };
-
-  // const basePalletTopic =
-  //   connections.getBaseMQTTTopicFromPort() +
-  //   "+/+/inventorymove/receivemfgparttoinventory";
-  // //#endregion
-
   const [pltData, setPltData] = useState(null); //data.data;
 
   const [tableData, setTableData] = useState({
@@ -49,9 +27,7 @@ const LastPallet = ({ machineID, datasets }) => {
 
   useEffect(() => {
     //fire 1st render only
-    //Connect to teh broker when page 1st launches
-    // mqttConnect(thisHost, options);
-    setPltData(datasets.palletdata);
+    // setPltData(datasets.palletdata);
   }, []);
 
   useEffect(()=>{
@@ -83,7 +59,7 @@ const LastPallet = ({ machineID, datasets }) => {
           tmp.statusText = "";
       }
 
-      if (pltData.status != 2) {
+      if (pltData.status !== 2) {
         const currentTime = Math.floor(new Date() / 1000);
         const requestedTime = Math.floor(parseFloat(pltData.tstamp) / 1000);
         const diff = currentTime - requestedTime;
@@ -101,49 +77,7 @@ const LastPallet = ({ machineID, datasets }) => {
     console.log("LastPallet.js useEffct fire every time");
   });
 
-  // useEffect(() => {
-  //   //fire on client change
-  //   console.log("LastPallet UseEffect Client");
-  //   if (client) {
-  //     client.on("connect", () => {
-  //       const pltTopic = basePalletTopic
-  //         .replace("+/i", machineID + "/i")
-  //         .toLowerCase();
-  //       mqttSub({ topic: pltTopic, qos: 0 });
-  //     });
-  //     client.on("message", (topic, message) => {
-  //       // setConnectStatus("Connected");
-  //       // console.log("connection successful");
-
-  //       setPltData(JSON.parse(message.toString()));
-  //       console.log(
-  //         `LastPallet.js received message from topic: ${topic} at ${Date.now()}`
-  //       );
-  //     });
-  //     client.on("error", (err) => {
-  //       console.error("Connection error: ", err);
-  //       client.end();
-  //     });
-  //     client.on("reconnect", () => {
-  //       // setConnectStatus("Reconnecting");
-  //     });
-  //   }
-  // }, [client]);
-
-  // const mqttSub = (subscription) => {
-  //   if (client) {
-  //     // topic & QoS for MQTT subscribing
-  //     const { topic, qos } = subscription;
-  //     // subscribe topic
-  //     client.subscribe(topic, { qos }, (error) => {
-  //       if (error) {
-  //         console.log("Subscribe to topics error", error);
-  //         return;
-  //       }
-  //       //console.log(`Subscribe to topics: ${topic}`);
-  //     });
-  //   }
-  // };
+  
   return (
     <React.Fragment>
       {console.log("LastPallet Render")}

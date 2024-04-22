@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRef } from "react";
-import { Grid, TextField, useForkRef } from "@mui/material";
+import { Grid, TextField} from "@mui/material";
 import {
   Dialog,
   DialogTitle,
@@ -12,14 +12,8 @@ import {
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 import Button from "@mui/material/Button";
-import {
-  mqttFunctions,
-  mfgDashboardFunctions,
-} from "./../../helpers/HelperScripts";
-
 import { connections } from "../../config/ConnectionBroker";
 
-import mqtt from "mqtt";
 
 import { muiThemes } from "../../assets/styling/muiThemes";
 import { TableRowTypography } from "../../assets/styling/muiThemes";
@@ -28,20 +22,6 @@ import mqttClient from "../../config/mqtt";
 const sistTheme = muiThemes.getSistemaTheme();
 
 const Actions = ({ datasets, fetchJobDetails }) => {
-  //#region MQTT Connect
-  // const [client, setClient] = useState(null);
-
-  // const thisHost = mqttFunctions.getHostname();
-  // const options = mqttFunctions.getOptions(
-  //   "actions",
-  //   Math.random().toString(16).substring(2, 8)
-  // );
-
-  // const mqttConn = (host, mqttOption) => {
-  //   // setClient(mqtt.connect(host, mqttOption));
-  // };
-
-  //#endregion
 
   const [partPalletErr, setPartPalletErr] = useState(true);
   const [employeeErr, setEmployeeErr] = useState(true);
@@ -55,11 +35,6 @@ const Actions = ({ datasets, fetchJobDetails }) => {
   const bookQty = useRef(0);
   const [employeeData, setEmployeeData] = useState();
   const [jobData, setJobData] = useState({ ium: "" });
-
-  // const { employeeData, jobData,topic } = data;
-  // const basePalletTopic =
-  //   connections.getBaseMQTTTopicFromPort() +
-  //   "+/+/inventorymove/receivemfgparttoinventory";
 
   //#region  Dialog setups
 
@@ -79,7 +54,7 @@ const Actions = ({ datasets, fetchJobDetails }) => {
   };
   const handleEmployeeSetCloseBook = () => {
     setOpenEmployeeSet(false);
-    if (bookQty.current == 0) bookQty.current = fullPalletQty.current;
+    if (bookQty.current === 0) bookQty.current = fullPalletQty.current;
     setOpenPalletQtyConfirm(true);
   };
 
@@ -121,14 +96,12 @@ const Actions = ({ datasets, fetchJobDetails }) => {
 
   //will only fire on 1st render. Fires before 1st render only
   useEffect(() => {
-    //only fire on initial load
-    // mqttConn(thisHost, options);
+    //only fire on initial loa
 
     setEmployeeData(datasets.employees);
   }, []);
   useEffect(() => {
     //only fire on initial load
-    // mqttConn(thisHost, options);
     setEmployeeData(datasets.employees.value);
   }, [datasets.employees]);
 
@@ -140,39 +113,6 @@ const Actions = ({ datasets, fetchJobDetails }) => {
     }
   }, [jobData]);
 
-  // useEffect(() => {
-  //   if (client) {
-  //     client.on("connect", () => {
-
-  //       mqttSub({
-  //         topic: "food/st04/operations/dashboards/epicor/employeeslist",
-  //         qos: 0,
-  //       });
-  //     });
-  //     client.on("message", (topic, message) => {
-  //       // setConnectStatus("Connected");
-  //       // console.log("connection successful");
-  //       switch (topic) {
-  //         case "food/st04/operations/dashboards/epicor/employeeslist":
-  //           setEmployeeData(JSON.parse(message.toString()).value);
-
-  //           break;
-
-  //         default:
-  //       }
-  //       console.log(
-  //         `Actions.js received message from topic: ${topic} at ${Date.now()}`
-  //       );
-  //     });
-  //     client.on("error", (err) => {
-  //       console.error("Connection error: ", err);
-  //       client.end();
-  //     });
-  //     client.on("reconnect", () => {
-  //       console.log("Re-Connection ");
-  //     });
-  //   }
-  // }, [client]);
 
   let record = {
     topic:
@@ -226,7 +166,7 @@ const Actions = ({ datasets, fetchJobDetails }) => {
     const val = event.target.value;
     let emperr = true;
     employeeID.current = null;
-    const emp = employeeData.filter((e) => e.EmpID == val)[0];
+    const emp = employeeData.filter((e) => e.EmpID === val)[0];
     if (emp) {
       emperr = false;
       empHelperText.current = "";
@@ -240,20 +180,6 @@ const Actions = ({ datasets, fetchJobDetails }) => {
     setEmployeeErr(emperr);
   };
 
-  // const mqttSub = (subscription) => {
-  //   if (client) {
-  //     // topic & QoS for MQTT subscribing
-  //     const { topic, qos } = subscription;
-  //     // subscribe topic
-  //     client.subscribe(topic, { qos }, (error) => {
-  //       if (error) {
-  //         console.log("Subscribe to topics error", error);
-  //         return;
-  //       }
-  //       //console.log(`Subscribe to topics: ${topic}`);
-  //     });
-  //   }
-  // };
 
 
   const mqttPublish = (context) => {
@@ -282,9 +208,7 @@ const Actions = ({ datasets, fetchJobDetails }) => {
       payload.empname = employee.employeeName;
       payload = JSON.stringify(payload);
       console.log(payload);
-      //console.log(jobDetails.current);
-
-      mqttClient.publish(topic, payload, { qos, retain }, (error) => {
+         mqttClient.publish(topic, payload, { qos, retain }, (error) => {
         if (error) {
           console.log("Publish error: ", error);
         }

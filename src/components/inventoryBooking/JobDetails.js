@@ -1,35 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-// import { useRef } from "react";
-// import styles from "../../assets/styling/ShiftSchedule.module.css";
-import { Grid, Typography } from "@mui/material";
+import { Grid } from "@mui/material";
 
 import {
-  mqttFunctions,
   mfgDashboardFunctions,
 } from "../../helpers/HelperScripts";
 
-import mqtt from "mqtt";
 
 import { muiThemes } from "../../assets/styling/muiThemes";
 import { TableRowTypography } from "../../assets/styling/muiThemes";
 const tableTheme = muiThemes.getSistemaTheme();
 
 const JobDetails = ({ mcID, datasets, feedback }) => {
-  //#region MQTT Connect
-  const thisHost = mqttFunctions.getHostname();
-
-  const [client, setClient] = useState(null);
-
-  var options = mqttFunctions.getOptions(
-    "jobDetails",
-    Math.random().toString(16).substring(2, 8)
-  );
-
-  const mqttConn = (host, mqttOption) => {
-    // setClient(mqtt.connect(host, mqttOption));
-  };
-  //#endregion
-
+  
   const [rtData, setRtData] = useState();
   const [jobData, setJobData] = useState();
   // const [jobReference, setJobReference] = useState();
@@ -37,11 +19,9 @@ const jobReference = useRef()
 
   useEffect(() => {
     //only fire on initial load
-    //wont be loading if we dont have datasets so safe to assume theyre populated
-    mqttConn(thisHost, options);
     //get the relevant job from mattec realttime dataset
     const tmpRT = datasets.realtime.value.filter(
-      (dept) => dept.MachID.toLowerCase() == mcID.toLowerCase()
+      (dept) => dept.MachID.toLowerCase() === mcID.toLowerCase()
     )[0];
 
     //seperate teh job from Mattec Job string
@@ -49,7 +29,6 @@ const jobReference = useRef()
     //get the asm ref from mattec job string
     const asm = tmpRT.JobID.trim().replace(jn, "").substring(2, 3);
 
-    //setJobReference({ job: jn, asm: asm });
 
    jobReference.current ={ job: jn, asm: asm };
     const tmpJob = datasets.jobs.value.filter(
@@ -76,113 +55,6 @@ const jobReference = useRef()
     setRtData(tmpRT);
     setJobData(tmpJob);
   }, []);
-
-  // useEffect(() => {
-  //   // console.log("JobDetails.js useEffct fire every time");
-  // });
-
-  // useEffect(() => {
-  //   //
-  //   console.log("JobDetails.js useEffct rtData");
-  //   if (rtData && rtData.JobID) {
-  //     const jn = rtData.JobID.trim().substring(
-  //       0,
-  //       rtData.JobID.trim().length - 6
-  //     );
-  //     const asm = rtData.JobID.trim().replace(jn, "").substring(2, 3);
-
-  //     setJobReference({ job: jn, asm: asm });
-
-  //     //     setJobNumber(rtData.Calculated_JobID.replace("100010", "").trim());
-  //   }
-  // }, [rtData]);
-
-  // // useEffect(() => {
-  // //   //
-  // //   //console.log("JobDetails.js useEffct rtData");
-  // //   if (
-  // //     jobData &&
-  // //     !Array.isArray(jobData) &&
-  // //     rtData &&
-  // //     !Array.isArray(rtData)
-  // //   ) {
-
-  // //     client.end();
-  // //   }
-  // // });
-
-  // useEffect(() => {
-  //   if (client) {
-  //     console.log(" ");
-  //     client.on("connect", () => {
-  //       // setConnectStatus("Connected");
-  //       // console.log("connection successful");
-  //       mqttSub({
-  //         topic: "food/st04/operations/dashboards/mattec/realtime",
-  //         qos: 0,
-  //       });
-  //       mqttSub({
-  //         topic: "food/st04/operations/dashboards/epicor/jobs",
-  //         qos: 0,
-  //       });
-  //     });
-  //     client.on("message", (topic, message) => {
-  //       // setConnectStatus("Connected");
-  //       // console.log("connection successful");
-  //       switch (topic) {
-  //         case "food/st04/operations/dashboards/mattec/realtime":
-  //           setRtData(
-  //             JSON.parse(message.toString()).value.filter(
-  //               (dept) =>
-  //                 dept.Calculated_MachID.toLowerCase() == mcID.toLowerCase()
-  //             )[0]
-  //           );
-  //           break;
-  //         case "food/st04/operations/dashboards/epicor/jobs":
-  //           setJobData(JSON.parse(message.toString()).value);
-  //           break;
-  //         default:
-  //       }
-  //       console.log(
-  //         `JobDetails.js received message from topic: ${topic} at ${Date.now()}`
-  //       );
-  //     });
-  //     client.on("error", (err) => {
-  //       console.error("Connection error: ", err);
-  //       client.end();
-  //     });
-  //     client.on("reconnect", () => {
-  //       // setConnectStatus("Reconnecting");
-  //     });
-  //   }
-  // }, [client]);
-
-  // const mqttSub = (subscription) => {
-  //   if (client) {
-  //     // topic & QoS for MQTT subscribing
-  //     const { topic, qos } = subscription;
-  //     // subscribe topic
-  //     client.subscribe(topic, { qos }, (error) => {
-  //       if (error) {
-  //         console.log("Subscribe to topics error", error);
-  //         return;
-  //       }
-  //       //console.log(`Subscribe to topics: ${topic}`);
-  //     });
-  //   }
-  // };
-
-  //if jobdata is an array it means it hasnt yet been filtered
-  // if (typeof jobReference != "undefined" && Array.isArray(jobData)) {
-  //   setJobData(
-  //     jobData.filter(
-  //       (jb) =>
-  //         jb.JobNum === jobReference.job &&
-  //         jb.AssemblySeq.toString() === jobReference.asm &&
-  //         jb.JCDept === "MACH"
-  //     )[0]
-  //   );
-  // }
 
   return !rtData || !jobData ? (
     <React.Fragment> {console.log("Render JobDetails")}</React.Fragment>

@@ -1,142 +1,46 @@
 import React, { useState, useEffect } from "react";
-// import { useRef } from "react";
-// import { Container, Row, Col } from "react-bootstrap";
-import styles from "../../assets/styling/ShiftSchedule.module.css";
-import { Grid, Typography } from "@mui/material";
-import {
-  mqttFunctions,
-  // mfgDashboardFunctions,
-} from "./../../helpers/HelperScripts";
-import mqtt from "mqtt";
-
+import { Grid } from "@mui/material";
 import { muiThemes } from "../../assets/styling/muiThemes";
 import { TableRowTypography } from "../../assets/styling/muiThemes";
 const tableTheme = muiThemes.getSistemaTheme();
 
 const JobStatus = ({ machineID, datasets }) => {
-  //#region MQTT Connect
-  const thisHost = mqttFunctions.getHostname();
-  const [client, setClient] = useState(null);
-  var options = mqttFunctions.getOptions();
-  const mqttConnect = (host, mqttOption) => {
-    // setClient(mqtt.connect(host, mqttOption));
-  };
-  //#endregion
+ 
 
   const [rtData, setRtData] = useState();
   const [mcData, setMcData] = useState();
 
-  useEffect(() => {
-    // console.log('JobStats.js useEffct fire every time')
-  });
-
+ 
   useEffect(() => {
     //only fire on initial load
-    // mqttConnect(thisHost, options);
     setRtData(
       datasets.realtime.value.filter(
         (mc) =>
-          mc.MachID.toLowerCase() ==
+          mc.MachID.toLowerCase() ===
           machineID.toLowerCase()
       )[0]
     );
     setMcData(
       datasets.machinedata.value.filter(
         (mc) =>
-          mc.MachID.toLowerCase() ==
+          mc.MachID.toLowerCase() ===
           machineID.toLowerCase()
       )[0]
     );
     console.log("data" + datasets);
   }, []);
-
-  // useEffect(() => {
-  //   //only fire on initial load
-  //   if (rtData) {
-  //   }
-  // }, [rtData]);
-  // useEffect(() => {
-  //   //only fire on initial load
-  //   if (mcData) {
-  //   }
-  // }, [mcData]);
-
-  // useEffect(() => {
-  //   if (client) {
-  //     client.on("connect", () => {
-  //       // setConnectStatus("Connected");
-  //       // console.log("connection successful");
-  //       mqttSub({
-  //         topic: "food/st04/operations/dashboards/mattec/realtime",
-  //         qos: 0,
-  //       });
-  //       mqttSub({
-  //         topic: "food/st04/operations/dashboards/mattec/machinedata",
-  //         qos: 0,
-  //       });
-  //     });
-  //     client.on("message", (topic, message) => {
-  //       // setConnectStatus("Connected");
-  //       // console.log("connection successful");
-  //       switch (topic) {
-  //         case "food/st04/operations/dashboards/mattec/realtime":
-  //           setRtData(
-  //             JSON.parse(message.toString()).value.filter(
-  //               (mc) =>
-  //                 mc.MachID.toLowerCase() ==
-  //                 machineID.machineID.toLowerCase()
-  //             )[0]
-  //           );
-  //           break;
-
-  //         case "food/st04/operations/dashboards/mattec/machinedata":
-  //           setMcData(
-  //             JSON.parse(message.toString()).value.filter(
-  //               (mc) =>
-  //                 mc.MachID.toLowerCase() ==
-  //                 machineID.machineID.toLowerCase()
-  //             )[0]
-  //           );
-  //           break;
-
-  //         default:
-  //       }
-  //     });
-  //     client.on("error", (err) => {
-  //       console.error("Connection error: ", err);
-  //       client.end();
-  //     });
-  //     client.on("reconnect", () => {
-  //       // setConnectStatus("Reconnecting");
-  //     });
-  //   }
-  // }, [client]);
-
-  // const mqttSub = (subscription) => {
-  //   if (client) {
-  //     // topic & QoS for MQTT subscribing
-  //     const { topic, qos } = subscription;
-  //     // subscribe topic
-  //     client.subscribe(topic, { qos }, (error) => {
-  //       if (error) {
-  //         console.log("Subscribe to topics error", error);
-  //         return;
-  //       }
-  //       //console.log(`Subscribe to topics: ${topic}`);
-  //     });
-  //   }
-  // };
+  
 
   const reqdQty =
-    mcData == null ? null : parseInt(mcData.RequiredQTY);
+    mcData === null ? null : parseInt(mcData.RequiredQTY);
   const goodQty =
-    mcData == null ? null : parseInt(mcData.CurrentQTY);
+    mcData === null ? null : parseInt(mcData.CurrentQTY);
   const remQty = mcData == null ? null : reqdQty - goodQty;
 
-  const jobStart =
-    rtData == null
-      ? ""
-      : new Date(parseInt(rtData.StartTime) * 1000);
+  // const jobStart =
+  //   rtData == null
+  //     ? ""
+  //     : new Date(parseInt(rtData.StartTime) * 1000);
   const togo = mcData == null ? null : togoToDHMS(mcData.TimeToGo);
 
   function togoToDHMS(tm) {
