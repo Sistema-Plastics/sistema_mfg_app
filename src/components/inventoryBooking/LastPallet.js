@@ -20,22 +20,24 @@ import mqtt from "mqtt";
 
 const tableTheme = muiThemes.getSistemaTheme();
 
-const LastPallet = ({ machineID }) => {
+const LastPallet = ({ machineID, datasets }) => {
   //const classes = useStyles();
-  const [pltData, setPltData] = useState(null); //data.data;
+
   //#region  MQTT Connect
-  const thisHost = "mqtt://10.92.0.168:9001";
-  const [client, setClient] = useState(null);
-  var options = mqttFunctions.getOptions();
+  // const thisHost = "mqtt://10.92.0.168:9001";
+  // const [client, setClient] = useState(null);
+  // var options = mqttFunctions.getOptions();
 
-  const mqttConnect = (host, mqttOption) => {
-    setClient(mqtt.connect(host, mqttOption));
-  };
+  // const mqttConnect = (host, mqttOption) => {
+  //   // setClient(mqtt.connect(host, mqttOption));
+  // };
 
-  const basePalletTopic =
-    connections.getBaseMQTTTopicFromPort() +
-    "+/+/inventorymove/receivemfgparttoinventory";
-  //#endregion
+  // const basePalletTopic =
+  //   connections.getBaseMQTTTopicFromPort() +
+  //   "+/+/inventorymove/receivemfgparttoinventory";
+  // //#endregion
+
+  const [pltData, setPltData] = useState(null); //data.data;
 
   const [tableData, setTableData] = useState({
     timestamp: "",
@@ -44,6 +46,17 @@ const LastPallet = ({ machineID }) => {
     status: 0,
     statusText: "",
   });
+
+  useEffect(() => {
+    //fire 1st render only
+    //Connect to teh broker when page 1st launches
+    // mqttConnect(thisHost, options);
+    setPltData(datasets.palletdata);
+  }, []);
+
+  useEffect(()=>{
+    setPltData(datasets.palletdata)
+  },[datasets.palletdata])
 
   useEffect(() => {
     if (pltData) {
@@ -85,69 +98,67 @@ const LastPallet = ({ machineID }) => {
   //decide if the amount of time is excessive and show as error
 
   useEffect(() => {
-    //fire 1st render only
-    //Connect to teh broker when page 1st launches
-    mqttConnect(thisHost, options);
-  }, []);
-
-  useEffect(() => {
     console.log("LastPallet.js useEffct fire every time");
   });
 
-  useEffect(() => {
-    //fire on client change
-    console.log("LastPallet UseEffect Client");
-    if (client) {
-      client.on("connect", () => {
-        const pltTopic = basePalletTopic
-          .replace("+/i", machineID + "/i")
-          .toLowerCase();
-        mqttSub({ topic: pltTopic, qos: 0 });
-      });
-      client.on("message", (topic, message) => {
-        // setConnectStatus("Connected");
-        // console.log("connection successful");
+  // useEffect(() => {
+  //   //fire on client change
+  //   console.log("LastPallet UseEffect Client");
+  //   if (client) {
+  //     client.on("connect", () => {
+  //       const pltTopic = basePalletTopic
+  //         .replace("+/i", machineID + "/i")
+  //         .toLowerCase();
+  //       mqttSub({ topic: pltTopic, qos: 0 });
+  //     });
+  //     client.on("message", (topic, message) => {
+  //       // setConnectStatus("Connected");
+  //       // console.log("connection successful");
 
-        setPltData(JSON.parse(message.toString()));
-        console.log(
-          `LastPallet.js received message from topic: ${topic} at ${Date.now()}`
-        );
-      });
-      client.on("error", (err) => {
-        console.error("Connection error: ", err);
-        client.end();
-      });
-      client.on("reconnect", () => {
-        // setConnectStatus("Reconnecting");
-      });
-    }
-  }, [client]);
+  //       setPltData(JSON.parse(message.toString()));
+  //       console.log(
+  //         `LastPallet.js received message from topic: ${topic} at ${Date.now()}`
+  //       );
+  //     });
+  //     client.on("error", (err) => {
+  //       console.error("Connection error: ", err);
+  //       client.end();
+  //     });
+  //     client.on("reconnect", () => {
+  //       // setConnectStatus("Reconnecting");
+  //     });
+  //   }
+  // }, [client]);
 
-  const mqttSub = (subscription) => {
-    if (client) {
-      // topic & QoS for MQTT subscribing
-      const { topic, qos } = subscription;
-      // subscribe topic
-      client.subscribe(topic, { qos }, (error) => {
-        if (error) {
-          console.log("Subscribe to topics error", error);
-          return;
-        }
-        //console.log(`Subscribe to topics: ${topic}`);
-      });
-    }
-  };
+  // const mqttSub = (subscription) => {
+  //   if (client) {
+  //     // topic & QoS for MQTT subscribing
+  //     const { topic, qos } = subscription;
+  //     // subscribe topic
+  //     client.subscribe(topic, { qos }, (error) => {
+  //       if (error) {
+  //         console.log("Subscribe to topics error", error);
+  //         return;
+  //       }
+  //       //console.log(`Subscribe to topics: ${topic}`);
+  //     });
+  //   }
+  // };
   return (
     <React.Fragment>
       {console.log("LastPallet Render")}
-      <Grid container >
-        <Grid item xs={12} sx={{
+      <Grid container>
+        <Grid
+          item
+          xs={12}
+          sx={{
             paddingLeft: 2,
             paddingTop: 1,
             paddingBottom: 1,
             marginBottom: 1,
             backgroundColor: tableTheme.palette.sistema.klipit.light,
-          }}>
+          }}
+        >
           <TableRowTypography
             variant="h2"
             paddingRight={16}

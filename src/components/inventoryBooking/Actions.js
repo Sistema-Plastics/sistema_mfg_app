@@ -23,19 +23,24 @@ import mqtt from "mqtt";
 
 import { muiThemes } from "../../assets/styling/muiThemes";
 import { TableRowTypography } from "../../assets/styling/muiThemes";
+import mqttClient from "../../config/mqtt";
+
 const sistTheme = muiThemes.getSistemaTheme();
 
-const Actions = ({ fetchJobDetails }) => {
+const Actions = ({ datasets, fetchJobDetails }) => {
   //#region MQTT Connect
-  const [client, setClient] = useState(null); 
+  // const [client, setClient] = useState(null);
 
-  const thisHost = mqttFunctions.getHostname();
-  const options = mqttFunctions.getOptions("actions",Math.random().toString(16).substring(2, 8));
-  
-  const mqttConn = (host, mqttOption) => {
-    setClient(mqtt.connect(host, mqttOption));
-  };
-  
+  // const thisHost = mqttFunctions.getHostname();
+  // const options = mqttFunctions.getOptions(
+  //   "actions",
+  //   Math.random().toString(16).substring(2, 8)
+  // );
+
+  // const mqttConn = (host, mqttOption) => {
+  //   // setClient(mqtt.connect(host, mqttOption));
+  // };
+
   //#endregion
 
   const [partPalletErr, setPartPalletErr] = useState(true);
@@ -52,9 +57,9 @@ const Actions = ({ fetchJobDetails }) => {
   const [jobData, setJobData] = useState({ ium: "" });
 
   // const { employeeData, jobData,topic } = data;
-  const basePalletTopic =
-    connections.getBaseMQTTTopicFromPort() +
-    "+/+/inventorymove/receivemfgparttoinventory";
+  // const basePalletTopic =
+  //   connections.getBaseMQTTTopicFromPort() +
+  //   "+/+/inventorymove/receivemfgparttoinventory";
 
   //#region  Dialog setups
 
@@ -117,8 +122,15 @@ const Actions = ({ fetchJobDetails }) => {
   //will only fire on 1st render. Fires before 1st render only
   useEffect(() => {
     //only fire on initial load
-    mqttConn(thisHost, options);
+    // mqttConn(thisHost, options);
+
+    setEmployeeData(datasets.employees);
   }, []);
+  useEffect(() => {
+    //only fire on initial load
+    // mqttConn(thisHost, options);
+    setEmployeeData(datasets.employees.value);
+  }, [datasets.employees]);
 
   useEffect(() => {
     //only fire on initial load
@@ -128,39 +140,39 @@ const Actions = ({ fetchJobDetails }) => {
     }
   }, [jobData]);
 
-  useEffect(() => {
-    if (client) {
-      client.on("connect", () => {
-      
-        mqttSub({
-          topic: "food/st04/operations/dashboards/epicor/employeeslist",
-          qos: 0,
-        });
-      });
-      client.on("message", (topic, message) => {
-        // setConnectStatus("Connected");
-        // console.log("connection successful");
-        switch (topic) {
-          case "food/st04/operations/dashboards/epicor/employeeslist":
-            setEmployeeData(JSON.parse(message.toString()).value);
+  // useEffect(() => {
+  //   if (client) {
+  //     client.on("connect", () => {
 
-            break;
+  //       mqttSub({
+  //         topic: "food/st04/operations/dashboards/epicor/employeeslist",
+  //         qos: 0,
+  //       });
+  //     });
+  //     client.on("message", (topic, message) => {
+  //       // setConnectStatus("Connected");
+  //       // console.log("connection successful");
+  //       switch (topic) {
+  //         case "food/st04/operations/dashboards/epicor/employeeslist":
+  //           setEmployeeData(JSON.parse(message.toString()).value);
 
-          default:
-        }
-        console.log(
-          `Actions.js received message from topic: ${topic} at ${Date.now()}`
-        );
-      });
-      client.on("error", (err) => {
-        console.error("Connection error: ", err);
-        client.end();
-      });
-      client.on("reconnect", () => {
-        console.log("Re-Connection ");
-      });
-    }
-  }, [client]);
+  //           break;
+
+  //         default:
+  //       }
+  //       console.log(
+  //         `Actions.js received message from topic: ${topic} at ${Date.now()}`
+  //       );
+  //     });
+  //     client.on("error", (err) => {
+  //       console.error("Connection error: ", err);
+  //       client.end();
+  //     });
+  //     client.on("reconnect", () => {
+  //       console.log("Re-Connection ");
+  //     });
+  //   }
+  // }, [client]);
 
   let record = {
     topic:
@@ -214,37 +226,40 @@ const Actions = ({ fetchJobDetails }) => {
     const val = event.target.value;
     let emperr = true;
     employeeID.current = null;
-    const emp = employeeData.filter((e) => e.EmpBasic_EmpID == val)[0];
+    const emp = employeeData.filter((e) => e.EmpID == val)[0];
     if (emp) {
       emperr = false;
       empHelperText.current = "";
 
       employeeID.current = val;
-      employee.current.employeeID = emp.EmpBasic_EmpID;
-      employee.current.employeeName = emp.EmpBasic_Name;
+      employee.current.employeeID = emp.EmpID;
+      employee.current.employeeName = emp.Name;
     } else {
       empHelperText.current = "PLease enter valid Employee Number";
     }
     setEmployeeErr(emperr);
   };
 
+  // const mqttSub = (subscription) => {
+  //   if (client) {
+  //     // topic & QoS for MQTT subscribing
+  //     const { topic, qos } = subscription;
+  //     // subscribe topic
+  //     client.subscribe(topic, { qos }, (error) => {
+  //       if (error) {
+  //         console.log("Subscribe to topics error", error);
+  //         return;
+  //       }
+  //       //console.log(`Subscribe to topics: ${topic}`);
+  //     });
+  //   }
+  // };
 
-  const mqttSub = (subscription) => {
-    if (client) {
-      // topic & QoS for MQTT subscribing
-      const { topic, qos } = subscription;
-      // subscribe topic
-      client.subscribe(topic, { qos }, (error) => {
-        if (error) {
-          console.log("Subscribe to topics error", error);
-          return;
-        }
-        //console.log(`Subscribe to topics: ${topic}`);
-      });
-    }
-  };
+
   const mqttPublish = (context) => {
-    if (client) {
+
+
+    if (mqttClient) {
       // topic, QoS & payload for publishing message
       //let bookQty = jobDetails.current.palletQty;
 
@@ -269,7 +284,7 @@ const Actions = ({ fetchJobDetails }) => {
       console.log(payload);
       //console.log(jobDetails.current);
 
-      client.publish(topic, payload, { qos, retain }, (error) => {
+      mqttClient.publish(topic, payload, { qos, retain }, (error) => {
         if (error) {
           console.log("Publish error: ", error);
         }

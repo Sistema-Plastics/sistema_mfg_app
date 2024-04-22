@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 // import { useRef } from "react";
 // import styles from "../../assets/styling/ShiftSchedule.module.css";
 import { Grid, Typography } from "@mui/material";
@@ -14,156 +14,175 @@ import { muiThemes } from "../../assets/styling/muiThemes";
 import { TableRowTypography } from "../../assets/styling/muiThemes";
 const tableTheme = muiThemes.getSistemaTheme();
 
-const JobDetails = ({ mcID, feedback }) => {
+const JobDetails = ({ mcID, datasets, feedback }) => {
   //#region MQTT Connect
   const thisHost = mqttFunctions.getHostname();
 
   const [client, setClient] = useState(null);
 
-  var options = mqttFunctions.getOptions('jobDetails',Math.random().toString(16).substring(2, 8));
+  var options = mqttFunctions.getOptions(
+    "jobDetails",
+    Math.random().toString(16).substring(2, 8)
+  );
 
   const mqttConn = (host, mqttOption) => {
-    setClient(mqtt.connect(host, mqttOption));
+    // setClient(mqtt.connect(host, mqttOption));
   };
   //#endregion
 
   const [rtData, setRtData] = useState();
   const [jobData, setJobData] = useState();
-  const [jobReference, setJobReference] = useState();
+  // const [jobReference, setJobReference] = useState();
+const jobReference = useRef()
 
   useEffect(() => {
     //only fire on initial load
+    //wont be loading if we dont have datasets so safe to assume theyre populated
     mqttConn(thisHost, options);
+    //get the relevant job from mattec realttime dataset
+    const tmpRT = datasets.realtime.value.filter(
+      (dept) => dept.MachID.toLowerCase() == mcID.toLowerCase()
+    )[0];
 
-    return () => {
-      // cancel the subscription
-       console.log("need to disconnect client")
-       if(client) client.end()
-  };
+    //seperate teh job from Mattec Job string
+    const jn = tmpRT.JobID.trim().substring(0, tmpRT.JobID.trim().length - 6);
+    //get the asm ref from mattec job string
+    const asm = tmpRT.JobID.trim().replace(jn, "").substring(2, 3);
+
+    //setJobReference({ job: jn, asm: asm });
+
+   jobReference.current ={ job: jn, asm: asm };
+    const tmpJob = datasets.jobs.value.filter(
+      (jb) =>
+        jb.JobNum === jn &&
+        jb.AssemblySeq.toString() === asm &&
+        jb.JCDept === "MACH"
+    )[0];
+
+    const jd = {
+      jn: tmpJob.JobNum,
+      asm: tmpJob.AssemblySeq,
+      mc: mcID,
+      cell: mfgDashboardFunctions.getCellfromRealtime(tmpRT.DeptDesc),
+      cq: tmpJob.QtyPerCarton_c,
+      pq: tmpJob.QtyPerPallet_c,
+      pn: tmpJob.PartNum,
+      pd: tmpJob.PartDescription,
+      ium: tmpJob.IUM,
+    };
+
+    feedback(jd);
+
+    setRtData(tmpRT);
+    setJobData(tmpJob);
   }, []);
 
-  useEffect(() => {
-    // console.log("JobDetails.js useEffct fire every time");
-  });
+  // useEffect(() => {
+  //   // console.log("JobDetails.js useEffct fire every time");
+  // });
 
-  useEffect(() => {
-    //
-    console.log("JobDetails.js useEffct rtData");
-    if (rtData && rtData.Calculated_JobID) {
-      const jn = rtData.Calculated_JobID.trim().substring(
-        0,
-        rtData.Calculated_JobID.trim().length - 6
-      );
-      const asm = rtData.Calculated_JobID.trim()
-        .replace(jn, "")
-        .substring(2, 3);
+  // useEffect(() => {
+  //   //
+  //   console.log("JobDetails.js useEffct rtData");
+  //   if (rtData && rtData.JobID) {
+  //     const jn = rtData.JobID.trim().substring(
+  //       0,
+  //       rtData.JobID.trim().length - 6
+  //     );
+  //     const asm = rtData.JobID.trim().replace(jn, "").substring(2, 3);
 
-      setJobReference({ job: jn, asm: asm });
+  //     setJobReference({ job: jn, asm: asm });
 
-      //     setJobNumber(rtData.Calculated_JobID.replace("100010", "").trim());
-    }
-  }, [rtData]);
+  //     //     setJobNumber(rtData.Calculated_JobID.replace("100010", "").trim());
+  //   }
+  // }, [rtData]);
 
-  useEffect(() => {
-    //
-    //console.log("JobDetails.js useEffct rtData");
-    if (
-      jobData &&
-      !Array.isArray(jobData) &&
-      rtData &&
-      !Array.isArray(rtData)
-    ) {
-      const jd = {
-        jn: jobData.JobHead_JobNum,
-        asm: jobData.JobOper_AssemblySeq,
-        mc: mcID,
-        cell: mfgDashboardFunctions.getCellfromRealtime(
-          rtData.Calculated_DeptDesc
-        ),
-        cq: jobData.Part_QtyPerCarton_c,
-        pq: jobData.Part_QtyPerPallet_c,
-        pn: jobData.JobHead_PartNum,
-        pd: jobData.JobHead_PartDescription,
-        ium: jobData.JobHead_IUM,
-      };
+  // // useEffect(() => {
+  // //   //
+  // //   //console.log("JobDetails.js useEffct rtData");
+  // //   if (
+  // //     jobData &&
+  // //     !Array.isArray(jobData) &&
+  // //     rtData &&
+  // //     !Array.isArray(rtData)
+  // //   ) {
 
-      feedback(jd);
-      client.end()
-    }
-  });
+  // //     client.end();
+  // //   }
+  // // });
 
-  useEffect(() => {
-    if (client) {
-      console.log(' ')
-      client.on("connect", () => {
-        // setConnectStatus("Connected");
-        // console.log("connection successful");
-        mqttSub({
-          topic: "food/st04/operations/dashboards/mattec/realtime",
-          qos: 0,
-        });
-        mqttSub({
-          topic: "food/st04/operations/dashboards/epicor/jobs",
-          qos: 0,
-        });
-      });
-      client.on("message", (topic, message) => {
-        // setConnectStatus("Connected");
-        // console.log("connection successful");
-        switch (topic) {
-          case "food/st04/operations/dashboards/mattec/realtime":
-            setRtData(
-              JSON.parse(message.toString()).value.filter(
-                (dept) =>
-                  dept.Calculated_MachID.toLowerCase() == mcID.toLowerCase()
-              )[0]
-            );
-            break;
-          case "food/st04/operations/dashboards/epicor/jobs":
-            setJobData(JSON.parse(message.toString()).value);
-            break;
-          default:
-        }
-        console.log(
-          `JobDetails.js received message from topic: ${topic} at ${Date.now()}`
-        );
-      });
-      client.on("error", (err) => {
-        console.error("Connection error: ", err);
-        client.end();
-      });
-      client.on("reconnect", () => {
-        // setConnectStatus("Reconnecting");
-      });
-    }
-  }, [client]);
+  // useEffect(() => {
+  //   if (client) {
+  //     console.log(" ");
+  //     client.on("connect", () => {
+  //       // setConnectStatus("Connected");
+  //       // console.log("connection successful");
+  //       mqttSub({
+  //         topic: "food/st04/operations/dashboards/mattec/realtime",
+  //         qos: 0,
+  //       });
+  //       mqttSub({
+  //         topic: "food/st04/operations/dashboards/epicor/jobs",
+  //         qos: 0,
+  //       });
+  //     });
+  //     client.on("message", (topic, message) => {
+  //       // setConnectStatus("Connected");
+  //       // console.log("connection successful");
+  //       switch (topic) {
+  //         case "food/st04/operations/dashboards/mattec/realtime":
+  //           setRtData(
+  //             JSON.parse(message.toString()).value.filter(
+  //               (dept) =>
+  //                 dept.Calculated_MachID.toLowerCase() == mcID.toLowerCase()
+  //             )[0]
+  //           );
+  //           break;
+  //         case "food/st04/operations/dashboards/epicor/jobs":
+  //           setJobData(JSON.parse(message.toString()).value);
+  //           break;
+  //         default:
+  //       }
+  //       console.log(
+  //         `JobDetails.js received message from topic: ${topic} at ${Date.now()}`
+  //       );
+  //     });
+  //     client.on("error", (err) => {
+  //       console.error("Connection error: ", err);
+  //       client.end();
+  //     });
+  //     client.on("reconnect", () => {
+  //       // setConnectStatus("Reconnecting");
+  //     });
+  //   }
+  // }, [client]);
 
-  const mqttSub = (subscription) => {
-    if (client) {
-      // topic & QoS for MQTT subscribing
-      const { topic, qos } = subscription;
-      // subscribe topic
-      client.subscribe(topic, { qos }, (error) => {
-        if (error) {
-          console.log("Subscribe to topics error", error);
-          return;
-        }
-        //console.log(`Subscribe to topics: ${topic}`);
-      });
-    }
-  };
+  // const mqttSub = (subscription) => {
+  //   if (client) {
+  //     // topic & QoS for MQTT subscribing
+  //     const { topic, qos } = subscription;
+  //     // subscribe topic
+  //     client.subscribe(topic, { qos }, (error) => {
+  //       if (error) {
+  //         console.log("Subscribe to topics error", error);
+  //         return;
+  //       }
+  //       //console.log(`Subscribe to topics: ${topic}`);
+  //     });
+  //   }
+  // };
 
   //if jobdata is an array it means it hasnt yet been filtered
-  if (typeof jobReference != "undefined" && Array.isArray(jobData)) {
-    setJobData(
-      jobData.filter(
-        (jb) =>
-          jb.JobHead_JobNum === jobReference.job &&
-          jb.JobOper_AssemblySeq.toString() === jobReference.asm &&
-          jb.ResourceGroup_JCDept === "MACH"
-      )[0]
-    );
-  }
+  // if (typeof jobReference != "undefined" && Array.isArray(jobData)) {
+  //   setJobData(
+  //     jobData.filter(
+  //       (jb) =>
+  //         jb.JobNum === jobReference.job &&
+  //         jb.AssemblySeq.toString() === jobReference.asm &&
+  //         jb.JCDept === "MACH"
+  //     )[0]
+  //   );
+  // }
 
   return !rtData || !jobData ? (
     <React.Fragment> {console.log("Render JobDetails")}</React.Fragment>
@@ -195,8 +214,7 @@ const JobDetails = ({ mcID, feedback }) => {
         </Grid>
         <Grid item xs={8}>
           <TableRowTypography variant="h3">
-            
-            {rtData.Calculated_MachID}
+            {rtData.MachID}
           </TableRowTypography>
         </Grid>
         <Grid item xs={4}>
@@ -205,8 +223,8 @@ const JobDetails = ({ mcID, feedback }) => {
         <Grid item xs={8}>
           {
             <TableRowTypography variant="h3">
-              {jobData.JobHead_JobNum} ASM: {jobReference.asm} Rev :{" "}
-              {jobData.JobHead_RevisionNum}{" "}
+              {jobData.jobNum} ASM: {jobReference.current.asm} Rev :{" "}
+              {jobData.RevisionNum}{" "}
             </TableRowTypography>
           }
         </Grid>
@@ -217,7 +235,7 @@ const JobDetails = ({ mcID, feedback }) => {
           {
             <TableRowTypography variant="h3">
               {" "}
-              {jobData.JobHead_PartNum}
+              {jobData.PartNum}
             </TableRowTypography>
           }
         </Grid>
@@ -228,7 +246,7 @@ const JobDetails = ({ mcID, feedback }) => {
           {
             <TableRowTypography variant="h3">
               {" "}
-              {jobData.JobHead_PartDescription}
+              {jobData.PartDescription}
             </TableRowTypography>
           }
         </Grid>
@@ -236,12 +254,7 @@ const JobDetails = ({ mcID, feedback }) => {
           <TableRowTypography variant="h4">Inventory UOM</TableRowTypography>
         </Grid>
         <Grid item xs={8}>
-          {
-            <TableRowTypography variant="h3">
-              {" "}
-              {jobData.JobHead_IUM}
-            </TableRowTypography>
-          }
+          {<TableRowTypography variant="h3"> {jobData.IUM}</TableRowTypography>}
         </Grid>
         <Grid item xs={4}>
           <TableRowTypography variant="h4">Qty Per Carton</TableRowTypography>
@@ -249,8 +262,8 @@ const JobDetails = ({ mcID, feedback }) => {
         <Grid item xs={8}>
           {
             <TableRowTypography variant="h3">
-              {" "}
-              {jobData.Part_QtyPerCarton_c} ea
+
+              {jobData.QtyPerCarton_c} ea
             </TableRowTypography>
           }
         </Grid>
@@ -258,14 +271,13 @@ const JobDetails = ({ mcID, feedback }) => {
           <TableRowTypography variant="h4">Qty Per Pallet</TableRowTypography>
         </Grid>
         <Grid item xs={8}>
-          {}
           {
             <TableRowTypography variant="h3">
-              {jobData.JobHead_IUM && jobData.JobHead_IUM.toLowerCase() === "ct"
-                ? parseFloat(jobData.Part_QtyPerPallet_c) /
-                    parseFloat(jobData.Part_QtyPerCarton_c) +
+              {jobData.IUM && jobData.IUM.toLowerCase() === "ct"
+                ? parseFloat(jobData.QtyPerPallet_c) /
+                    parseFloat(jobData.QtyPerCarton_c) +
                   " ctns"
-                : jobData.Part_QtyPerPallet_c + " ea"}
+                : jobData.QtyPerPallet_c + " ea"}
             </TableRowTypography>
           }
         </Grid>

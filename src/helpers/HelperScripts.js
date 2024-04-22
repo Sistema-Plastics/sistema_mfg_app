@@ -1005,14 +1005,15 @@ export const axiosConfigs = {
 };
 export const mqttFunctions = {
   getHostname: function (mode) {
-    return "ws://10.92.0.168:9001";
+    return "ws://10.92.0.168:8080";
   },
 
   getOptions: function (pageID,randomID) {
     return {
-      protocol: "ws",
-      username: "pub_client",
-      password: "password",
+      port:8080,
+      // protocol: "ws",
+      // username: "pub_client",
+      // password: "password",
       keepalive: 60,
       // clientId uniquely identifies client
       // choose any string you wish

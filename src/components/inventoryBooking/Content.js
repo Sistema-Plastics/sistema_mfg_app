@@ -6,11 +6,19 @@ import LastPallet from "./LastPallet";
 import { Grid, Paper, Typography } from "@mui/material";
 import useTheme from "@mui/material/styles/useTheme";
 
-export default function Content() {
-  const params = new URLSearchParams(document.location.search);
-  const machineID = params.get("mcID"); //.toLowerCase();
+export default function Content({ machineID, ibdData }) {
+  // const params = new URLSearchParams(document.location.search);
+  // const machineID = params.get("mcID"); //.toLowerCase();
+  const [datasets, setDataSets] = useState(ibdData);
 
   const jobDetails = useRef();
+  useEffect(() => {
+    setDataSets(ibdData);
+  }, []);
+
+  useEffect(() => {
+    setDataSets(ibdData);
+  }, [ibdData]);
 
   const sistTheme = useTheme();
 
@@ -18,17 +26,15 @@ export default function Content() {
     // return {mcID:jobDetails.current.mcID ,cellRef:jobDetails.current.cell}
     jobDetails.current = jd;
   };
-
   const handleJobDetailsDelivery = () => {
     return jobDetails.current;
   };
-
   return (
     <React.Fragment>
       {console.log("Render Content.js")}
       {/* https://mui.com/material-ui/react-grid/ */}
       <Grid container spacing={1} marginTop={0}>
-        <Grid item xl={12} xs={12} padding={0} >
+        <Grid item xl={12} xs={12} padding={0}>
           <Paper elevation={10}>
             <Typography
               variant="h3"
@@ -42,18 +48,23 @@ export default function Content() {
 
         <Grid item xs={5} padding={0}>
           <Paper elevation={10}>
-            <JobDetails mcID={machineID} feedback={handleJobDetailsReceipt} />
+            <JobDetails
+              mcID={machineID}
+              datasets={ibdData}
+              feedback={handleJobDetailsReceipt}
+            />
           </Paper>
         </Grid>
         <Grid item xs={5} padding={0}>
           <Paper elevation={10}>
-            <JobStatus machineID={machineID} />
-            <LastPallet machineID={machineID} />
+            <JobStatus machineID={machineID} datasets={ibdData} />
+            <LastPallet machineID={machineID} datasets={ibdData} />
           </Paper>
         </Grid>
         <Grid item xs={2} padding={0}>
           <Paper elevation={10}>
             <Actions
+            datasets={ibdData}
               fetchJobDetails={handleJobDetailsDelivery}
             />
           </Paper>

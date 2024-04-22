@@ -13,14 +13,13 @@ import { muiThemes } from "../../assets/styling/muiThemes";
 import { TableRowTypography } from "../../assets/styling/muiThemes";
 const tableTheme = muiThemes.getSistemaTheme();
 
-
-const JobStatus = (machineID /* { data } */) => {
+const JobStatus = ({ machineID, datasets }) => {
   //#region MQTT Connect
   const thisHost = mqttFunctions.getHostname();
   const [client, setClient] = useState(null);
   var options = mqttFunctions.getOptions();
   const mqttConnect = (host, mqttOption) => {
-    setClient(mqtt.connect(host, mqttOption));
+    // setClient(mqtt.connect(host, mqttOption));
   };
   //#endregion
 
@@ -33,97 +32,112 @@ const JobStatus = (machineID /* { data } */) => {
 
   useEffect(() => {
     //only fire on initial load
-    mqttConnect(thisHost, options);
+    // mqttConnect(thisHost, options);
+    setRtData(
+      datasets.realtime.value.filter(
+        (mc) =>
+          mc.MachID.toLowerCase() ==
+          machineID.toLowerCase()
+      )[0]
+    );
+    setMcData(
+      datasets.machinedata.value.filter(
+        (mc) =>
+          mc.MachID.toLowerCase() ==
+          machineID.toLowerCase()
+      )[0]
+    );
+    console.log("data" + datasets);
   }, []);
 
-  useEffect(() => {
-    //only fire on initial load
-    if (rtData) {
-    }
-  }, [rtData]);
-  useEffect(() => {
-    //only fire on initial load
-    if (mcData) {
-    }
-  }, [mcData]);
+  // useEffect(() => {
+  //   //only fire on initial load
+  //   if (rtData) {
+  //   }
+  // }, [rtData]);
+  // useEffect(() => {
+  //   //only fire on initial load
+  //   if (mcData) {
+  //   }
+  // }, [mcData]);
 
-  useEffect(() => {
-    if (client) {
-      client.on("connect", () => {
-        // setConnectStatus("Connected");
-        // console.log("connection successful");
-        mqttSub({
-          topic: "food/st04/operations/dashboards/mattec/realtime",
-          qos: 0,
-        });
-        mqttSub({
-          topic: "food/st04/operations/dashboards/mattec/machinedata",
-          qos: 0,
-        });
-      });
-      client.on("message", (topic, message) => {
-        // setConnectStatus("Connected");
-        // console.log("connection successful");
-        switch (topic) {
-          case "food/st04/operations/dashboards/mattec/realtime":
-            setRtData(
-              JSON.parse(message.toString()).value.filter(
-                (mc) =>
-                  mc.Calculated_MachID.toLowerCase() ==
-                  machineID.machineID.toLowerCase()
-              )[0]
-            );
-            break;
+  // useEffect(() => {
+  //   if (client) {
+  //     client.on("connect", () => {
+  //       // setConnectStatus("Connected");
+  //       // console.log("connection successful");
+  //       mqttSub({
+  //         topic: "food/st04/operations/dashboards/mattec/realtime",
+  //         qos: 0,
+  //       });
+  //       mqttSub({
+  //         topic: "food/st04/operations/dashboards/mattec/machinedata",
+  //         qos: 0,
+  //       });
+  //     });
+  //     client.on("message", (topic, message) => {
+  //       // setConnectStatus("Connected");
+  //       // console.log("connection successful");
+  //       switch (topic) {
+  //         case "food/st04/operations/dashboards/mattec/realtime":
+  //           setRtData(
+  //             JSON.parse(message.toString()).value.filter(
+  //               (mc) =>
+  //                 mc.MachID.toLowerCase() ==
+  //                 machineID.machineID.toLowerCase()
+  //             )[0]
+  //           );
+  //           break;
 
-          case "food/st04/operations/dashboards/mattec/machinedata":
-            setMcData(
-              JSON.parse(message.toString()).value.filter(
-                (mc) =>
-                  mc.Calculated_MachID.toLowerCase() ==
-                  machineID.machineID.toLowerCase()
-              )[0]
-            );
-            break;
+  //         case "food/st04/operations/dashboards/mattec/machinedata":
+  //           setMcData(
+  //             JSON.parse(message.toString()).value.filter(
+  //               (mc) =>
+  //                 mc.MachID.toLowerCase() ==
+  //                 machineID.machineID.toLowerCase()
+  //             )[0]
+  //           );
+  //           break;
 
-          default:
-        }
-      });
-      client.on("error", (err) => {
-        console.error("Connection error: ", err);
-        client.end();
-      });
-      client.on("reconnect", () => {
-        // setConnectStatus("Reconnecting");
-      });
-    }
-  }, [client]);
+  //         default:
+  //       }
+  //     });
+  //     client.on("error", (err) => {
+  //       console.error("Connection error: ", err);
+  //       client.end();
+  //     });
+  //     client.on("reconnect", () => {
+  //       // setConnectStatus("Reconnecting");
+  //     });
+  //   }
+  // }, [client]);
 
-  const mqttSub = (subscription) => {
-    if (client) {
-      // topic & QoS for MQTT subscribing
-      const { topic, qos } = subscription;
-      // subscribe topic
-      client.subscribe(topic, { qos }, (error) => {
-        if (error) {
-          console.log("Subscribe to topics error", error);
-          return;
-        }
-        //console.log(`Subscribe to topics: ${topic}`);
-      });
-    }
-  };
+  // const mqttSub = (subscription) => {
+  //   if (client) {
+  //     // topic & QoS for MQTT subscribing
+  //     const { topic, qos } = subscription;
+  //     // subscribe topic
+  //     client.subscribe(topic, { qos }, (error) => {
+  //       if (error) {
+  //         console.log("Subscribe to topics error", error);
+  //         return;
+  //       }
+  //       //console.log(`Subscribe to topics: ${topic}`);
+  //     });
+  //   }
+  // };
 
   const reqdQty =
-    mcData == null ? null : parseInt(mcData.Calculated_RequiredQTY);
+    mcData == null ? null : parseInt(mcData.RequiredQTY);
   const goodQty =
-    mcData == null ? null : parseInt(mcData.Calculated_CurrentQTY);
+    mcData == null ? null : parseInt(mcData.CurrentQTY);
   const remQty = mcData == null ? null : reqdQty - goodQty;
 
   const jobStart =
     rtData == null
       ? ""
-      : new Date(parseInt(rtData.Calculated_StartTime) * 1000);
-  const togo = mcData == null ? null : togoToDHMS(mcData.Calculated_TimeToGo);
+      : new Date(parseInt(rtData.StartTime) * 1000);
+  const togo = mcData == null ? null : togoToDHMS(mcData.TimeToGo);
 
   function togoToDHMS(tm) {
     //get days
@@ -164,28 +178,28 @@ const JobStatus = (machineID /* { data } */) => {
         </Grid>
 
         <Grid item xs={5}>
-        <TableRowTypography variant="h4">Est Time Left </TableRowTypography>
+          <TableRowTypography variant="h4">Est Time Left </TableRowTypography>
         </Grid>
         <Grid item xs={7}>
-           <TableRowTypography variant="h3"> {togo} </TableRowTypography >
+          <TableRowTypography variant="h3"> {togo} </TableRowTypography>
         </Grid>
         <Grid item xs={5}>
-        <TableRowTypography variant="h4">Required QTY </TableRowTypography>
+          <TableRowTypography variant="h4">Required QTY </TableRowTypography>
         </Grid>
         <Grid item xs={7}>
-           <TableRowTypography variant="h3"> {reqdQty} </TableRowTypography >
+          <TableRowTypography variant="h3"> {reqdQty} </TableRowTypography>
         </Grid>
         <Grid item xs={5}>
-           <TableRowTypography variant="h4">Completed Qty </TableRowTypography>
+          <TableRowTypography variant="h4">Completed Qty </TableRowTypography>
         </Grid>
         <Grid item xs={7}>
-           <TableRowTypography variant="h3"> {goodQty} </TableRowTypography >
+          <TableRowTypography variant="h3"> {goodQty} </TableRowTypography>
         </Grid>
         <Grid item xs={5}>
-           <TableRowTypography variant="h4">Qty To Go </TableRowTypography>
+          <TableRowTypography variant="h4">Qty To Go </TableRowTypography>
         </Grid>
         <Grid item xs={7}>
-           <TableRowTypography variant="h3"> {remQty} </TableRowTypography >
+          <TableRowTypography variant="h3"> {remQty} </TableRowTypography>
         </Grid>
       </Grid>
     </React.Fragment>
@@ -195,33 +209,33 @@ export default JobStatus;
 
 /**
  * {
-    "Calculated_MachID": "B14",
-    "Calculated_MachNo": 29,
-    "Calculated_DeptNo": 8,
-    "Calculated_OEE": "100",
-    "Calculated_CycEff": "101.129388456262",
-    "Calculated_YieldEff": "103.181607851505",
-    "Calculated_AvgCycTime": "12.8548191563745",
-    "Calculated_ScrapPercent": "0",
-    "Calculated_DownPercent": "0",
-    "Calculated_GoodProduction": "17264",
-    "Calculated_TotalProduction": "17264",
-    "Calculated_GoodPercent": "100",
-    "Calculated_RunEfficency": "100",
-    "Calculated_Berry105Efficiency": "106.45083759553",
-    "Calculated_BerryMeefEfficiency": "100",
-    "Calculated_LastCycTime": "12.8",
-    "Calculated_TimeToGo": "86.604656853722",
-    "Calculated_NextTool": "T627                ",
-    "Calculated_NextJob": "A0316408100010      ",
-    "Calculated_NextPartNum": "3402333                  ",
-    "Calculated_NextPartDesc": "Lid Yogurt Pot Minty Teal                         ",
-    "Calculated_CurrentJob": "A0316535100010      ",
-    "Calculated_CurrentPartNum": "3402332                  ",
-    "Calculated_CurrentPartDesc": "Lid Yogurt Pot Ocean Blue                         ",
-    "Calculated_AssyCycTime": "1.60686962065668",
-    "Calculated_ExpCycTime": "13",
-    "Calculated_CurrentQTY": "25096",
-    "Calculated_RequiredQTY": "215040",
+    "MachID": "B14",
+    "MachNo": 29,
+    "DeptNo": 8,
+    "OEE": "100",
+    "CycEff": "101.129388456262",
+    "YieldEff": "103.181607851505",
+    "AvgCycTime": "12.8548191563745",
+    "ScrapPercent": "0",
+    "DownPercent": "0",
+    "GoodProduction": "17264",
+    "TotalProduction": "17264",
+    "GoodPercent": "100",
+    "RunEfficency": "100",
+    "Berry105Efficiency": "106.45083759553",
+    "BerryMeefEfficiency": "100",
+    "LastCycTime": "12.8",
+    "TimeToGo": "86.604656853722",
+    "NextTool": "T627                ",
+    "NextJob": "A0316408100010      ",
+    "NextPartNum": "3402333                  ",
+    "NextPartDesc": "Lid Yogurt Pot Minty Teal                         ",
+    "CurrentJob": "A0316535100010      ",
+    "CurrentPartNum": "3402332                  ",
+    "CurrentPartDesc": "Lid Yogurt Pot Ocean Blue                         ",
+    "AssyCycTime": "1.60686962065668",
+    "ExpCycTime": "13",
+    "CurrentQTY": "25096",
+    "RequiredQTY": "215040",
     "RowIdent": "b667bf61-7c81-4f91-8e42-d11f2965ba25"
 }/ */

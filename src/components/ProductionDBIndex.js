@@ -103,7 +103,7 @@ export default function Index() {
               </GridItem>
               <GridItem>
                 <LinkTypography variant='h6'>
-                  <BlankLink to="/InvBooking">Book Inventory</BlankLink>
+                  <BlankLink to="/InvBooking?mcID=F04">Book Inventory</BlankLink>
                 </LinkTypography>
               </GridItem>
               <GridItem>
