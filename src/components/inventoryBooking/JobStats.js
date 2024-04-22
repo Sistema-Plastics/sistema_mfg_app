@@ -5,43 +5,59 @@ import { TableRowTypography } from "../../assets/styling/muiThemes";
 const tableTheme = muiThemes.getSistemaTheme();
 
 const JobStatus = ({ machineID, datasets }) => {
- 
-
   const [rtData, setRtData] = useState();
   const [mcData, setMcData] = useState();
 
- 
+  useEffect(() => {
+    //only fire on initial load
+    // setRtData(
+    //   datasets.realtime.value.filter(
+    //     (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
+    //   )[0]
+    // );
+    // setMcData(
+    //   datasets.machinedata.value.filter(
+    //     (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
+    //   )[0]
+    // );
+    console.log("data" + datasets);
+  }, []);
+
   useEffect(() => {
     //only fire on initial load
     setRtData(
       datasets.realtime.value.filter(
-        (mc) =>
-          mc.MachID.toLowerCase() ===
-          machineID.toLowerCase()
+        (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
       )[0]
     );
+  }, [datasets.realtime]);
+
+  useEffect(() => {
+    //only fire on initial load
     setMcData(
       datasets.machinedata.value.filter(
-        (mc) =>
-          mc.MachID.toLowerCase() ===
-          machineID.toLowerCase()
+        (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
       )[0]
     );
     console.log("data" + datasets);
-  }, []);
-  
+  }, [datasets.machinedata]);
 
-  const reqdQty =
-    mcData === null ? null : parseInt(mcData.RequiredQTY);
-  const goodQty =
-    mcData === null ? null : parseInt(mcData.CurrentQTY);
-  const remQty = mcData == null ? null : reqdQty - goodQty;
+  let reqdQty = 0;
+  let goodQty = 0;
+  let remQty = 0;
+  let togo = 0;
+
+  useEffect(() => {
+    if (typeof mcData !== 'undefined'){ reqdQty = parseInt(mcData.RequiredQTY);
+    goodQty = mcData === null ? null : parseInt(mcData.CurrentQTY);
+    remQty = mcData == null ? null : reqdQty - goodQty;
+    togo = mcData == null ? null : togoToDHMS(mcData.TimeToGo);}
+  }, [mcData]);
 
   // const jobStart =
   //   rtData == null
   //     ? ""
   //     : new Date(parseInt(rtData.StartTime) * 1000);
-  const togo = mcData == null ? null : togoToDHMS(mcData.TimeToGo);
 
   function togoToDHMS(tm) {
     //get days
