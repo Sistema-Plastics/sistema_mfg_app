@@ -28,7 +28,6 @@ const sistColours = {
   "paper-Background": "#fff", //"#fcf6e4",
 };
 
-
 //#region  Help Links
 /** 
 +++++++++++++++++++++++++++++++++
@@ -43,16 +42,61 @@ typography theme viewer https://mui.com/material-ui/customization/default-theme/
 
 //Base compt order Box/Container/Grid container/Grid ite/Paper/compt
 
+
+<Box
+          component="main"
+          sx={{
+            backgroundColor: (theme) =>
+              theme.palette.mode === 'light'
+                ? theme.palette.grey[100]
+                : theme.palette.grey[900],
+            flexGrow: 1,
+            height: '100vh',
+            overflow: 'auto',
+          }}
+        >
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={8} lg={9}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: 240,
+                  }}
+                ><Box
+                component="main"
+                sx={{
+                  backgroundColor: (theme) =>
+                    theme.palette.mode === 'light'
+                      ? theme.palette.grey[100]
+                      : theme.palette.grey[900],
+                  flexGrow: 1,
+                  height: '100vh',
+                  overflow: 'auto',
+                }}
+              >
+                <Toolbar />
+                <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={8} lg={9}>
+                      <Paper
+                        sx={{
+                          p: 2,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          height: 240,
+                        }}
+                      >
+
+
+
+
 ++++++++++++++++++++++++++++++++++++++ 
  */
 
-
-
-
 //#endregion
-
-
-
 
 export const muiThemes = {
   getSistemaTheme: function () {
@@ -124,6 +168,24 @@ export const muiThemes = {
             dark: "",
             contrastText: sistColours["microwave-Text"],
           },
+        },
+        trafficLightRed: {
+          main: red[500],
+          light: red[200],
+          dark: red[900],
+          contrastText: grey[50],
+        },
+        trafficLightYellow: {
+          main: yellow[500],
+          light: yellow[200],
+          dark: yellow[900],
+          contrastText: grey[50],
+        },
+        trafficLightGreen: {
+          main: green[500],
+          light: green[200],
+          dark: green[900],
+          contrastText: grey[50],
         },
       },
 
@@ -391,6 +453,12 @@ export const TableRowTypography = styled(Typography)(({ theme }) => ({
     marginLeft: 10,
     marginRight: 10,
     fontSize: "0.625rem",
+  },
+  [`&.${typographyClasses.body1}`]: {
+    padding: 5,
+    marginLeft: 10,
+    marginRight: 10,
+    fontSize: "0.5rem",
   },
 
   [`&.${typographyClasses.tableCellData}`]: {

@@ -1,10 +1,11 @@
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { SistemaContext } from "../../assets/components/SistemaHeader";
 import { Container } from "@mui/material";
-import { connections } from "../../config/ConnectionBroker";
 import Content from "./Content";
 
 import mqttClient from "../../config/mqtt";
+import { connections } from "../../config/ConnectionBroker";
+
 
 const InventoryBooking = () => {
 
@@ -29,7 +30,7 @@ const InventoryBooking = () => {
   const pltTopic = `+/${machineID.toLowerCase()}/inventorymove/receivemfgparttoinventory`;
   // const pltTopic = '+/f04/inventorymove/receivemfgparttoinventory'
   //setup topics
-  let routingKeys = [
+  let topics = [
     "systemdata/dashboards/epicor/employeeslist",
     "systemdata/dashboards/mattec/realtime",
     "systemdata/dashboards/epicor/jobs",
@@ -38,7 +39,7 @@ const InventoryBooking = () => {
   ];
 
   //now add bse topic as prefx
-  routingKeys = routingKeys.map((m) => baseTopic + m);
+  topics = topics.map((m) => baseTopic + m);
 
   useEffect(() => {
     // https://www.hivemq.com/blog/ultimate-guide-on-how-to-use-mqtt-with-node-js/
@@ -92,6 +93,7 @@ const InventoryBooking = () => {
       // console.log("Received  '" + topic + "'");
     });
   }, []);
+
   useEffect(() => {
     if (
       datasets.machinedata !== null &&
@@ -107,9 +109,9 @@ const InventoryBooking = () => {
   useEffect(() => {
     if (isConnected) {
       
-      for (var i = 0; i < routingKeys.length; i++) {
-        mqttClient.subscribe(routingKeys[i], function () {
-          console.log("subscribed to ", routingKeys[i]);
+      for (var i = 0; i < topics.length; i++) {
+        mqttClient.subscribe(topics[i], function () {
+          console.log("subscribed to ", topics[i]);
         });
       }
     }

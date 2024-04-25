@@ -144,9 +144,9 @@ export default function Index() {
               <GridItem>
                 <LinkTypography variant='h6'>
                   <BlankLink
-                    to="/Assembly/JobsCellDB?cell=005&showConstraintsOnly=false"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    to="/Assembly/JobsCellDB?cell=007&showConstraintsOnly=false"
+                    // target="_blank"
+                    // rel="noopener noreferrer"
                   >
                     Main Assembly - Schedule
                   </BlankLink>

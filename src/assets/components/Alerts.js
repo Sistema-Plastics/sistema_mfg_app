@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Alert from "react-bootstrap/Alert";
+import {Alert,AlertTitle} from "@mui/material";
 
 export default function PageAlert(props) {
   const [show, setShow] = useState(true);
@@ -10,9 +10,9 @@ export default function PageAlert(props) {
         <Alert
           variant={props.variant}
           onClose={() => setShow(false)}
-          dismissible
+          // dismissible
         >
-          <Alert.Heading>{props.header}</Alert.Heading>
+          <AlertTitle>{props.header}</AlertTitle>
           <div>{props.body}</div>
         </Alert>
       </>

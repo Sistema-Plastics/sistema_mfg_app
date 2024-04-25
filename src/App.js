@@ -63,6 +63,8 @@ import InventoryBooking from "./components/inventoryBooking/InventoryBooking";
 import POApprovalDashboard from "./components/purchaseOrders/POApprovalDashboard";
 import POApproval from "./components/purchaseOrders/POApproval";
 
+// --- Assembly
+import JobsCellDB from "./components/assembly/assyPages/JobsCellDB";
 // import InventoryMovements from "./components/inventoryDashboards/inventoryMovements/InventoryMovements";
 
 //#endregion
@@ -172,7 +174,7 @@ function App() {
                   <Route path="/ThemesCheck" element={<ThemesCheck />} />
                   <Route path="/PendingPOs/" element={<POApprovalDashboard />} />
                   <Route path="/PendingPOs/:poNum" element={<POApproval />} />
-                  
+                  <Route path="/Assembly/JobsCellDB" element={<JobsCellDB />} />
                 </Routes>
               </SistemaHeader></QueryClientProvider>
             </Box>

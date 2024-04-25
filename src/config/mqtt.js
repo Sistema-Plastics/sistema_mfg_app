@@ -9,7 +9,7 @@ const client = mqtt.connect(
 );
 
 client.on("connect", function () {
-  console.log("connected");
+  console.log("mqtt.js connected");
 });
 
 export default client;
