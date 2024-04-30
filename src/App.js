@@ -58,6 +58,7 @@ import ThemesCheck from "./assets/components/ThemesCheck";
 // --- Manufacturing
 import ShiftSchedule from "./components/shiftSchedule/ShiftSchedule";
 import InventoryBooking from "./components/inventoryBooking/InventoryBooking";
+// import InventoryMovements from "./components/inventoryDashboards/inventoryMovements/InventoryMovements";
 
 // --- Purchase Orders
 import POApprovalDashboard from "./components/purchaseOrders/POApprovalDashboard";
@@ -65,7 +66,7 @@ import POApproval from "./components/purchaseOrders/POApproval";
 
 // --- Assembly
 import JobsCellDB from "./components/assembly/assyPages/JobsCellDB";
-// import InventoryMovements from "./components/inventoryDashboards/inventoryMovements/InventoryMovements";
+// import EmployeeCellCurrentDB from "./components/assembly/assyPages/EmployeeCellCurrentDB";
 
 //#endregion
 

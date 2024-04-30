@@ -3,16 +3,18 @@ import { SistemaContext } from "../../assets/components/SistemaHeader";
 import { Container } from "@mui/material";
 import Content from "./Content";
 
-import mqttClient from "../../config/mqtt";
+
 import { connections } from "../../config/ConnectionBroker";
 
+import mqtt from "mqtt";
+import { mqttFunctions } from "./../../helpers/HelperScripts";
 
 const InventoryBooking = () => {
 
   const [isConnected, setIsConnected] = useState(false);
   const [dataComplete, setDataComplete] = useState(false);
 
-  
+  const [client, setClient] = useState(null);
   const params = new URLSearchParams(document.location.search);
   const machineID = params.get("mcID"); //.toLowerCase();
 
@@ -44,15 +46,82 @@ const InventoryBooking = () => {
   useEffect(() => {
     // https://www.hivemq.com/blog/ultimate-guide-on-how-to-use-mqtt-with-node-js/
 
-    mqttClient.on("connect", function () {
+    setClient(
+      mqtt.connect(
+        mqttFunctions.getHostname(),
+        mqttFunctions.getOptions(
+          "mqtt",
+          Math.random().toString(16).substring(2, 8)
+        )
+      )
+    );
+
+
+
+    // client.on("connect", function () {
+    //   setIsConnected(true);
+    //   console.log("connected");
+    // });
+    // client.on("end", () => {
+    //   console.log("Connection to MQTT broker ended");
+    // });
+
+    // client.on("message", function (topic, message) {
+    //   // if (topic == routingKey) {
+    //   const msg = JSON.parse(message.toString());
+    //   switch (true) {
+    //     case topic.includes("employeeslist"):
+    //       // tmpDatasets.current.employees = msg;
+    //       setDatasets((prevState) => {
+    //         return { ...prevState, employees: msg };
+    //       });
+
+    //       break;
+    //     case topic.includes("realtime"):
+    //       // tmpDatasets.current.realtime = msg;
+    //       setDatasets((prevState) => {
+    //         return { ...prevState, realtime: msg };
+    //       });
+    //       break;
+    //     case topic.includes("jobs"):
+    //       // tmpDatasets.current.jobs = msg;
+    //       setDatasets((prevState) => {
+    //         return { ...prevState, jobs: msg };
+    //       });
+    //       break;
+    //     case topic.includes("machinedata"):
+    //       // tmpDatasets.current.machinedata = msg;
+    //       setDatasets((prevState) => {
+    //         return { ...prevState, machinedata: msg };
+    //       });
+    //       break;
+    //     case topic.includes("receivemfgparttoinventory"):
+    //       //tmpDatasets.current.palletdata = msg;
+    //       setDatasets((prevState) => {
+    //         return { ...prevState, palletdata: msg };
+    //       });
+    //       break;
+    //     default:
+    //   }
+
+    //   // console.log("Received  '" + topic + "'");
+    // });
+  }, []);
+
+
+  useEffect(()=>{
+
+    if (!client) return; 
+
+    client.on("connect", function () {
       setIsConnected(true);
       console.log("connected");
     });
-    mqttClient.on("end", () => {
+    client.on("end", () => {
       console.log("Connection to MQTT broker ended");
     });
 
-    mqttClient.on("message", function (topic, message) {
+    client.on("message", function (topic, message) {
       // if (topic == routingKey) {
       const msg = JSON.parse(message.toString());
       switch (true) {
@@ -92,7 +161,7 @@ const InventoryBooking = () => {
 
       // console.log("Received  '" + topic + "'");
     });
-  }, []);
+  },[client])
 
   useEffect(() => {
     if (
@@ -110,7 +179,7 @@ const InventoryBooking = () => {
     if (isConnected) {
       
       for (var i = 0; i < topics.length; i++) {
-        mqttClient.subscribe(topics[i], function () {
+        client.subscribe(topics[i], function () {
           console.log("subscribed to ", topics[i]);
         });
       }

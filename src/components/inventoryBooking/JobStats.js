@@ -5,54 +5,72 @@ import { TableRowTypography } from "../../assets/styling/muiThemes";
 const tableTheme = muiThemes.getSistemaTheme();
 
 const JobStatus = ({ machineID, datasets }) => {
-  const [rtData, setRtData] = useState();
-  const [mcData, setMcData] = useState();
+  // const [rtData, setRtData] = useState();
+  // const [mcData, setMcData] = useState();
+
+  const [displayData, setDisplayData] = useState({
+    reqdQty: 0,
+    goodQty: 0,
+    remQty: 0,
+    togo: 0,
+  });
+  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    //only fire on initial load
-    // setRtData(
-    //   datasets.realtime.value.filter(
-    //     (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
-    //   )[0]
-    // );
-    // setMcData(
-    //   datasets.machinedata.value.filter(
-    //     (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
-    //   )[0]
-    // );
-    console.log("data" + datasets);
-  }, []);
+    // only fire on initial load
+    // const rt = datasets.realtime.value.filter(
+    //   (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
+    // )[0];
 
-  useEffect(() => {
-    //only fire on initial load
-    setRtData(
-      datasets.realtime.value.filter(
-        (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
-      )[0]
-    );
-  }, [datasets.realtime]);
+    const mc = datasets.machinedata.value.filter(
+      (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
+    )[0];
 
-  useEffect(() => {
-    //only fire on initial load
-    setMcData(
-      datasets.machinedata.value.filter(
-        (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
-      )[0]
-    );
+    if (typeof mc !== "undefined") {
+      setDisplayData((prevState) => {
+        return { ...prevState, reqdQty: parseInt(mc.RequiredQTY) };
+      });
+      setDisplayData((prevState) => {
+        return { ...prevState, goodQty: parseInt(mc.CurrentQTY) };
+      });
+      setDisplayData((prevState) => {
+        return {
+          ...prevState,
+          remQty: parseInt(mc.RequiredQTY) - parseInt(mc.CurrentQTY),
+        };
+      });
+      setDisplayData((prevState) => {
+        return { ...prevState, togo: togoToDHMS(mc.TimeToGo) };
+      });
+    }
+
+    // goodQty = mcData === null ? nu ll : parseInt(mcData.CurrentQTY);
+    // remQty = mcData == null ? null : reqdQty - goodQty;
+    // togo = mcData == null ? null : togoToDHMS(mcData.TimeToGo);
+
     console.log("data" + datasets);
   }, [datasets.machinedata]);
 
-  let reqdQty = 0;
-  let goodQty = 0;
-  let remQty = 0;
-  let togo = 0;
+  // useEffect(() => {
+  //   //only fire on initial load
+  //   setRtData(
+  //     datasets.realtime.value.filter(
+  //       (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
+  //     )[0]
+  //   );
+  // }, [datasets.realtime]);
 
-  useEffect(() => {
-    if (typeof mcData !== 'undefined'){ reqdQty = parseInt(mcData.RequiredQTY);
-    goodQty = mcData === null ? null : parseInt(mcData.CurrentQTY);
-    remQty = mcData == null ? null : reqdQty - goodQty;
-    togo = mcData == null ? null : togoToDHMS(mcData.TimeToGo);}
-  }, [mcData]);
+  // useEffect(() => {
+  //   //only fire on initial load
+  //   setMcData(
+  //     datasets.machinedata.value.filter(
+  //       (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
+  //     )[0]
+  //   );
+  //   console.log("data" + datasets);
+  // }, [datasets.machinedata]);
+
+  // useEffect(() => {}, [mcData]);
 
   // const jobStart =
   //   rtData == null
@@ -71,9 +89,11 @@ const JobStatus = ({ machineID, datasets }) => {
     return tm;
   }
 
-  return !mcData && !rtData ? (
-    <React.Fragment></React.Fragment>
-  ) : (
+  // return !isComplete ? (
+  //   <React.Fragment></React.Fragment>
+  // ) : (
+  //
+  return (
     <React.Fragment>
       <Grid container>
         <Grid
@@ -93,7 +113,7 @@ const JobStatus = ({ machineID, datasets }) => {
             alignSelf={"center"}
             color={tableTheme.palette.sistema.klipit.contrastText}
           >
-            Job Details
+            Job Status
           </TableRowTypography>
         </Grid>
 
@@ -101,25 +121,37 @@ const JobStatus = ({ machineID, datasets }) => {
           <TableRowTypography variant="h4">Est Time Left </TableRowTypography>
         </Grid>
         <Grid item xs={7}>
-          <TableRowTypography variant="h3"> {togo} </TableRowTypography>
+          <TableRowTypography variant="h3">
+            {" "}
+            {displayData.togo}{" "}
+          </TableRowTypography>
         </Grid>
         <Grid item xs={5}>
           <TableRowTypography variant="h4">Required QTY </TableRowTypography>
         </Grid>
         <Grid item xs={7}>
-          <TableRowTypography variant="h3"> {reqdQty} </TableRowTypography>
+          <TableRowTypography variant="h3">
+            {" "}
+            {displayData.reqdQty}{" "}
+          </TableRowTypography>
         </Grid>
         <Grid item xs={5}>
           <TableRowTypography variant="h4">Completed Qty </TableRowTypography>
         </Grid>
         <Grid item xs={7}>
-          <TableRowTypography variant="h3"> {goodQty} </TableRowTypography>
+          <TableRowTypography variant="h3">
+            {" "}
+            {displayData.goodQty}{" "}
+          </TableRowTypography>
         </Grid>
         <Grid item xs={5}>
           <TableRowTypography variant="h4">Qty To Go </TableRowTypography>
         </Grid>
         <Grid item xs={7}>
-          <TableRowTypography variant="h3"> {remQty} </TableRowTypography>
+          <TableRowTypography variant="h3">
+            {" "}
+            {displayData.remQty}{" "}
+          </TableRowTypography>
         </Grid>
       </Grid>
     </React.Fragment>

@@ -1,63 +1,64 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Grid } from "@mui/material";
+import { Grid, Container } from "@mui/material";
 
-import {
-  mfgDashboardFunctions,
-} from "../../helpers/HelperScripts";
-
+import { mfgDashboardFunctions } from "../../helpers/HelperScripts";
 
 import { muiThemes } from "../../assets/styling/muiThemes";
 import { TableRowTypography } from "../../assets/styling/muiThemes";
 const tableTheme = muiThemes.getSistemaTheme();
 
 const JobDetails = ({ mcID, datasets, feedback }) => {
-  
   const [rtData, setRtData] = useState();
   const [jobData, setJobData] = useState();
   // const [jobReference, setJobReference] = useState();
-const jobReference = useRef()
+  const jobReference = useRef();
 
   useEffect(() => {
     //only fire on initial load
     //get the relevant job from mattec realttime dataset
-    const tmpRT = datasets.realtime.value.filter(
-      (dept) => dept.MachID.toLowerCase() === mcID.toLowerCase()
-    )[0];
+    try {
+      const tmpRT = datasets.realtime.value.filter(
+        (dept) => dept.MachID.toLowerCase() === mcID.toLowerCase()
+      )[0];
 
-    //seperate teh job from Mattec Job string
-    const jn = tmpRT.JobID.trim().substring(0, tmpRT.JobID.trim().length - 6);
-    //get the asm ref from mattec job string
-    const asm = tmpRT.JobID.trim().replace(jn, "").substring(2, 3);
+      //seperate teh job from Mattec Job string
+      const jn = tmpRT.JobID.trim().substring(0, tmpRT.JobID.trim().length - 6);
+      //get the asm ref from mattec job string
+      const asm = tmpRT.JobID.trim().replace(jn, "").substring(2, 3);
 
+      jobReference.current = { job: jn, asm: asm };
+      const tmpJob = datasets.jobs.value.filter(
+        (jb) =>
+          jb.JobNum === jn &&
+          jb.AssemblySeq.toString() === asm &&
+          jb.JCDept === "MACH"
+      )[0];
 
-   jobReference.current ={ job: jn, asm: asm };
-    const tmpJob = datasets.jobs.value.filter(
-      (jb) =>
-        jb.JobNum === jn &&
-        jb.AssemblySeq.toString() === asm &&
-        jb.JCDept === "MACH"
-    )[0];
+      const jd = {
+        jn: tmpJob.JobNum,
+        asm: tmpJob.AssemblySeq,
+        mc: mcID,
+        cell: mfgDashboardFunctions.getCellfromRealtime(tmpRT.DeptDesc),
+        cq: tmpJob.QtyPerCarton_c,
+        pq: tmpJob.QtyPerPallet_c,
+        pn: tmpJob.PartNum,
+        pd: tmpJob.PartDescription,
+        ium: tmpJob.IUM,
+      };
 
-    const jd = {
-      jn: tmpJob.JobNum,
-      asm: tmpJob.AssemblySeq,
-      mc: mcID,
-      cell: mfgDashboardFunctions.getCellfromRealtime(tmpRT.DeptDesc),
-      cq: tmpJob.QtyPerCarton_c,
-      pq: tmpJob.QtyPerPallet_c,
-      pn: tmpJob.PartNum,
-      pd: tmpJob.PartDescription,
-      ium: tmpJob.IUM,
-    };
+      feedback(jd);
 
-    feedback(jd);
-
-    setRtData(tmpRT);
-    setJobData(tmpJob);
+      setRtData(tmpRT);
+      setJobData(tmpJob);
+    } catch (ex) {}
   }, []);
 
   return !rtData || !jobData ? (
-    <React.Fragment> {console.log("Render JobDetails")}</React.Fragment>
+    <React.Fragment>
+        <Container>
+        <h1> No Job Data found</h1>
+      </Container>
+    </React.Fragment>
   ) : (
     <React.Fragment>
       <Grid container>
@@ -85,9 +86,7 @@ const jobReference = useRef()
           <TableRowTypography variant="h4">Machine</TableRowTypography>
         </Grid>
         <Grid item xs={8}>
-          <TableRowTypography variant="h3">
-            {rtData.MachID}
-          </TableRowTypography>
+          <TableRowTypography variant="h3">{rtData.MachID}</TableRowTypography>
         </Grid>
         <Grid item xs={4}>
           <TableRowTypography variant="h4">Job</TableRowTypography>
@@ -134,7 +133,6 @@ const jobReference = useRef()
         <Grid item xs={8}>
           {
             <TableRowTypography variant="h3">
-
               {jobData.QtyPerCarton_c} ea
             </TableRowTypography>
           }
