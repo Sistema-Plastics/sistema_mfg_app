@@ -186,7 +186,7 @@ export default function Content({ machineID, ibdData }) {
     "EmpBasic_TempJob_c": "",
     "EmpBasic_EmpStatus": "I",
     "Supervisor_Name": null,
-    "UDCodes_CodeDesc": null,
+    "CodeDesc": null,
     "JCDept_Description": "Machines Department",
     "RowIdent": "685cdf72-af54-495f-b57e-cbee8d8d704a"
 }

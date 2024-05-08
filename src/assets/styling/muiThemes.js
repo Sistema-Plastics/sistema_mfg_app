@@ -168,6 +168,11 @@ export const muiThemes = {
             dark: "",
             contrastText: sistColours["microwave-Text"],
           },
+          fresh: {
+            main: "#7ACC00",
+          },
+          freshworks: { main: "#215732" },
+          togo: { main: "#0097A9" },
         },
         trafficLightRed: {
           main: red[500],
@@ -477,7 +482,7 @@ export const CellTableCell = styled(TableCell)(({ theme }) => ({
     backgroundColor: muiThemes.getSistemaTheme().palette.primary.dark,
     color: muiThemes.getSistemaTheme().palette.primary.contrastText,
     borderBottom: "none",
-    borderBottom: "none",
+    // borderBottom: "none",
     paddingBottom: 4,
     paddingTop: 4,
     fontSize: 18,

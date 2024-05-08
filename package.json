@@ -17,6 +17,7 @@
     "dayjs": "^1.11.10",
     "mqtt": "^5.5.2",
     "react": "^18.2.0",
+    "react-beautiful-dnd": "^13.1.1",
     "react-csv": "^2.2.2",
     "react-dom": "^18.2.0",
     "react-query": "^3.39.3",

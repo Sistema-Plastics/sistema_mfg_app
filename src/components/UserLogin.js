@@ -29,7 +29,7 @@ const pwdTextFieldStyling = {
   },
 };
 const backdrop = {
-  zIndex: theme.zIndex.drawer + 1,
+  // zIndex: theme.zIndex.drawer + 1,
   color: "#fff",
 }
 

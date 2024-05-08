@@ -160,7 +160,8 @@ export default function Index() {
               </GridItem>
               <GridItem>
                 <LinkTypography variant='h6'>
-                  <BlankLink to="/Assembly/AssemblyNav">
+                  {/* <BlankLink to="/Assembly/AssemblyNav"> */}
+                  <BlankLink to="/Assembly/EmployeeCellPlanDnd">
                     Main Assembly Dashboard - Labour Rostering
                   </BlankLink>
                 </LinkTypography>

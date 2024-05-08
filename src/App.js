@@ -66,6 +66,8 @@ import POApproval from "./components/purchaseOrders/POApproval";
 
 // --- Assembly
 import JobsCellDB from "./components/assembly/assyPages/JobsCellDB";
+import EmployeeCellPlanDnd from "./components/assembly/assyPages/EmployeeCellPlanDnd";
+
 // import EmployeeCellCurrentDB from "./components/assembly/assyPages/EmployeeCellCurrentDB";
 
 //#endregion
@@ -81,7 +83,6 @@ import ShiftSchedule from "./components/shiftSchedule/ShiftSchedule";
 import AssemblyNav from "./components/assembly/assyPages/Navigation";
 import EmployeeCellCurrentDB from "./components/assembly/assyPages/EmployeeCellCurrentDB";
 import EmployeeCellCurrentDnd from "./components/assembly/assyPages/EmployeeCellCurrentDnd";
-import EmployeeCellPlanDnd from "./components/assembly/assyPages/EmployeeCellPlanDnd";
 import EmployeeJobPlanDnd from "./components/assembly/assyPages/EmployeeJobPlanDnd";
 import EmployeeJobCurrentDnd from "./components/assembly/assyPages/EmployeeJobCurrentDnd";
 import JobsCellDB from "./components/assembly/assyPages/JobsCellDB";
@@ -142,18 +143,14 @@ Recycled Ocean Bound Plastic Recycled Teal (RGB 100 / 143 / 150) Reflex Blue (Lo
 
 //#endregion
 
-
 //#region  THEME
 
-
-const sistemaTheme =  muiThemes.getSistemaTheme();
+const sistemaTheme = muiThemes.getSistemaTheme();
 const queryClient = new QueryClient();
 //link to se how old JSS is converted to below https://mui.com/material-ui/migration/migrating-from-jss/
 //note css specificty is advised against, better to use in line sx or custom type
 
-
 //#endregion
-
 
 function App() {
   return (
@@ -162,22 +159,34 @@ function App() {
         <BrowserRouter>
           <Container maxWidth="false">
             {/* //false disables maxwidth setting */}
-            <Box component={"section"} >
+            <Box component={"section"}>
               <CssBaseline />
               <QueryClientProvider client={queryClient}>
-              <SistemaHeader>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/Index" element={<Index />} />
-                  <Route path="/Clock" element={<DigitalClock />} />
-                  <Route path="/InvBooking" element={<InventoryBooking />} />
-                  <Route path="/ShiftSchedule" element={<ShiftSchedule />} />
-                  <Route path="/ThemesCheck" element={<ThemesCheck />} />
-                  <Route path="/PendingPOs/" element={<POApprovalDashboard />} />
-                  <Route path="/PendingPOs/:poNum" element={<POApproval />} />
-                  <Route path="/Assembly/JobsCellDB" element={<JobsCellDB />} />
-                </Routes>
-              </SistemaHeader></QueryClientProvider>
+                <SistemaHeader>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/Index" element={<Index />} />
+                    <Route path="/Clock" element={<DigitalClock />} />
+                    <Route path="/InvBooking" element={<InventoryBooking />} />
+                    <Route path="/ShiftSchedule" element={<ShiftSchedule />} />
+                    <Route path="/ThemesCheck" element={<ThemesCheck />} />
+                    <Route
+                      path="/PendingPOs/"
+                      element={<POApprovalDashboard />}
+                    />
+                    <Route path="/PendingPOs/:poNum" element={<POApproval />} />
+                    <Route
+                      path="/Assembly/JobsCellDB"
+                      element={<JobsCellDB />}
+                    />
+
+                    <Route
+                      path="/Assembly/EmployeeCellPlanDnd"
+                      element={<EmployeeCellPlanDnd />}
+                    />
+                  </Routes>
+                </SistemaHeader>
+              </QueryClientProvider>
             </Box>
           </Container>
         </BrowserRouter>
