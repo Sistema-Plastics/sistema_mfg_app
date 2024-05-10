@@ -171,7 +171,7 @@ export const muiThemes = {
           fresh: {
             main: "#7ACC00",
           },
-          freshworks: { main: "#215732" },
+          freshworks: {light:'#43a865', main: "#215732" },
           togo: { main: "#0097A9" },
         },
         trafficLightRed: {
@@ -192,6 +192,7 @@ export const muiThemes = {
           dark: green[900],
           contrastText: grey[50],
         },
+        circularProgress:{main:sistColours["klipit-Light"]},
       },
 
       typography: {

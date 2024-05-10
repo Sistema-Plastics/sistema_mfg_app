@@ -8,6 +8,10 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
   Avatar,
   Box,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  Fab,
   FormControlLabel,
   // Container,
   Grid,
@@ -20,7 +24,10 @@ import {
   // Paper,
   Typography,
 } from "@mui/material";
+
 import SaveIcon from "@mui/icons-material/Save";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 
 import cellCrewSize from "../assyData/CellCrewSize";
@@ -73,7 +80,7 @@ const getCurrShift = (shifts) => {
   //1st get all shifts cobvering current time
   let v = shifts.filter((s) => d > s.startoffset && d < s.endoffset);
 
-  //set daty filter
+  //set day filter
   const wkday =
     d.getDay() > 0 && d.getDay() < 6
       ? "Weekday"
@@ -99,28 +106,31 @@ function EmployeeCellPlanDnd() {
   const [displayUnRequired, setDisplayUnRequired] = useState(true);
   const [displayOnlyClockedIn, setDisplayOnlyClockedIn] = useState(false);
 
+  const [isUpdateComplete, setIsUpdateComplete] = useState(true);
+  const [openDialog, setOpenDialog] = useState(false);
+
   const [datasets, setDatasets] = useState({
     employees: null,
+    origemployees: null,
     activelabour: null,
     clockins: null,
     plannedleave: null,
-    cellcrewsizeOld: null,
     cells: null,
     shifts: null,
     assycrewsizes: null,
   });
 
   const sistTheme = useTheme();
+  // const crewsizetopicroot = "webui/updateAssemblyRoster";
 
   let topics = [
     "systemdata/dashboards/epicor/employeeslist",
     "systemdata/dashboards/epicor/empclockin",
-    "systemdata/dashboards/epicor/plannedleave",
     "systemdata/dashboards/epicor/activelabour",
-    "systemdata/dashboards/epicor/cellcrewsize",
     "systemdata/dashboards/epicor/cells",
     "systemdata/dashboards/epicor/shifts",
     "systemdata/dashboards/epicor/assycrewsize",
+    "webui/updateAssemblyRoster/erpresponse",
   ];
 
   // //now add bse topic as prefx
@@ -150,7 +160,44 @@ function EmployeeCellPlanDnd() {
   };
 
   const handleSave = (e) => {
-    console.log("save plan");
+    let retEmployees = datasets.employees
+      .filter(
+        (e) =>
+          e.cell !==
+          datasets.origemployees.filter((e2) => e2.id === e.id)[0].cell
+      )
+      .map((e) => {
+        return { id: e.id, cell: e.cell ==="0"? 'avail': e.cell };
+      });
+    //exit if not actions
+    if (retEmployees.length < 1) {
+      return 0;
+    }
+
+    let record = {
+      topic: baseTopic + "webui/updateAssemblyRoster",
+      qos: 0,
+      retain: false,
+      payload: Date.now().toString(),
+      status: "",
+    };
+
+    record.payload = {
+      timestamp: Date.now().toString(),
+      values: retEmployees,
+    };
+    record.status = 0;
+
+    setIsUpdateComplete(false);
+    setOpenDialog(true);
+
+    let { topic, qos, retain, payload, status, bookqty, employee } = record;
+    payload = JSON.stringify(payload);
+    client.publish(topic, payload, { qos, retain }, (error) => {
+      if (error) {
+        console.log("Publish error: ", error);
+      }
+    });
   };
 
   const handleUnRequiredChange = (event) => {
@@ -168,6 +215,27 @@ function EmployeeCellPlanDnd() {
 
     const lines = [];
     if (empDataset === null) empDataset = datasets.employees.map((e) => e);
+
+    //only set teh time to the hour,
+    //example job starts at 19:57 this is converted 19:00
+    // so for afternoon shift it will show as less than 20:00
+    // but job startiung 20:05 will be set to 20:00 so not less  20:00 and
+    //will not show in afternoon shift
+    let dateShiftedAssyCrewSizes = datasets.assycrewsizes.map((j) => {
+      return {
+        ...j,
+        StartDate: new Date(
+          j.StartDate.replace(
+            "T00",
+            "T" + j.StartHour.substring(0, j.StartHour.indexOf("."))
+          )
+        ),
+      };
+    });
+
+    dateShiftedAssyCrewSizes = dateShiftedAssyCrewSizes.filter(
+      (j) => j.StartDate < currShift.endTime
+    );
 
     //get max crew per line
     lineSet.forEach(function (line) {
@@ -228,7 +296,7 @@ function EmployeeCellPlanDnd() {
   }, []);
 
   useEffect(() => {
-    if (!client) return;
+    if (client === null) return;
 
     client.on("connect", function () {
       //when connected pass to is connected  effect to subscribe
@@ -242,76 +310,95 @@ function EmployeeCellPlanDnd() {
 
     client.on("message", function (topic, message) {
       // if (topic == routingKey) {
-      const msg = JSON.parse(message.toString()).value;
-      switch (true) {
-        case topic.includes("employeeslist"):
-          // tmpDatasets.current.employees = msg;
-          setDatasets((prevState) => {
-            return { ...prevState, employees: assyEmployees(null, msg) };
-          });
 
-          break;
-        case topic.includes("plannedleave"):
-          // tmpDatasets.current.realtime = msg;
-          setDatasets((prevState) => {
-            return { ...prevState, plannedleave: msg };
-          });
-          break;
-        case topic.includes("activelabour"):
-          // tmpDatasets.current.jobs = msg;
-          setDatasets((prevState) => {
-            return { ...prevState, activelabour: msg };
-          });
-          break;
-        case topic.includes("empclockin"):
-          // tmpDatasets.current.machinedata = msg;
-          setDatasets((prevState) => {
-            return { ...prevState, clockins: msg };
-          });
-          break;
-        case topic.includes("cellcrewsize"):
-          // tmpDatasets.current.machinedata = msg;
-          setDatasets((prevState) => {
-            return { ...prevState, cellcrewsizeOld: cellCrewSize(null, msg) };
-          });
-          break;
-        case topic.includes("shifts"):
-          // tmpDatasets.current.machinedata = msg;
-          setDatasets((prevState) => {
-            return { ...prevState, shifts: assyShifts(msg) };
-          });
-          break;
-        case topic.includes("assycrewsize"):
-          // tmpDatasets.current.machinedata = msg;
-          setDatasets((prevState) => {
-            return { ...prevState, assycrewsizes: msg };
-          });
-          break;
-        case topic.includes("cells"):
-          //add unassigned reference
-          msg.unshift({
-            CodeID: "0",
-            CodeDesc: "Unassigned Employees",
-            LongDesc: "ASPK",
-          });
+      //handle systems data messages
+      if (topic.includes("systemdata")) {
+        const msg = JSON.parse(message.toString()).value;
+        switch (true) {
+          case topic.includes("employeeslist"):
+            //set teh comparioson list. this will be used when passing back to erp to filter out changes
+            setDatasets((prevState) => {
+              return { ...prevState, origemployees: assyEmployees(null, msg) };
+            });
+            //set the list that will change
+            setDatasets((prevState) => {
+              return { ...prevState, employees: assyEmployees(null, msg) };
+            });
+            break;
+          case topic.includes("activelabour"):
+            // tmpDatasets.current.jobs = msg;
+            setDatasets((prevState) => {
+              return { ...prevState, activelabour: msg };
+            });
+            break;
+          case topic.includes("empclockin"):
+            setDatasets((prevState) => {
+              return { ...prevState, clockins: msg };
+            });
+            break;
+          case topic.includes("shifts"):
+            // tmpDatasets.current.machinedata = msg;
+            setDatasets((prevState) => {
+              return { ...prevState, shifts: assyShifts(msg) };
+            });
+            break;
+          case topic.includes("assycrewsize"):
+            // tmpDatasets.current.machinedata = msg;
+            setDatasets((prevState) => {
+              return { ...prevState, assycrewsizes: msg };
+            });
+            break;
+          case topic.includes("cells"):
+            //add unassigned reference
+            msg.unshift({
+              CodeID: "0",
+              CodeDesc: "Unassigned Employees",
+              LongDesc: "ASPK",
+            });
 
-          setDatasets((prevState) => {
-            return { ...prevState, cells: msg };
-          });
-          break;
-        default:
+            setDatasets((prevState) => {
+              return { ...prevState, cells: msg };
+            });
+            break;
+          default:
+        }
+
+        //now unsubscibe from topic to prevent unwanted updates
+       
+        client.unsubscribe(topic, function (resp) {
+          resp ===null ? console.log("unsubscribed: " + topic) : console.log("unsubscribed error: " + resp);
+        });
       }
+
+
+      if (topic.includes("webui/updateAssemblyRoster")) {
+        //inform user then close dialog
+        console.log("ERP response");
+        setIsUpdateComplete(true);
+        setTimeout(function () {
+          setOpenDialog(false);
+        }, 3000); //delay is in milliseconds
+
+        //now push the full employees dataset incase a refresh is initiated
+      }
+      //listen for teh response to teh crew size change we initiated
     });
   }, [client]);
 
   useEffect(() => {
     //when connected subscribe to the topics
     if (isConnected) {
-      for (var i = 0; i < topics.length; i++) {
-        client.subscribe(topics[i], function () {
-          console.log("subscribed to ", topics[i]);
+      topics.forEach((topic) => {
+        client.subscribe(topic, function () {
+          console.log("subscribed to ", topic);
         });
-      }
+      });
+
+      // for (var i = 0; i < topics.length; i++) {
+      //   client.subscribe(topics[i], function () {
+      //     console.log("subscribed to ", topics[i]);
+      //   });
+      // }
     }
   }, [isConnected]);
 
@@ -320,7 +407,6 @@ function EmployeeCellPlanDnd() {
     if (
       datasets.employees !== null &&
       datasets.activelabour !== null &&
-      datasets.cellcrewsizeOld !== null &&
       datasets.cells !== null &&
       datasets.shifts !== null &&
       datasets.assycrewsizes !== null &&
@@ -332,15 +418,6 @@ function EmployeeCellPlanDnd() {
   }, [datasets]);
 
   useEffect(() => {
-    //when the data retreivl is complete close teh MQTT connection
-    if (client) {
-      client.end({
-        reasonCode: 0x04, // Disconnect with Will Message
-        properties: {
-          reasonString: "Closing connection once all Crew information gathered",
-        },
-      });
-    }
     //get each lines max crewsize for jobs where startdate
     //is less than or equalk to today
     if (dataComplete) setMaxLineCrewSize(null);
@@ -511,6 +588,68 @@ function EmployeeCellPlanDnd() {
           ))}
         </Box>
       </DragDropContext>
+
+      <Dialog open={openDialog}>
+        <DialogTitle>
+          {isUpdateComplete ? "Update Complete" : "Cell Crew Update Pending"}
+        </DialogTitle>
+
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Box sx={{ m: 1, position: "relative" }}>
+            <Fab
+              aria-label="save"
+              color="primary"
+              sx={{
+                ...(isUpdateComplete
+                  ? {
+                      bgcolor: sistTheme.palette.sistema.freshworks.light,
+                      "&:hover": {
+                        bgcolor: green[700],
+                      },
+                    }
+                  : {
+                      bgcolor: sistTheme.palette.sistema.klipit.light,
+                    }),
+              }}
+            >
+              {isUpdateComplete ? (
+                <CheckCircleIcon
+                  fontSize="large"
+                  sx={{ bgcolor: sistTheme.palette.sistema.freshworks.light }}
+                />
+              ) : (
+                <SaveIcon
+                  fontSize="large"
+                  color="circularProgress"
+                  sx={{
+                    backgroundColor: sistTheme.palette.sistema.klipit.light,
+                  }}
+                />
+              )}
+            </Fab>
+
+            {!isUpdateComplete && (
+              <CircularProgress
+                size={68}
+                sx={{
+                  color: sistTheme.palette.sistema.klipit.light,
+                  position: "absolute",
+                  top: -5,
+                  left: -5,
+                  zIndex: 1,
+                }}
+              />
+            )}
+          </Box>
+        </Box>
+      </Dialog>
+
       {/* </div> */}
     </React.Fragment>
   );

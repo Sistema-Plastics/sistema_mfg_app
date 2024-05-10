@@ -334,7 +334,7 @@ const assyEmployees = (dateParam, employees,clockins) => {
         return formatedEmp;
       });
     retVal = rv;
-    console.log(rv);
+    // console.log(rv);
   }
   // let date =
   //   dateParam === undefined
