@@ -15,6 +15,7 @@ import Typography from "@mui/material/Typography";
 import { typographyClasses } from "@mui/material/Typography";
 
 import { tableCellClasses } from "@mui/material/TableCell";
+import { BorderColor, BorderTop } from "@mui/icons-material";
 
 const sistColours = {
   "klipit-Main": "#0032A0",
@@ -41,7 +42,8 @@ Colours https://mui.com/material-ui/customization/color/
 typography theme viewer https://mui.com/material-ui/customization/default-theme/?expand-path=$.typography
 
 //Base compt order Box/Container/Grid container/Grid ite/Paper/compt
-
+Typography examples
+https://muhimasri.com/blogs/mui-typography/ 
 
 <Box
           component="main"
@@ -171,7 +173,7 @@ export const muiThemes = {
           fresh: {
             main: "#7ACC00",
           },
-          freshworks: {light:'#43a865', main: "#215732" },
+          freshworks: { light: "#43a865", main: "#215732" },
           togo: { main: "#0097A9" },
         },
         trafficLightRed: {
@@ -192,9 +194,10 @@ export const muiThemes = {
           dark: green[900],
           contrastText: grey[50],
         },
-        circularProgress:{main:sistColours["klipit-Light"]},
+        circularProgress: { main: sistColours["klipit-Light"] },
       },
 
+      // https://m2.material.io/design/typography/the-type-system.html#type-scale
       typography: {
         fontFamily: [
           "-apple-system",
@@ -208,7 +211,8 @@ export const muiThemes = {
           '"Segoe UI Emoji"',
           '"Segoe UI Symbol"',
         ].join(","),
-
+        subtitle1: { fontSize: "1rem", fontWeight: "4.." },
+        subtitle2: { fontSize: "0.9rem", fontWeight: "600" },
         body1: {
           color: sistColours["klipit-Text"],
         },
@@ -491,4 +495,46 @@ export const CellTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
   },
+}));
+
+const cellProps ={
+  padding:5,
+  fontSize: 14,
+}
+
+
+export const RowHdrTableCell = styled(TableCell)(({ theme }) => ({
+  ...cellProps,
+  maxWidth:70,
+
+  [`&.${tableCellClasses.body}`]: { backgroundColor:grey[400],
+   
+  },  // [`&.${tableCellClasses.head}`]: {
+  //   backgroundColor: 'green',//muiThemes.getSistemaTheme().palette.primary.dark,
+  //   color: muiThemes.getSistemaTheme().palette.primary.contrastText,
+  //   borderBottom: "none",
+  //   // borderBottom: "none",
+  //   paddingBottom: 4,
+  //   paddingTop: 4,
+  //   fontSize: 18,
+  // },
+}));
+
+export const RowDataTableCell = styled(TableCell)(({ theme }) => ({
+...cellProps,
+
+[`&.${tableCellClasses.body}`]: {
+
+    backgroundColor:grey[100],
+  },
+  // [`&.${tableCellClasses.head}`]: {
+  //   backgroundColor: grey[400],//muiThemes.getSistemaTheme().palette.primary.dark,
+  //   color: 'yelow', //muiThemes.getSistemaTheme().palette.primary.contrastText,
+  //   borderBottom: "none",
+  //   // borderBottom: "none",
+  //   paddingBottom: 4,
+  //   paddingTop: 4,
+  //   fontSize: 18,
+  // },
+  
 }));

@@ -67,6 +67,7 @@ import POApproval from "./components/purchaseOrders/POApproval";
 // --- Assembly
 import JobsCellDB from "./components/assembly/assyPages/JobsCellDB";
 import EmployeeCellPlanDnd from "./components/assembly/assyPages/EmployeeCellPlanDnd";
+import ProductionBooking from "./components/assembly/assyPages/ProductionBooking";
 
 // import EmployeeCellCurrentDB from "./components/assembly/assyPages/EmployeeCellCurrentDB";
 
@@ -183,6 +184,10 @@ function App() {
                     <Route
                       path="/Assembly/EmployeeCellPlanDnd"
                       element={<EmployeeCellPlanDnd />}
+                    />
+                    <Route
+                      path="/Assembly/ProductionBooking"
+                      element={<ProductionBooking />}
                     />
                   </Routes>
                 </SistemaHeader>

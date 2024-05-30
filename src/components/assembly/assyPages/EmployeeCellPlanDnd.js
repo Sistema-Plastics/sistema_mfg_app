@@ -3,7 +3,6 @@ import React, {
   useEffect,
   useState,
 } from "react";
-// import ReactDOM from "react-dom";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
   Avatar,
@@ -141,22 +140,22 @@ function EmployeeCellPlanDnd() {
     datasets.shifts === null ? null : getCurrShift(datasets.shifts);
 
   const handleOnDragEnd = (result) => {
-    const employeeID = result.draggableId;
-    const src = result.source.droppableId;
-    const dest = result.destination.droppableId;
+    // const employeeID = result.draggableId;
+    // const src = result.source.droppableId;
+    // const dest = result.destination.droppableId;
 
-    const newemps = datasets.employees.map((e) => {
-      if (e.id === employeeID) {
-        return { ...e, cell: dest };
-      } else {
-        return e;
-      }
-    });
-    setMaxLineCrewSize(newemps);
-    setDatasets((prevState) => {
-      return { ...prevState, employees: newemps };
-    });
-    console.log(`Moved ${employeeID}  from ${src}  to ${dest} `);
+    // const newemps = datasets.employees.map((e) => {
+    //   if (e.id === employeeID) {
+    //     return { ...e, cell: dest };
+    //   } else {
+    //     return e;
+    //   }
+    // });
+    // setMaxLineCrewSize(newemps);
+    // setDatasets((prevState) => {
+    //   return { ...prevState, employees: newemps };
+    // });
+    console.log(`Moved  `);
   };
 
   const handleSave = (e) => {
@@ -326,7 +325,7 @@ function EmployeeCellPlanDnd() {
             });
             break;
           case topic.includes("activelabour"):
-            // tmpDatasets.current.jobs = msg;
+           
             setDatasets((prevState) => {
               return { ...prevState, activelabour: msg };
             });
