@@ -55,7 +55,7 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
 
   return !rtData || !jobData ? (
     <React.Fragment>
-        <Container>
+      <Container>
         <h1> No Job Data found</h1>
       </Container>
     </React.Fragment>
@@ -94,7 +94,7 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
         <Grid item xs={8}>
           {
             <TableRowTypography variant="h3">
-              {jobData.jobNum} ASM: {jobReference.current.asm} Rev :{" "}
+              {jobData.JobNum} ASM: {jobReference.current.asm} Rev :{" "}
               {jobData.RevisionNum}{" "}
             </TableRowTypography>
           }
@@ -105,7 +105,6 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
         <Grid item xs={8}>
           {
             <TableRowTypography variant="h3">
-              {" "}
               {jobData.PartNum}
             </TableRowTypography>
           }
@@ -116,7 +115,6 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
         <Grid item xs={8}>
           {
             <TableRowTypography variant="h3">
-              {" "}
               {jobData.PartDescription}
             </TableRowTypography>
           }
