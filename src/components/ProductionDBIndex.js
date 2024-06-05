@@ -110,6 +110,10 @@ export default function Index() {
                 <LinkTypography variant='h6'>
                   <BlankLink to="/Clock">Clock</BlankLink>
                 </LinkTypography>
+              </GridItem><GridItem>
+                <LinkTypography variant='h6'>
+                  <BlankLink to="/BarcodeLabelPrinting">Barcode Label Printing</BlankLink>
+                </LinkTypography>
               </GridItem>
             </MyPaper>
           </GridContainer>
