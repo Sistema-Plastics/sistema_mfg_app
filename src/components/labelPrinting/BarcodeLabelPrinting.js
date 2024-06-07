@@ -23,6 +23,8 @@ import {
   DialogActions,
   DialogContent,
   Button,
+  TextField,
+  DialogContentText,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -71,10 +73,10 @@ export default function BarcodeLabelPrinting() {
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(false);
   const [isProcessing, setIsProcessing] = useState(true);
-  const [dbData, setDBData] = useState({ cellFilter: null, openJobs: null });
 
-  const [openPrintDlg, setOpenPrintDlg] = useState(false);
   const [printJob, setPrintJob] = useState(null);
+
+  const [canPrint, setCanPrint] = useState(false);
 
   const baseTopic = connections.getBaseMQTTTopicFromPort();
 
@@ -89,7 +91,8 @@ export default function BarcodeLabelPrinting() {
 
   let topics = [
     "systemdata/dashboards/epicor/bacodelabelprinting",
-    // "systemdata/dashboards/epicor/jobstockcheck",
+    "systemdata/dashboards/epicor/resources",
+    "systemdata/dashboards/epicor/employeeslist",
     // "systemdata/dashboards/epicor/activelabour",
     // "systemdata/dashboards/epicor/labourdtl",
     // "systemdata/dashboards/epicor/jobs",
@@ -137,6 +140,16 @@ export default function BarcodeLabelPrinting() {
             return { ...prevState, bacodelabelprinting: msg };
           });
           break;
+        case topic.includes("resources"):
+          setDatasets((prevState) => {
+            return { ...prevState, resources: msg };
+          });
+          break;
+        case topic.includes("employeeslist"):
+          setDatasets((prevState) => {
+            return { ...prevState, employees: msg };
+          });
+          break;
         // case topic.includes("jobstockcheck"):
         //   setDatasets((prevState) => {
         //     return { ...prevState, jobstockcheck: msg };
@@ -174,7 +187,8 @@ export default function BarcodeLabelPrinting() {
       // datasets.jobstockcheck !== null &&
       // datasets.activelabour !== null &&
       // datasets.labourdtl !== null &&
-      // datasets.jobs !== null &&
+      typeof datasets.employees !== "undefined" &&
+      typeof datasets.resources !== "undefined" &&
       typeof datasets.bacodelabelprinting !== "undefined"
     ) {
       try {
@@ -199,12 +213,90 @@ export default function BarcodeLabelPrinting() {
     }
   }, [isConnected]);
 
+  useEffect(() => {
+    console.log("");
+    if (
+      printJob !== null &&
+      typeof printJob.printer !== "undefined" &&
+      typeof printJob.employee !== "undefined" &&
+      typeof printJob.printrunqty !== "undefined"
+    ) {
+      setCanPrint(true);
+    } else {
+      setCanPrint(false);
+    }
+  }, [printJob]);
+
   const handlePrint = (event) => {
     setPrintJob(event);
-    // setOpenPrintDlg(true);
-    console.log("");
   };
 
+  const handleUpdateEmployee = (val) => {
+    if (
+      datasets.employees.filter((e) => e.EmpID === val.target.value).length > 0
+    ) {
+      setPrintJob((prevState) => {
+        return { ...prevState, employee: val.target.value };
+      });
+    } else {
+      const tmp = Object.assign({}, printJob);
+      delete tmp.employee;
+      setPrintJob(tmp);
+    }
+  };
+  const handleUpdatePrintQty = (val) => {
+    let v = 0;
+    try {
+      v = parseFloat(val.target.value);
+      if (v < 1 > 0 || v >= printJob.PrintQty) v = 0;
+    } catch {}
+
+    //if invalid print qty v will be 0
+    if (v > 0) {
+      setPrintJob((prevState) => {
+        return { ...prevState, printrunqty: v };
+      });
+    } else {
+      const tmp = Object.assign({}, printJob);
+      delete tmp.printrunqty;
+      setPrintJob(tmp);
+    }
+  };
+  const handleUpdatePrinter = (val) => {
+    setPrintJob((prevState) => {
+      return { ...prevState, printer: val.target.value };
+    });
+  };
+
+  const handlePrintSubmit = () => {
+    let record = {
+      topic: (baseTopic + `bcprt/${printJob.printer}/printlbarcodelabels`).toLowerCase(),
+      qos: 0,
+      retain: false,
+      payload: Date.now().toString(),
+      status: "",
+    };
+
+    record.payload = {
+      timestamp: Date.now().toString(),
+      values: printJob,
+    };
+    record.status = 0;
+
+    let { topic, qos, retain, payload, status, bookqty, employee } = record;
+    payload = JSON.stringify(payload);
+    client.publish(topic, payload, { qos, retain }, (error) => {
+      if (error) {
+        console.log("Publish error: ", error);
+      }
+    });
+    setPrintJob(null);
+    setCanPrint(false);
+  };
+  const handlePrintCancel = () => {
+    setPrintJob(null);
+    setCanPrint(false);
+  };
   return (
     <React.Fragment>
       <Box
@@ -297,26 +389,37 @@ export default function BarcodeLabelPrinting() {
                 <Grid container>
                   <Table>
                     <TableHead>
-                      {" "}
                       <TableRow>
                         <TableCell>Job Number</TableCell>
-                        <TableCell>Label PN</TableCell>
-                        <TableCell>Label Desc</TableCell>
+                        <TableCell>Label ASM PN</TableCell>
+                        <TableCell>Label Stock Part Number</TableCell>
+                        <TableCell>Label Stock Description</TableCell>
                         <TableCell>Requied Label Qty</TableCell>
                         <TableCell>Rem Label Qty</TableCell>
                         <TableCell>EAN</TableCell>
+                        <TableCell>FG Part Number</TableCell>
+                        <TableCell>FG Part Description</TableCell>
+                        <TableCell>Label Destination</TableCell>
+
                         <TableCell>Print</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {datasets.bacodelabelprinting.map((bcl, key) => (
                         <TableRow>
-                          <TableCell>{bcl.JobNum}</TableCell>
-                          <TableCell>{bcl.PartNum}</TableCell>
-                          <TableCell>{bcl.PartDescription}</TableCell>
+                          <TableCell>
+                            {bcl.JobNum + ":" + bcl.AssemblySeq}
+                          </TableCell>
+                          <TableCell>{bcl.LabelPart}</TableCell>
+                          <TableCell>{bcl.LabelMaterial}</TableCell>
+                          <TableCell>{bcl.LabelMaterialDesc}</TableCell>
                           <TableCell>{bcl.PrintQty}</TableCell>
                           <TableCell>0</TableCell>
                           <TableCell>{bcl.GTIN13_c}</TableCell>
+                          <TableCell>{bcl.FG_Part}</TableCell>
+                          <TableCell>{bcl.FG_PartDesc}</TableCell>
+                          <TableCell>{bcl.ResourceID}</TableCell>
+
                           <TableCell>
                             <PrintIcon
                               key={bcl.JobNum}
@@ -342,7 +445,7 @@ export default function BarcodeLabelPrinting() {
 
                 <Dialog
                   open={printJob !== null}
-                  maxWidth={"sm"}
+                  maxWidth={"sm"} //xs, sm, md, lg, xl
                   fullWidth={true}
                 >
                   <DialogTitle>
@@ -351,7 +454,7 @@ export default function BarcodeLabelPrinting() {
                       : "Print Job For " + printJob.JobNum}
                   </DialogTitle>
                   <DialogContent>
-                  <Grid item xs={3}>
+                    {/* <Grid item xs={3}>
                       Employee Number
                     </Grid>
                     <Grid item xs={9}></Grid>
@@ -362,16 +465,103 @@ export default function BarcodeLabelPrinting() {
                     <Grid item xs={3}>
                       Printer
                     </Grid>
-                    <Grid item xs={9}></Grid>
+                    <Grid item xs={9}></Grid> */}
+                  </DialogContent>
+                  <DialogContent>
+                    <Grid container>
+                      <Grid item xs={3}>
+                        <DialogContentText>Employee Number</DialogContentText>
+                      </Grid>
+                      <Grid item xs={9}>
+                        <FormControl>
+                          <FormControlLabel
+                            sx={{
+                              backgroundColor: "transparent",
+                              "& .MuiFilledInput-input": {
+                                color: sistTheme.palette.sistema.klipit.main,
+                              },
+                            }}
+                            control={
+                              <TextField
+                                error={
+                                  printJob === null ||
+                                  typeof printJob.employee === "undefined"
+                                }
+                                id="outlined-error"
+                                defaultValue=""
+                                variant="filled"
+                                // helperText={empHelperText.current}
+                                onChange={handleUpdateEmployee}
+                              ></TextField>
+                            }
+                          />
+                        </FormControl>
+                      </Grid>
+
+                      <Grid item xs={3}>
+                        <DialogContentText>
+                          No Labels to print
+                        </DialogContentText>
+                      </Grid>
+                      <Grid item xs={9}>
+                        <FormControl>
+                          <FormControlLabel
+                            sx={{
+                              backgroundColor: "transparent",
+                              "& .MuiFilledInput-input": {
+                                color: sistTheme.palette.sistema.klipit.main,
+                              },
+                            }}
+                            control={
+                              <TextField
+                                error={
+                                  printJob === null ||
+                                  typeof printJob.printrunqty === "undefined"
+                                }
+                                id="outlined-error"
+                                defaultValue=""
+                                variant="filled"
+                                // helperText={empHelperText.current}
+                                onChange={handleUpdatePrintQty}
+                              ></TextField>
+                            }
+                          />
+                        </FormControl>
+                      </Grid>
+
+                      <Grid item xs={3}>
+                        <DialogContentText>Printer</DialogContentText>
+                      </Grid>
+                      <Grid item xs={9}>
+                        <FormControl fullWidth>
+                          <InputLabel id="demo-simple-select-label">
+                            Select Printer
+                          </InputLabel>
+                          <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            // value={dbData.cellFilter.cellID}
+                            label="Resource"
+                            onChange={handleUpdatePrinter}
+                          >
+                            {datasets.resources
+                              .filter((r) => r.ResourceGrpID === "BCPRT")
+                              .map((r) => {
+                                return (
+                                  <MenuItem value={r.ResourceID}>
+                                    {r.Description}
+                                  </MenuItem>
+                                );
+                              })}
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                    </Grid>
                   </DialogContent>
                   <DialogActions>
-                    <Button
-                      onClick={() => {
-                        setPrintJob(null);
-                      }}
-                    >
-                      {" "}
-                      Cancel
+                    <Button onClick={handlePrintCancel}>Cancel</Button>
+                    <Button disabled={!canPrint} onClick={handlePrintSubmit}>
+                      Submit
                     </Button>
                   </DialogActions>
                 </Dialog>
