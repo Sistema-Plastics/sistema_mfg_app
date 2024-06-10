@@ -26,17 +26,31 @@ const JobStatus = ({ machineID, datasets }) => {
       (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
     )[0];
 
+    const jobNo = mc.CurrentJob.substring(0, mc.CurrentJob.length - 6);
+
+    const job = datasets.jobs.value.filter(
+      (j) => j.JobNum === jobNo && j.JCDept === "MACH"
+    )[0];
+
+    let reqdqty = 0,
+      goodqty = 0,
+      remqty = 0;
+
     if (typeof mc !== "undefined") {
+      reqdqty = parseInt(mc.RequiredQTY);
+      goodqty = parseInt(mc.CurrentQTY);
+      remqty = reqdqty - goodqty;
+
       setDisplayData((prevState) => {
-        return { ...prevState, reqdQty: parseInt(mc.RequiredQTY) };
+        return { ...prevState, reqdQty: reqdqty };
       });
       setDisplayData((prevState) => {
-        return { ...prevState, goodQty: parseInt(mc.CurrentQTY) };
+        return { ...prevState, goodQty: goodqty };
       });
       setDisplayData((prevState) => {
         return {
           ...prevState,
-          remQty: parseInt(mc.RequiredQTY) - parseInt(mc.CurrentQTY),
+          remQty: remqty,
         };
       });
       setDisplayData((prevState) => {
@@ -44,38 +58,42 @@ const JobStatus = ({ machineID, datasets }) => {
       });
     }
 
-    // goodQty = mcData === null ? nu ll : parseInt(mcData.CurrentQTY);
-    // remQty = mcData == null ? null : reqdQty - goodQty;
-    // togo = mcData == null ? null : togoToDHMS(mcData.TimeToGo);
+    if (typeof job !== "undefined") {
+      const ium = job.IUM;
+      const palletQty = job.QtyPerPallet_c;
+      const cartonQty = job.QtyPerCarton_c;
+      const palletIUMQty = job.QtyPerPallet;
+
+      let vStr =
+        reqdqty +
+        " ea / " +
+        reqdqty / cartonQty +
+        " " +
+        ium.toLowerCase() +
+        " / " +
+        reqdqty / palletQty +
+        " plts";
+
+      setDisplayData((prevState) => {
+        return { ...prevState, dispReqdQty: vStr };
+      });
+
+      setDisplayData((prevState) => {
+        return { ...prevState, IUM: job.IUM };
+      });
+      setDisplayData((prevState) => {
+        return { ...prevState, palletQty: job.QtyPerPallet_c };
+      });
+      setDisplayData((prevState) => {
+        return { ...prevState, cartonQty: job.QtyPerCarton_c };
+      });
+      setDisplayData((prevState) => {
+        return { ...prevState, palletIUMQty: job.QtyPerPallet };
+      });
+    }
 
     console.log("data" + datasets);
   }, [datasets.machinedata]);
-
-  // useEffect(() => {
-  //   //only fire on initial load
-  //   setRtData(
-  //     datasets.realtime.value.filter(
-  //       (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
-  //     )[0]
-  //   );
-  // }, [datasets.realtime]);
-
-  // useEffect(() => {
-  //   //only fire on initial load
-  //   setMcData(
-  //     datasets.machinedata.value.filter(
-  //       (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
-  //     )[0]
-  //   );
-  //   console.log("data" + datasets);
-  // }, [datasets.machinedata]);
-
-  // useEffect(() => {}, [mcData]);
-
-  // const jobStart =
-  //   rtData == null
-  //     ? ""
-  //     : new Date(parseInt(rtData.StartTime) * 1000);
 
   function togoToDHMS(tm) {
     //get days
@@ -88,11 +106,6 @@ const JobStatus = ({ machineID, datasets }) => {
 
     return tm;
   }
-
-  // return !isComplete ? (
-  //   <React.Fragment></React.Fragment>
-  // ) : (
-  //
   return (
     <React.Fragment>
       <Grid container>
@@ -122,8 +135,7 @@ const JobStatus = ({ machineID, datasets }) => {
         </Grid>
         <Grid item xs={7}>
           <TableRowTypography variant="h3">
-            {" "}
-            {displayData.togo}{" "}
+            {displayData.togo}
           </TableRowTypography>
         </Grid>
         <Grid item xs={5}>
@@ -131,8 +143,8 @@ const JobStatus = ({ machineID, datasets }) => {
         </Grid>
         <Grid item xs={7}>
           <TableRowTypography variant="h3">
-            {" "}
-            {displayData.reqdQty}{" "}
+            {/* {displayData.reqdQty} */}
+            {displayData.dispReqdQty}
           </TableRowTypography>
         </Grid>
         <Grid item xs={5}>
@@ -140,8 +152,7 @@ const JobStatus = ({ machineID, datasets }) => {
         </Grid>
         <Grid item xs={7}>
           <TableRowTypography variant="h3">
-            {" "}
-            {displayData.goodQty}{" "}
+            {displayData.goodQty}
           </TableRowTypography>
         </Grid>
         <Grid item xs={5}>
@@ -149,8 +160,7 @@ const JobStatus = ({ machineID, datasets }) => {
         </Grid>
         <Grid item xs={7}>
           <TableRowTypography variant="h3">
-            {" "}
-            {displayData.remQty}{" "}
+            {displayData.remQty}
           </TableRowTypography>
         </Grid>
       </Grid>

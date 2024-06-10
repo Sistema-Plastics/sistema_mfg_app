@@ -27,7 +27,7 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
       const asm = tmpRT.JobID.trim().replace(jn, "").substring(2, 3);
 
       jobReference.current = { job: jn, asm: asm };
-      const tmpJob = datasets.jobs.value.filter(
+      const tmpJob = datasets.jobs.va+lue.filter(
         (jb) =>
           jb.JobNum === jn &&
           jb.AssemblySeq.toString() === asm &&
