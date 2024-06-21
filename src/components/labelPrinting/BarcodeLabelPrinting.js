@@ -272,13 +272,14 @@ export default function BarcodeLabelPrinting() {
     let record = {
       topic: (baseTopic + `bcprt/${printJob.printer}/printlbarcodelabels`).toLowerCase(),
       qos: 0,
-      retain: false,
+      retain: true,
       payload: Date.now().toString(),
       status: "",
     };
 
     record.payload = {
       timestamp: Date.now().toString(),
+      status:0,
       values: printJob,
     };
     record.status = 0;
