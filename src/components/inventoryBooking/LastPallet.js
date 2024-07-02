@@ -30,7 +30,7 @@ const LastPallet = ({ machineID, datasets }) => {
   }, []);
 
   useEffect(() => {
-    if(datasets.palletdata.jobnum === datasets.currentJob.jn)  setPltData(datasets.palletdata);
+   datasets.palletdata &&  datasets.palletdata.jobnum === datasets.currentJob.jn? setPltData(datasets.palletdata):setPltData(null)
   }, [datasets.palletdata]);
 
   useEffect(() => {

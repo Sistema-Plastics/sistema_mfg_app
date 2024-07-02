@@ -26,6 +26,9 @@ const InventoryBooking = () => {
     palletdata: null,
   });
 
+  
+//TODO: refresh pallet subscription
+
   //get base topic from config
   const baseTopic = connections.getBaseMQTTTopicFromPort();
 

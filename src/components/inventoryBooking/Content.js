@@ -14,12 +14,12 @@ export default function Content({ machineID, ibdData }) {
 
   const jobDetails = useRef();
   useEffect(() => {
-    // setDataSets(ibdData);
+     setDataSets(ibdData);
     getCurrentJobData();
   }, []);
 
   useEffect(() => {
-    // setDataSets(ibdData);
+     setDataSets(ibdData);
     getCurrentJobData();
   }, [ibdData]);
 
