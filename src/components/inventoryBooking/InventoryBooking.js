@@ -56,56 +56,6 @@ const InventoryBooking = () => {
       )
     );
 
-
-
-    // client.on("connect", function () {
-    //   setIsConnected(true);
-    //   console.log("connected");
-    // });
-    // client.on("end", () => {
-    //   console.log("Connection to MQTT broker ended");
-    // });
-
-    // client.on("message", function (topic, message) {
-    //   // if (topic == routingKey) {
-    //   const msg = JSON.parse(message.toString());
-    //   switch (true) {
-    //     case topic.includes("employeeslist"):
-    //       // tmpDatasets.current.employees = msg;
-    //       setDatasets((prevState) => {
-    //         return { ...prevState, employees: msg };
-    //       });
-
-    //       break;
-    //     case topic.includes("realtime"):
-    //       // tmpDatasets.current.realtime = msg;
-    //       setDatasets((prevState) => {
-    //         return { ...prevState, realtime: msg };
-    //       });
-    //       break;
-    //     case topic.includes("jobs"):
-    //       // tmpDatasets.current.jobs = msg;
-    //       setDatasets((prevState) => {
-    //         return { ...prevState, jobs: msg };
-    //       });
-    //       break;
-    //     case topic.includes("machinedata"):
-    //       // tmpDatasets.current.machinedata = msg;
-    //       setDatasets((prevState) => {
-    //         return { ...prevState, machinedata: msg };
-    //       });
-    //       break;
-    //     case topic.includes("receivemfgparttoinventory"):
-    //       //tmpDatasets.current.palletdata = msg;
-    //       setDatasets((prevState) => {
-    //         return { ...prevState, palletdata: msg };
-    //       });
-    //       break;
-    //     default:
-    //   }
-
-    //   // console.log("Received  '" + topic + "'");
-    // });
   }, []);
 
 
@@ -158,7 +108,6 @@ const InventoryBooking = () => {
           break;
         default:
       }
-
       // console.log("Received  '" + topic + "'");
     });
   },[client])

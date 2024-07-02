@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Grid, Paper, } from "@mui/material";
+import { Grid, Paper } from "@mui/material";
 import {
   TableContainer,
   Table,
@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import { muiThemes } from "../../assets/styling/muiThemes";
 import { TableRowTypography } from "../../assets/styling/muiThemes";
-
 
 const tableTheme = muiThemes.getSistemaTheme();
 
@@ -30,45 +29,55 @@ const LastPallet = ({ machineID, datasets }) => {
     // setPltData(datasets.palletdata);
   }, []);
 
-  useEffect(()=>{
-    setPltData(datasets.palletdata)
-  },[datasets.palletdata])
+  useEffect(() => {
+    if(datasets.palletdata.jobnum === datasets.currentJob.jn)  setPltData(datasets.palletdata);
+  }, [datasets.palletdata]);
 
   useEffect(() => {
     if (pltData) {
-      let tmp = {};
-      tmp.timestamp = new Date(parseFloat(pltData.tstamp)).toLocaleString();
-      tmp.emp = pltData.empid;
-      tmp.qty = pltData.acttranqty;
+      try {
+        // let currJob = datasets.realtime.value.filter(
+        //   (f) => f.MachID.toLowerCase() == machineID.toLowerCase()
+        // )[0].JobID;
+        // currJob = currJob.substring(0, currJob.length - 6);
+        // if (currJob === pltData.jobnum) {
+          let tmp = {};
+          tmp.timestamp = new Date(parseFloat(pltData.tstamp)).toLocaleString();
+          tmp.emp = pltData.empid;
+          tmp.qty = pltData.acttranqty;
 
-      switch (pltData.status) {
-        case 0:
-          tmp.statusText = "Waiitng ERP Confirmation";
-          tmp.status = 0;
-          break;
-        case 1:
-          tmp.statusText = "Booked-Waiting Collection";
-          tmp.status = 1;
-          break;
-        case 2:
-          tmp.statusText = "Receipted to Dexion";
-          tmp.status = 2;
+          switch (pltData.status) {
+            case 0:
+              tmp.statusText = "Waiitng ERP Confirmation";
+              tmp.status = 0;
+              break;
+            case 1:
+              tmp.statusText = "Booked-Waiting Collection";
+              tmp.status = 1;
+              break;
+            case 2:
+              tmp.statusText = "Receipted to Dexion";
+              tmp.status = 2;
 
-          break;
-        default:
-          tmp.statusText = "";
+              break;
+            default:
+              tmp.statusText = "";
+          }
+
+          if (pltData.status !== 2) {
+            const currentTime = Math.floor(new Date() / 1000);
+            const requestedTime = Math.floor(parseFloat(pltData.tstamp) / 1000);
+            const diff = currentTime - requestedTime;
+            if (diff > 300) {
+              tmp.status = 10;
+            }
+          }
+
+          setTableData(tmp);
+        // }
+      } catch (ex) {
+        console.log(ex);
       }
-
-      if (pltData.status !== 2) {
-        const currentTime = Math.floor(new Date() / 1000);
-        const requestedTime = Math.floor(parseFloat(pltData.tstamp) / 1000);
-        const diff = currentTime - requestedTime;
-        if (diff > 300) {
-          tmp.status = 10;
-        }
-      }
-
-      setTableData(tmp);
     }
   }, [pltData]);
   //decide if the amount of time is excessive and show as error
@@ -77,7 +86,6 @@ const LastPallet = ({ machineID, datasets }) => {
     console.log("LastPallet.js useEffct fire every time");
   });
 
-  
   return (
     <React.Fragment>
       {console.log("LastPallet Render")}

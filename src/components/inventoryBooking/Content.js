@@ -5,6 +5,7 @@ import Actions from "./Actions";
 import LastPallet from "./LastPallet";
 import { Grid, Paper, Typography } from "@mui/material";
 import useTheme from "@mui/material/styles/useTheme";
+import { mfgDashboardFunctions } from "../../helpers/HelperScripts";
 
 export default function Content({ machineID, ibdData }) {
   // const params = new URLSearchParams(document.location.search);
@@ -13,14 +14,69 @@ export default function Content({ machineID, ibdData }) {
 
   const jobDetails = useRef();
   useEffect(() => {
-    setDataSets(ibdData);
+    // setDataSets(ibdData);
+    getCurrentJobData();
   }, []);
 
   useEffect(() => {
-    setDataSets(ibdData);
+    // setDataSets(ibdData);
+    getCurrentJobData();
   }, [ibdData]);
 
   const sistTheme = useTheme();
+
+  const getCurrentJobData = () => {
+    let retval = null;
+    try {
+      //get rtData for machine
+      const tmpRT = ibdData.realtime.value.filter(
+        (dept) => dept.MachID.toLowerCase() === machineID.toLowerCase()
+      )[0];
+
+      const mc = ibdData.machinedata.value.filter(
+        (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
+      )[0];
+
+      //now get the Epciro job number from the RTDAta
+      const jn = tmpRT.JobID.trim().substring(0, tmpRT.JobID.trim().length - 6);
+      //get the asm ref from mattec job string
+      const asm = tmpRT.JobID.trim().replace(jn, "").substring(2, 3);
+
+      const tmpJob = datasets.jobs.value.filter(
+        (jb) =>
+          jb.JobNum === jn &&
+          jb.AssemblySeq.toString() === asm &&
+          jb.JCDept === "MACH"
+      )[0];
+
+      const jd = {
+        jn: tmpJob.JobNum,
+        asm: tmpJob.AssemblySeq,
+        rev: tmpJob.RevisionNum,
+        mc: machineID,
+        cell: mfgDashboardFunctions.getCellfromRealtime(tmpRT.DeptDesc),
+        cq: tmpJob.QtyPerCarton_c,
+        pq: tmpJob.QtyPerPallet_c,
+        pn: tmpJob.PartNum,
+        pd: tmpJob.PartDescription,
+        ium: tmpJob.IUM,
+        timetogo : mc.TimeToGo,
+        reqdqty: parseInt(mc.RequiredQTY),
+        goodqty: parseInt(mc.CurrentQTY),
+        remqty: parseInt(mc.RequiredQTY) - parseInt(mc.CurrentQTY),
+      };
+
+      setDataSets((prevState) => {
+        return { ...prevState, currentJob: jd };
+      });
+    } catch (ex) {
+      console.log(ex);
+
+      setDataSets((prevState) => {
+        return { ...prevState, currentJob: null };
+      });
+    }
+  };
 
   const handleJobDetailsReceipt = (jd) => {
     // return {mcID:jobDetails.current.mcID ,cellRef:jobDetails.current.cell}
@@ -29,6 +85,7 @@ export default function Content({ machineID, ibdData }) {
   const handleJobDetailsDelivery = () => {
     return jobDetails.current;
   };
+
   return (
     <React.Fragment>
       {console.log("Render Content.js")}
@@ -46,29 +103,44 @@ export default function Content({ machineID, ibdData }) {
           </Paper>
         </Grid>
 
-        <Grid item xs={5} padding={0}>
-          <Paper elevation={10}>
-            <JobDetails
-              mcID={machineID}
-              datasets={ibdData}
-              feedback={handleJobDetailsReceipt}
-            />
-          </Paper>
-        </Grid>
-        <Grid item xs={5} padding={0}>
-          <Paper elevation={10}>
-            <JobStatus machineID={machineID} datasets={datasets} />
-            <LastPallet machineID={machineID} datasets={datasets} />
-          </Paper>
-        </Grid>
-        <Grid item xs={2} padding={0}>
-          <Paper elevation={10}>
-            <Actions
-            datasets={ibdData}
-              fetchJobDetails={handleJobDetailsDelivery}
-            />
-          </Paper>
-        </Grid>
+        {datasets.currentJob !== null &&
+        typeof datasets.currentJob !== "undefined" ? (
+          <>
+            <Grid item xs={5} padding={0}>
+              <Paper elevation={10}>
+                <JobDetails
+                  mcID={machineID}
+                  datasets={datasets}
+                  feedback={handleJobDetailsReceipt}
+                />
+              </Paper>
+            </Grid>
+            <Grid item xs={5} padding={0}>
+              <Paper elevation={10}>
+               <JobStatus machineID={machineID} datasets={datasets} />
+                 <LastPallet machineID={machineID} datasets={datasets} />
+              </Paper>
+            </Grid>
+            <Grid item xs={2} padding={0}>
+              <Paper elevation={10}>
+                <Actions
+                  datasets={ibdData}
+                  fetchJobDetails={handleJobDetailsDelivery}
+                />
+              </Paper>
+            </Grid>
+          </>
+        ) : (
+          <div>
+            <Typography
+              variant="h5"
+              gutterBottom
+              padding={sistTheme.spacing(1)}
+            >
+              No Job data to show
+            </Typography>
+          </div>
+        )}
       </Grid>
     </React.Fragment>
   );

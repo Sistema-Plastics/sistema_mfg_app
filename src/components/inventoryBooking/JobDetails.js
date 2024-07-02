@@ -8,52 +8,52 @@ import { TableRowTypography } from "../../assets/styling/muiThemes";
 const tableTheme = muiThemes.getSistemaTheme();
 
 const JobDetails = ({ mcID, datasets, feedback }) => {
-  const [rtData, setRtData] = useState();
-  const [jobData, setJobData] = useState();
-  // const [jobReference, setJobReference] = useState();
-  const jobReference = useRef();
+  // const [rtData, setRtData] = useState();
+  // const [jobData, setJobData] = useState();
+  // // const [jobReference, setJobReference] = useState();
+  // const jobReference = useRef();
 
-  useEffect(() => {
-    //only fire on initial load
-    //get the relevant job from mattec realttime dataset
-    try {
-      const tmpRT = datasets.realtime.value.filter(
-        (dept) => dept.MachID.toLowerCase() === mcID.toLowerCase()
-      )[0];
+  // useEffect(() => {
+  //   //only fire on initial load
+  //   //get the relevant job from mattec realttime dataset
+  //   try {
+  //     const tmpRT = datasets.realtime.value.filter(
+  //       (dept) => dept.MachID.toLowerCase() === mcID.toLowerCase()
+  //     )[0];
 
-      //seperate teh job from Mattec Job string
-      const jn = tmpRT.JobID.trim().substring(0, tmpRT.JobID.trim().length - 6);
-      //get the asm ref from mattec job string
-      const asm = tmpRT.JobID.trim().replace(jn, "").substring(2, 3);
+  //     //seperate teh job from Mattec Job string
+  //     const jn = tmpRT.JobID.trim().substring(0, tmpRT.JobID.trim().length - 6);
+  //     //get the asm ref from mattec job string
+  //     const asm = tmpRT.JobID.trim().replace(jn, "").substring(2, 3);
 
-      jobReference.current = { job: jn, asm: asm };
-      const tmpJob = datasets.jobs.va+lue.filter(
-        (jb) =>
-          jb.JobNum === jn &&
-          jb.AssemblySeq.toString() === asm &&
-          jb.JCDept === "MACH"
-      )[0];
+  //     jobReference.current = { job: jn, asm: asm };
+  //     const tmpJob = datasets.jobs.value.filter(
+  //       (jb) =>
+  //         jb.JobNum === jn &&
+  //         jb.AssemblySeq.toString() === asm &&
+  //         jb.JCDept === "MACH"
+  //     )[0];
 
-      const jd = {
-        jn: tmpJob.JobNum,
-        asm: tmpJob.AssemblySeq,
-        mc: mcID,
-        cell: mfgDashboardFunctions.getCellfromRealtime(tmpRT.DeptDesc),
-        cq: tmpJob.QtyPerCarton_c,
-        pq: tmpJob.QtyPerPallet_c,
-        pn: tmpJob.PartNum,
-        pd: tmpJob.PartDescription,
-        ium: tmpJob.IUM,
-      };
+  //     const jd = {
+  //       jn: tmpJob.JobNum,
+  //       asm: tmpJob.AssemblySeq,
+  //       mc: mcID,
+  //       cell: mfgDashboardFunctions.getCellfromRealtime(tmpRT.DeptDesc),
+  //       cq: tmpJob.QtyPerCarton_c,
+  //       pq: tmpJob.QtyPerPallet_c,
+  //       pn: tmpJob.PartNum,
+  //       pd: tmpJob.PartDescription,
+  //       ium: tmpJob.IUM,
+  //     };
 
-      feedback(jd);
+  //     feedback(jd);
 
-      setRtData(tmpRT);
-      setJobData(tmpJob);
-    } catch (ex) {}
-  }, []);
+  //     setRtData(tmpRT);
+  //     setJobData(tmpJob);
+  //   } catch (ex) {}
+  // }, []);
 
-  return !rtData || !jobData ? (
+  return datasets.currentJob === null ?(
     <React.Fragment>
       <Container>
         <h1> No Job Data found</h1>
@@ -86,7 +86,7 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
           <TableRowTypography variant="h4">Machine</TableRowTypography>
         </Grid>
         <Grid item xs={8}>
-          <TableRowTypography variant="h3">{rtData.MachID}</TableRowTypography>
+          <TableRowTypography variant="h3">{datasets.currentJob.mc.toUpperCase()}</TableRowTypography>
         </Grid>
         <Grid item xs={4}>
           <TableRowTypography variant="h4">Job</TableRowTypography>
@@ -94,8 +94,8 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
         <Grid item xs={8}>
           {
             <TableRowTypography variant="h3">
-              {jobData.JobNum} ASM: {jobReference.current.asm} Rev :{" "}
-              {jobData.RevisionNum}{" "}
+              {datasets.currentJob.jn} ASM: {datasets.currentJob.asm} Rev :{" "}
+              {datasets.currentJob.rev}{" "}
             </TableRowTypography>
           }
         </Grid>
@@ -105,7 +105,7 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
         <Grid item xs={8}>
           {
             <TableRowTypography variant="h3">
-              {jobData.PartNum}
+              {datasets.currentJob.pn}
             </TableRowTypography>
           }
         </Grid>
@@ -115,7 +115,7 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
         <Grid item xs={8}>
           {
             <TableRowTypography variant="h3">
-              {jobData.PartDescription}
+              {datasets.currentJob.pd}
             </TableRowTypography>
           }
         </Grid>
@@ -123,7 +123,7 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
           <TableRowTypography variant="h4">Inventory UOM</TableRowTypography>
         </Grid>
         <Grid item xs={8}>
-          {<TableRowTypography variant="h3"> {jobData.IUM}</TableRowTypography>}
+          {<TableRowTypography variant="h3"> {datasets.currentJob.ium}</TableRowTypography>}
         </Grid>
         <Grid item xs={4}>
           <TableRowTypography variant="h4">Qty Per Carton</TableRowTypography>
@@ -131,7 +131,7 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
         <Grid item xs={8}>
           {
             <TableRowTypography variant="h3">
-              {jobData.QtyPerCarton_c} ea
+              {datasets.currentJob.cq} ea
             </TableRowTypography>
           }
         </Grid>
@@ -141,11 +141,11 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
         <Grid item xs={8}>
           {
             <TableRowTypography variant="h3">
-              {jobData.IUM && jobData.IUM.toLowerCase() === "ct"
-                ? parseFloat(jobData.QtyPerPallet_c) /
-                    parseFloat(jobData.QtyPerCarton_c) +
+              {datasets.currentJob.ium && datasets.currentJob.ium.toLowerCase() === "ct"
+                ? parseFloat(datasets.currentJob.pq) /
+                    parseFloat(datasets.currentJob.cq) +
                   " ctns"
-                : jobData.QtyPerPallet_c + " ea"}
+                : datasets.currentJob.pq + " ea"}
             </TableRowTypography>
           }
         </Grid>
