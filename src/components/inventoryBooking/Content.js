@@ -137,7 +137,7 @@ export default function Content({ machineID, ibdData }) {
               gutterBottom
               padding={sistTheme.spacing(1)}
             >
-              No Job data to show
+              No Job data to show for {machineID}
             </Typography>
           </div>
         )}
