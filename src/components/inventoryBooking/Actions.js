@@ -43,7 +43,7 @@ const Actions = ({ datasets, fetchJobDetails }) => {
   const [openEmployeeSet, setOpenEmployeeSet] = React.useState(false);
 
   const handleEmployeeSetOpen = () => {
-    setJobData(fetchJobDetails());
+    setJobData(datasets.currentJob);
     setEmployeeErr(true);
     setOpenEmployeeSet(true);
   };
@@ -59,7 +59,8 @@ const Actions = ({ datasets, fetchJobDetails }) => {
   };
 
   const handlePltQtySetOpen = () => {
-    setJobData(fetchJobDetails());
+    setJobData(datasets.currentJob
+    );
     setOpenPalletQtySet(true);
   };
   const handlePltQtySetClose = () => {
