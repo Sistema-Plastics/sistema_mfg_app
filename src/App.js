@@ -58,6 +58,7 @@ import ThemesCheck from "./assets/components/ThemesCheck";
 // --- Manufacturing
 import ShiftSchedule from "./components/shiftSchedule/ShiftSchedule";
 import InventoryBooking from "./components/inventoryBooking/InventoryBooking";
+import BarcodeLabelPrinting from "./components/labelPrinting/BarcodeLabelPrinting";
 // import InventoryMovements from "./components/inventoryDashboards/inventoryMovements/InventoryMovements";
 
 // --- Purchase Orders
@@ -168,6 +169,7 @@ function App() {
                     <Route path="/Index" element={<Index />} />
                     <Route path="/Clock" element={<DigitalClock />} />
                     <Route path="/InvBooking" element={<InventoryBooking />} />
+                    <Route path="/BarcodeLabelPrinting" element={<BarcodeLabelPrinting />} />
                     <Route path="/ShiftSchedule" element={<ShiftSchedule />} />
                     <Route path="/ThemesCheck" element={<ThemesCheck />} />
                     <Route
