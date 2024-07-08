@@ -124,8 +124,8 @@ export default function Content({ machineID, ibdData }) {
             <Grid item xs={2} padding={0}>
               <Paper elevation={10}>
                 <Actions
-                  datasets={ibdData}
-                  fetchJobDetails={handleJobDetailsDelivery}
+                  datasets={datasets}
+                  // fetchJobDetails={handleJobDetailsDelivery}
                 />
               </Paper>
             </Grid>
