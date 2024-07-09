@@ -1,16 +1,12 @@
 export const connections = {
   getBaseURLfromPort: function (urlRef) {
-    let baseURL = "https://erp-test02.sistemaplastics.com/erp104/api/v1/";
+    let baseURL = "https://aauc3spwntsk001.nr.ad.newellco.com/epicorerp10/api/v1/";
 
     const webPort = Number(window.location.port);
     switch (webPort) {
       case 5000:
+      case 8080:
       case 443:
-        console.log(
-          "Port " +
-            webPort +
-            " so API URL https://aauc3spwntsk001.nr.ad.newellco.com/epicorerp10/api/v1/"
-        );
         baseURL =
           "https://aauc3spwntsk001.nr.ad.newellco.com/epicorerp10/api/v1/";
         break;
@@ -19,11 +15,7 @@ export const connections = {
       case 5500:
       case 5001:
       case 5002:
-        console.log(
-          "Port " +
-            webPort +
-            " so API URL https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1"
-        );
+      case 8081: 
         baseURL = "https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1/";
 
         break;
@@ -33,15 +25,12 @@ export const connections = {
       case 3002:
       case 3003:
       default:
-        console.log(
-          "Port " +
-            webPort +
-            " so API URL https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1"
-        );
-
+      
         baseURL = "https://dc1nwnepr001.nr.ad.newellco.com/ERP10TESTO/api/v1/";
         break;
     }
+
+    console.log(`Port ${webPort}  so API URL ${baseURL}`);
     return baseURL;
   },
 
