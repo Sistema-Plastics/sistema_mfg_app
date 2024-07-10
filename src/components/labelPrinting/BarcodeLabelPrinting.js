@@ -36,10 +36,6 @@ import Select from "@mui/material/Select";
 import { grey, green, pink, yellow } from "@mui/material/colors";
 import { generalFunctions } from "../../helpers/HelperScripts";
 
-// import PageAlert from "../../../assets/components/Alerts";
-
-// import LineJobs from "../assyComponents/LineJobs";
-
 //new stuff
 import PrintIcon from "@mui/icons-material/Print";
 import { connections } from "../../config/ConnectionBroker";
@@ -73,6 +69,8 @@ export default function BarcodeLabelPrinting() {
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(false);
   const [isProcessing, setIsProcessing] = useState(true);
+
+  const [showComplete, setShowComplete] = useState(false);
 
   const [printJob, setPrintJob] = useState(null);
 
@@ -119,6 +117,23 @@ export default function BarcodeLabelPrinting() {
     );
   }, []);
 
+  const mapShowComplete = (msg) => {
+    msg = msg.map((item) => {
+      return {
+        ...item,
+        showComplete:
+          showComplete === true
+            ? true
+            : item.PrintQty - item.PrintedQty > 0
+            ? true
+            : false,
+      };
+    });
+    setDatasets((prevState) => {
+      return { ...prevState, bacodelabelprinting: msg };
+    });
+  };
+
   useEffect(() => {
     if (!client) return;
 
@@ -136,9 +151,7 @@ export default function BarcodeLabelPrinting() {
       console.log("msg from " + topic);
       switch (true) {
         case topic.includes("bacodelabelprinting"):
-          setDatasets((prevState) => {
-            return { ...prevState, bacodelabelprinting: msg };
-          });
+          mapShowComplete(msg);
           break;
         case topic.includes("resources"):
           setDatasets((prevState) => {
@@ -150,32 +163,6 @@ export default function BarcodeLabelPrinting() {
             return { ...prevState, employees: msg };
           });
           break;
-        // case topic.includes("jobstockcheck"):
-        //   setDatasets((prevState) => {
-        //     return { ...prevState, jobstockcheck: msg };
-        //   });
-        //   break;
-        // case topic.includes("activelabour"):
-        //   setDatasets((prevState) => {
-        //     return { ...prevState, activelabour: msg };
-        //   });
-        //   break;
-        // case topic.includes("labourdtl"):
-        //   setDatasets((prevState) => {
-        //     return { ...prevState, labourdtl: msg };
-        //   });
-        //   break;
-        // case topic.includes("jobs"):
-        //   setDatasets((prevState) => {
-        //     return { ...prevState, jobs: msg };
-        //   });
-        //   break;
-        // case topic.includes("binstockcheck"):
-        //   setDatasets((prevState) => {
-        //     return { ...prevState, binstockcheck: msg };
-        //   });
-
-        //   break;
         default:
       }
     });
@@ -183,10 +170,6 @@ export default function BarcodeLabelPrinting() {
 
   useEffect(() => {
     if (
-      // datasets.cells !== null &&
-      // datasets.jobstockcheck !== null &&
-      // datasets.activelabour !== null &&
-      // datasets.labourdtl !== null &&
       typeof datasets.employees !== "undefined" &&
       typeof datasets.resources !== "undefined" &&
       typeof datasets.bacodelabelprinting !== "undefined"
@@ -212,6 +195,11 @@ export default function BarcodeLabelPrinting() {
       }
     }
   }, [isConnected]);
+
+  useEffect(() => {
+    if(  typeof datasets.bacodelabelprinting !== "undefined")
+    mapShowComplete(datasets.bacodelabelprinting);
+  }, [showComplete]);
 
   useEffect(() => {
     console.log("");
@@ -268,9 +256,16 @@ export default function BarcodeLabelPrinting() {
     });
   };
 
+  const handleChangeShowCompleted = (event) => {
+    setShowComplete(event.target.checked);
+    console.log();
+  };
+
   const handlePrintSubmit = () => {
     let record = {
-      topic: (baseTopic + `bcprt/${printJob.printer}/printlbarcodelabels`).toLowerCase(),
+      topic: (
+        baseTopic + `bcprt/${printJob.printer}/printlbarcodelabels`
+      ).toLowerCase(),
       qos: 0,
       retain: true,
       payload: Date.now().toString(),
@@ -279,7 +274,7 @@ export default function BarcodeLabelPrinting() {
 
     record.payload = {
       timestamp: Date.now().toString(),
-      status:0,
+      status: 0,
       values: printJob,
     };
     record.status = 0;
@@ -380,7 +375,7 @@ export default function BarcodeLabelPrinting() {
                     control={
                       <SistSwitch
                         // checked={displayOnlyClockedIn}
-                        // onChange={handleClockedInChange}
+                        onChange={handleChangeShowCompleted}
                         inputProps={{ "aria-label": "controlled" }}
                       />
                     }
@@ -395,8 +390,8 @@ export default function BarcodeLabelPrinting() {
                         <TableCell>Label ASM PN</TableCell>
                         <TableCell>Label Stock Part Number</TableCell>
                         <TableCell>Label Stock Description</TableCell>
-                        <TableCell>Requied Label Qty</TableCell>
-                        <TableCell>Rem Label Qty</TableCell>
+                        <TableCell>Required Label Qty</TableCell>
+                        <TableCell>Remaining Label Qty</TableCell>
                         <TableCell>EAN</TableCell>
                         <TableCell>FG Part Number</TableCell>
                         <TableCell>FG Part Description</TableCell>
@@ -406,36 +401,40 @@ export default function BarcodeLabelPrinting() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {datasets.bacodelabelprinting.map((bcl, key) => (
-                        <TableRow>
-                          <TableCell>
-                            {bcl.JobNum + ":" + bcl.AssemblySeq}
-                          </TableCell>
-                          <TableCell>{bcl.LabelPart}</TableCell>
-                          <TableCell>{bcl.LabelMaterial}</TableCell>
-                          <TableCell>{bcl.LabelMaterialDesc}</TableCell>
-                          <TableCell>{bcl.PrintQty}</TableCell>
-                          <TableCell>0</TableCell>
-                          <TableCell>{bcl.GTIN13_c}</TableCell>
-                          <TableCell>{bcl.FG_Part}</TableCell>
-                          <TableCell>{bcl.FG_PartDesc}</TableCell>
-                          <TableCell>{bcl.ResourceID}</TableCell>
+                      {datasets.bacodelabelprinting
+                        .filter((bcl) => bcl.showComplete === true)
+                        .map((bcl, key) => (
+                          <TableRow>
+                            <TableCell>
+                              {bcl.JobNum + ":" + bcl.AssemblySeq}
+                            </TableCell>
+                            <TableCell>{bcl.LabelPart}</TableCell>
+                            <TableCell>{bcl.LabelMaterial}</TableCell>
+                            <TableCell>{bcl.LabelMaterialDesc}</TableCell>
+                            <TableCell>{bcl.PrintQty}</TableCell>
+                            <TableCell>
+                              {bcl.PrintQty - bcl.PrintedQty}
+                            </TableCell>
+                            <TableCell>{bcl.GTIN13_c}</TableCell>
+                            <TableCell>{bcl.FG_Part}</TableCell>
+                            <TableCell>{bcl.FG_PartDesc}</TableCell>
+                            <TableCell>{bcl.ResourceID}</TableCell>
 
-                          <TableCell>
-                            <PrintIcon
-                              key={bcl.JobNum}
-                              sx={{
-                                fontSize: 20,
-                                color: sistTheme.palette.sistema.microwave.main,
-                              }}
-                              onClick={() => handlePrint(bcl)}
-                            ></PrintIcon>
-                            {/* <IconButton onClick={handlePrint(bcl)}>
+                            <TableCell>
+                              <PrintIcon
+                                key={bcl.JobNum}
+                                sx={{
+                                  fontSize: 20,
+                                  color: sistTheme.palette.sistema.klipit.main,
+                                }}
+                                onClick={() => handlePrint(bcl)}
+                              ></PrintIcon>
+                              {/* <IconButton onClick={handlePrint(bcl)}>
                               <PrintIcon />
                             </IconButton> */}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                            </TableCell>
+                          </TableRow>
+                        ))}
                       <TableRow>
                         <TableCell></TableCell>
                       </TableRow>
