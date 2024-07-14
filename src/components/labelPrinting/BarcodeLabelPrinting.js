@@ -102,7 +102,7 @@ export default function BarcodeLabelPrinting() {
   const sistTheme = muiThemes.getSistemaTheme();
 
   useEffect(() => {
-    console.log("useffect every jobscelldb.js");
+    console.log(`"useffect every jobscelldb.js" showcomnpleted:${showComplete}`);
   });
 
   useEffect(() => {
@@ -121,7 +121,7 @@ export default function BarcodeLabelPrinting() {
     msg = msg.map((item) => {
       return {
         ...item,
-        showComplete:
+        renderComplete:
           showComplete === true
             ? true
             : item.PrintQty - item.PrintedQty > 0
@@ -129,6 +129,8 @@ export default function BarcodeLabelPrinting() {
             : false,
       };
     });
+    console.log(`'mapsshowcomplete showcomplete: ${showComplete}`)
+    console.log(msg)
     setDatasets((prevState) => {
       return { ...prevState, bacodelabelprinting: msg };
     });
@@ -148,7 +150,7 @@ export default function BarcodeLabelPrinting() {
     client.on("message", function (topic, message) {
       // if (topic == routingKey) {
       const msg = JSON.parse(message.toString()).value;
-      console.log("msg from " + topic);
+      // console.log("msg from " + topic);
       switch (true) {
         case topic.includes("bacodelabelprinting"):
           mapShowComplete(msg);
@@ -258,7 +260,7 @@ export default function BarcodeLabelPrinting() {
 
   const handleChangeShowCompleted = (event) => {
     setShowComplete(event.target.checked);
-    console.log();
+    console.log(`'changed show complete to ' ${event.target.checked}`);
   };
 
   const handlePrintSubmit = () => {
@@ -374,7 +376,7 @@ export default function BarcodeLabelPrinting() {
                   <FormControlLabel
                     control={
                       <SistSwitch
-                        // checked={displayOnlyClockedIn}
+                        checked={showComplete}
                         onChange={handleChangeShowCompleted}
                         inputProps={{ "aria-label": "controlled" }}
                       />
@@ -401,8 +403,9 @@ export default function BarcodeLabelPrinting() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {datasets.bacodelabelprinting
-                        .filter((bcl) => bcl.showComplete === true)
+                   
+                     {datasets.bacodelabelprinting
+                        .filter((bcl) => bcl.renderComplete === true)
                         .map((bcl, key) => (
                           <TableRow>
                             <TableCell>
