@@ -91,10 +91,7 @@ export default function BarcodeLabelPrinting() {
     "systemdata/dashboards/epicor/bacodelabelprinting",
     "systemdata/dashboards/epicor/resources",
     "systemdata/dashboards/epicor/employeeslist",
-    // "systemdata/dashboards/epicor/activelabour",
-    // "systemdata/dashboards/epicor/labourdtl",
-    // "systemdata/dashboards/epicor/jobs",
-    // "systemdata/dashboards/epicor/binstockcheck",
+    
   ];
   //now add bse topic as prefx
   topics = topics.map((m) => baseTopic + m);
@@ -129,12 +126,57 @@ export default function BarcodeLabelPrinting() {
             : false,
       };
     });
+  
+    msg.sort( compare );
+    
     console.log(`'mapsshowcomplete showcomplete: ${showComplete}`)
     console.log(msg)
     setDatasets((prevState) => {
       return { ...prevState, bacodelabelprinting: msg };
     });
   };
+/***{
+    "JobNum": "0323911",
+    "ResourceID": "E08",
+    "FG_Part": "1008751",
+    "FG_PartDesc": "820ml Multi Split To Go TRI (6)",
+    "FG_StartDate": "2024-06-20T00:00:00",
+    "BL_StartDate": "2024-06-20T00:00:00",
+    "Parent": 0,
+    "AssemblySeq": 1,
+    "OprSeq": 10,
+    "LabelPart": "5295083",
+    "GTIN13_c": "9414202215604",
+    "LabelDesc1_c": "Bento To Go",
+    "LabelDesc2_c": "Boite à repas Bento Cube To Go 1.25L",
+    "LabelDesc3_c": "",
+    "PrintQty": 450300,
+    "Scrap": 300,
+    "RequiredQty": 450000,
+    "LabelMaterial": "5202489",
+    "LabelMaterialDesc": "LBL 60 x 40mm Blank PP FIR Barcode",
+    "Printer": "",
+    "Print": false,
+    "PrintedQty": 449825,
+    "RowMod": null,
+    "RowIdent": "2dcef819-c31f-4917-ab02-eb998e7d1fcf",
+    "SysRowID": "2dcef819-c31f-4917-ab02-eb998e7d1fcf",
+    "renderComplete": true
+}
+     */
+
+  function compare( a, b ) {
+    const d1 = new Date(a.BL_StartDate)
+    const d2 = new Date(b.BL_StartDate)
+    if ( a < b ){
+      return -1;
+    }
+    if ( a.last_nom > b.last_nom ){
+      return 1;
+    }
+    return 0;
+  }
+  
 
   useEffect(() => {
     if (!client) return;
@@ -394,6 +436,7 @@ export default function BarcodeLabelPrinting() {
                         <TableCell>Label Stock Description</TableCell>
                         <TableCell>Required Label Qty</TableCell>
                         <TableCell>Remaining Label Qty</TableCell>
+                        <TableCell>Scrap Allowamnce</TableCell>
                         <TableCell>EAN</TableCell>
                         <TableCell>FG Part Number</TableCell>
                         <TableCell>FG Part Description</TableCell>
@@ -418,6 +461,7 @@ export default function BarcodeLabelPrinting() {
                             <TableCell>
                               {bcl.PrintQty - bcl.PrintedQty}
                             </TableCell>
+                            <TableCell>{bcl.Scrap}</TableCell>
                             <TableCell>{bcl.GTIN13_c}</TableCell>
                             <TableCell>{bcl.FG_Part}</TableCell>
                             <TableCell>{bcl.FG_PartDesc}</TableCell>
