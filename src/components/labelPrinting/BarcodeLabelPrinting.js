@@ -70,8 +70,11 @@ export default function BarcodeLabelPrinting() {
   const [error, setError] = useState(false);
   const [isProcessing, setIsProcessing] = useState(true);
 
-  const [showComplete, setShowComplete] = useState(false);
 
+  //we use showconplete to fire re-render but need shoCompleteRef as showcomplete 
+  //initially renders as false on topic update and the display changes
+  const [showComplete, setShowComplete] = useState(false);
+  const showCompleteRef = useRef(false);
   const [printJob, setPrintJob] = useState(null);
 
   const [canPrint, setCanPrint] = useState(false);
@@ -91,16 +94,20 @@ export default function BarcodeLabelPrinting() {
     "systemdata/dashboards/epicor/bacodelabelprinting",
     "systemdata/dashboards/epicor/resources",
     "systemdata/dashboards/epicor/employeeslist",
-    
   ];
   //now add bse topic as prefx
   topics = topics.map((m) => baseTopic + m);
 
   const sistTheme = muiThemes.getSistemaTheme();
+  
+// if (showComplete !== showCompleteRef.current) setShowComplete(showCompleteRef.current)
 
-  useEffect(() => {
-    console.log(`"useffect every jobscelldb.js" showcomnpleted:${showComplete}`);
-  });
+
+  // useEffect(() => {
+  //   console.log(
+  //     `"useffect every jobscelldb.js" showcomnpleted:${showComplete}`
+  //   );
+  // });
 
   useEffect(() => {
     setClient(
@@ -118,72 +125,39 @@ export default function BarcodeLabelPrinting() {
     msg = msg.map((item) => {
       return {
         ...item,
-        renderComplete:
-          showComplete === true
-            ? true
-            : item.PrintQty - item.PrintedQty > 0
-            ? true
-            : false,
+        BL_StartDate: new Date(
+          new Date(item.BL_StartDate).setHours(
+            item.FG_StartHour.split(".")[0],
+            parseFloat(item.FG_StartHour.split(".")[1]) * 0.6
+          )
+        ),
+        renderComplete: showCompleteRef.current
+          ? true
+          : item.RequiredQty - item.PrintedQty > 0
+          ? true
+          : false,
       };
     });
-  
-    msg.sort( compare );
-    
-    console.log(`'mapsshowcomplete showcomplete: ${showComplete}`)
-    console.log(msg)
+   
+    msg.sort(
+      (a, b) =>
+        a.BL_StartDate -
+        b.BL_StartDate /*|| (a.JobNum.localeCompare(b.JobNum))*/
+    );
+
+    // console.log(`'mapsshowcomplete showcomplete: ${showComplete}  showCompleteRef : = ${showCompleteRef.current} `);
+    // console.log(msg);
     setDatasets((prevState) => {
       return { ...prevState, bacodelabelprinting: msg };
     });
   };
-/***{
-    "JobNum": "0323911",
-    "ResourceID": "E08",
-    "FG_Part": "1008751",
-    "FG_PartDesc": "820ml Multi Split To Go TRI (6)",
-    "FG_StartDate": "2024-06-20T00:00:00",
-    "BL_StartDate": "2024-06-20T00:00:00",
-    "Parent": 0,
-    "AssemblySeq": 1,
-    "OprSeq": 10,
-    "LabelPart": "5295083",
-    "GTIN13_c": "9414202215604",
-    "LabelDesc1_c": "Bento To Go",
-    "LabelDesc2_c": "Boite à repas Bento Cube To Go 1.25L",
-    "LabelDesc3_c": "",
-    "PrintQty": 450300,
-    "Scrap": 300,
-    "RequiredQty": 450000,
-    "LabelMaterial": "5202489",
-    "LabelMaterialDesc": "LBL 60 x 40mm Blank PP FIR Barcode",
-    "Printer": "",
-    "Print": false,
-    "PrintedQty": 449825,
-    "RowMod": null,
-    "RowIdent": "2dcef819-c31f-4917-ab02-eb998e7d1fcf",
-    "SysRowID": "2dcef819-c31f-4917-ab02-eb998e7d1fcf",
-    "renderComplete": true
-}
-     */
-
-  function compare( a, b ) {
-    const d1 = new Date(a.BL_StartDate)
-    const d2 = new Date(b.BL_StartDate)
-    if ( a < b ){
-      return -1;
-    }
-    if ( a.last_nom > b.last_nom ){
-      return 1;
-    }
-    return 0;
-  }
-  
 
   useEffect(() => {
     if (!client) return;
 
     client.on("connect", function () {
       setIsConnected(true);
-      console.log(" jobscelldb.js connected");
+      // console.log(" jobscelldb.js connected");
     });
     client.on("end", () => {
       console.log("Connection to MQTT broker ended");
@@ -192,9 +166,10 @@ export default function BarcodeLabelPrinting() {
     client.on("message", function (topic, message) {
       // if (topic == routingKey) {
       const msg = JSON.parse(message.toString()).value;
-      // console.log("msg from " + topic);
+
       switch (true) {
         case topic.includes("bacodelabelprinting"):
+          // console.log(`showcomplete in client.on :  ${showComplete}   showCompleteRef : = ${showCompleteRef.current}`);
           mapShowComplete(msg);
           break;
         case topic.includes("resources"):
@@ -234,19 +209,18 @@ export default function BarcodeLabelPrinting() {
     if (isConnected) {
       for (let i = 0; i < topics.length; i++) {
         client.subscribe(topics[i], function () {
-          console.log("subscribed to ", topics[i]);
+          // console.log("subscribed to ", topics[i]);
         });
       }
     }
   }, [isConnected]);
 
   useEffect(() => {
-    if(  typeof datasets.bacodelabelprinting !== "undefined")
-    mapShowComplete(datasets.bacodelabelprinting);
+    if (typeof datasets.bacodelabelprinting !== "undefined")
+      mapShowComplete(datasets.bacodelabelprinting);
   }, [showComplete]);
 
   useEffect(() => {
-    console.log("");
     if (
       printJob !== null &&
       typeof printJob.printer !== "undefined" &&
@@ -301,8 +275,10 @@ export default function BarcodeLabelPrinting() {
   };
 
   const handleChangeShowCompleted = (event) => {
+   
+    showCompleteRef.current = event.target.checked
     setShowComplete(event.target.checked);
-    console.log(`'changed show complete to ' ${event.target.checked}`);
+    // console.log(`'changed show complete to ' ${event.target.checked}`);
   };
 
   const handlePrintSubmit = () => {
@@ -431,12 +407,13 @@ export default function BarcodeLabelPrinting() {
                     <TableHead>
                       <TableRow>
                         <TableCell>Job Number</TableCell>
+                        <TableCell>Label Job Date</TableCell>
                         <TableCell>Label ASM PN</TableCell>
                         <TableCell>Label Stock Part Number</TableCell>
                         <TableCell>Label Stock Description</TableCell>
                         <TableCell>Required Label Qty</TableCell>
                         <TableCell>Remaining Label Qty</TableCell>
-                        <TableCell>Scrap Allowamnce</TableCell>
+                        <TableCell>Scrap Allowance</TableCell>
                         <TableCell>EAN</TableCell>
                         <TableCell>FG Part Number</TableCell>
                         <TableCell>FG Part Description</TableCell>
@@ -446,20 +423,22 @@ export default function BarcodeLabelPrinting() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                   
-                     {datasets.bacodelabelprinting
+                      {datasets.bacodelabelprinting
                         .filter((bcl) => bcl.renderComplete === true)
                         .map((bcl, key) => (
                           <TableRow>
                             <TableCell>
                               {bcl.JobNum + ":" + bcl.AssemblySeq}
                             </TableCell>
+                            <TableCell>
+                              {bcl.BL_StartDate.toLocaleDateString()}
+                            </TableCell>
                             <TableCell>{bcl.LabelPart}</TableCell>
                             <TableCell>{bcl.LabelMaterial}</TableCell>
                             <TableCell>{bcl.LabelMaterialDesc}</TableCell>
-                            <TableCell>{bcl.PrintQty}</TableCell>
+                            <TableCell>{bcl.RequiredQty}</TableCell>
                             <TableCell>
-                              {bcl.PrintQty - bcl.PrintedQty}
+                              {bcl.RequiredQty - bcl.PrintedQty}
                             </TableCell>
                             <TableCell>{bcl.Scrap}</TableCell>
                             <TableCell>{bcl.GTIN13_c}</TableCell>
