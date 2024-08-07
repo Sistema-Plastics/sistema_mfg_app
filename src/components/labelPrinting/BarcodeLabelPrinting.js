@@ -436,9 +436,9 @@ export default function BarcodeLabelPrinting() {
                             <TableCell>{bcl.LabelPart}</TableCell>
                             <TableCell>{bcl.LabelMaterial}</TableCell>
                             <TableCell>{bcl.LabelMaterialDesc}</TableCell>
-                            <TableCell>{bcl.RequiredQty}</TableCell>
+                            <TableCell>{bcl.RequiredQty.toLocaleString()}</TableCell>
                             <TableCell>
-                              {bcl.RequiredQty - bcl.PrintedQty}
+                              {(bcl.RequiredQty - bcl.PrintedQty).toLocaleString()}
                             </TableCell>
                             <TableCell>{bcl.Scrap}</TableCell>
                             <TableCell>{bcl.GTIN13_c}</TableCell>
@@ -571,7 +571,7 @@ export default function BarcodeLabelPrinting() {
                             onChange={handleUpdatePrinter}
                           >
                             {datasets.resources
-                              .filter((r) => r.ResourceGrpID === "BCPRT")
+                              .filter((r) => r.ResourceGrpID === "BCLPRT")
                               .map((r) => {
                                 return (
                                   <MenuItem value={r.ResourceID}>
