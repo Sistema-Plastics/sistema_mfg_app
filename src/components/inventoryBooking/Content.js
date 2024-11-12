@@ -8,142 +8,208 @@ import useTheme from "@mui/material/styles/useTheme";
 import { mfgDashboardFunctions } from "../../helpers/HelperScripts";
 
 export default function Content({ machineID, ibdData }) {
-  // const params = new URLSearchParams(document.location.search);
-  // const machineID = params.get("mcID"); //.toLowerCase();
-  const [datasets, setDataSets] = useState(ibdData);
+    // const params = new URLSearchParams(document.location.search);
+    // const machineID = params.get("mcID"); //.toLowerCase();
+    const [datasets, setDataSets] = useState(ibdData);
 
-  const jobDetails = useRef();
-  useEffect(() => {
-     setDataSets(ibdData);
-    getCurrentJobData();
-  }, []);
+    //List of Resource Group Departments
+    const resGrpDept = ["MACH", "PK Table"];
+    const jobDetails = useRef();
+    useEffect(() => {
+        setDataSets(ibdData);
+        getCurrentJobData();
+    }, []);
 
-  useEffect(() => {
-     setDataSets(ibdData);
-    getCurrentJobData();
-  }, [ibdData]);
+    useEffect(() => {
+        setDataSets(ibdData);
+        getCurrentJobData();
+    }, [ibdData]);
 
-  const sistTheme = useTheme();
+    const sistTheme = useTheme();
+    let msgJobNotFound = `No job currently scheduled on ${machineID.toUpperCase()}`;
 
-  const getCurrentJobData = () => {
-    let retval = null;
-    try {
-      //get rtData for machine
-      const tmpRT = ibdData.realtime.value.filter(
-        (dept) => dept.MachID.toLowerCase() === machineID.toLowerCase()
-      )[0];
+    const getCurrentJobData = () => {
+        let retval = null;
+        let jn = null;
+        let asm = null;
+        let dept = null;
+        let deptDesc = null;
+        let mc = null;
+        let cell = null;
+        let timeToGo = null;
+        let currentQTY = null;
+        let remqty = null;
+        let requiredQTY = null;
 
-      const mc = ibdData.machinedata.value.filter(
-        (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
-      )[0];
+        try {
+            //get rtData for machine
+            const tmpRT = ibdData.realtime.value.filter(
+                (dept) => dept.MachID.toLowerCase() === machineID.toLowerCase()
+            )[0];
 
-      //now get the Epciro job number from the RTDAta
-      const jn = tmpRT.JobID.trim().substring(0, tmpRT.JobID.trim().length - 6);
-      //get the asm ref from mattec job string
-      const asm = tmpRT.JobID.trim().replace(jn, "").substring(2, 3);
+            if (tmpRT === undefined) {
+                const ld = ibdData.labourdtl.value.filter(
+                    (ld) =>
+                        ld.ResourceID.toLowerCase() === machineID.toLowerCase()
+                )[0];
+                //console.log("Machine is not in Mattec. tmpRT is undefined");
+                if (ld !== null && ld !== undefined) {
+                    jn = ld.JobNum;
+                    asm = ld.AssemblySeq;
+                } else if (ld == null) {
+                    msgJobNotFound +=
+                        "\nPlease start job in Epicor MES if a scheduled job is not displaying";
+                }
+            } else {
+                //const mc = ibdData.machinedata.value.filter(
+                mc = ibdData.machinedata.value.filter(
+                    (mc) => mc.MachID.toLowerCase() === machineID.toLowerCase()
+                )[0];
 
-      const tmpJob = datasets.jobs.value.filter(
-        (jb) =>
-          jb.JobNum === jn &&
-          jb.AssemblySeq.toString() === asm &&
-          jb.JCDept === "MACH"
-      )[0];
+                //now get the Epicor job number from the RTDAta
+                jn = tmpRT.JobID.trim().substring(
+                    0,
+                    tmpRT.JobID.trim().length - 6
+                );
+                //get the asm ref from mattec job string
+                asm = tmpRT.JobID.trim().replace(jn, "").substring(2, 3);
+                deptDesc = tmpRT.DeptDesc;
+                cell = mfgDashboardFunctions.getCellfromRealtime(deptDesc);
+                timeToGo = mc.TimeToGo;
+                requiredQTY = parseInt(mc.RequiredQTY) || 0;
+                currentQTY = parseInt(mc.CurrentQTY) || 0;
+                remqty = requiredQTY - currentQTY;
+            }
+            if (jn != null) {
+                const tmpJob = datasets.jobsopenops.value.filter(
+                    (jb) =>
+                        jb.JobNum === jn &&
+                        jb.AssemblySeq === asm &&
+                        jb.ResourceID.toLowerCase() ===
+                            machineID.toLowerCase() &&
+                        resGrpDept.includes(jb.JCDept)
+                )[0];
+                if (deptDesc == null) {
+                    deptDesc = tmpJob.JCDept_Description;
+                }
+                if (cell == null) {
+                    cell = tmpJob.Cell_c;
+                }
+                if (timeToGo == null) {
+                    timeToGo = tmpJob.TimeLeft;
+                }
+                if (requiredQTY == null || isNaN(requiredQTY)) {
+                    requiredQTY = parseInt(tmpJob.RequiredQty);
+                }
+                if (currentQTY == null || isNaN(currentQTY)) {
+                    currentQTY = parseInt(tmpJob.QtyCompleted);
+                }
+                if (remqty == null || isNaN(remqty)) {
+                    remqty = parseInt(tmpJob.WIPQty);
+                }
+                const jd = {
+                    jn: tmpJob.JobNum,
+                    asm: tmpJob.AssemblySeq,
+                    opr: tmpJob.OprSeq,
+                    rev: tmpJob.RevisionNum,
+                    mc: machineID,
+                    cell: cell,
+                    cq: tmpJob.QtyPerCarton_c,
+                    pq: tmpJob.QtyPerPallet_c,
+                    pn: tmpJob.PartNum,
+                    pd: tmpJob.PartDescription,
+                    ium: tmpJob.IUM,
+                    timetogo: timeToGo,
+                    reqdqty: requiredQTY,
+                    goodqty: currentQTY,
+                    remqty: remqty,
+                };
 
-      const jd = {
-        jn: tmpJob.JobNum,
-        asm: tmpJob.AssemblySeq,
-        rev: tmpJob.RevisionNum,
-        mc: machineID,
-        cell: mfgDashboardFunctions.getCellfromRealtime(tmpRT.DeptDesc),
-        cq: tmpJob.QtyPerCarton_c,
-        pq: tmpJob.QtyPerPallet_c,
-        pn: tmpJob.PartNum,
-        pd: tmpJob.PartDescription,
-        ium: tmpJob.IUM,
-        timetogo : mc.TimeToGo,
-        reqdqty: parseInt(mc.RequiredQTY),
-        goodqty: parseInt(mc.CurrentQTY),
-        remqty: parseInt(mc.RequiredQTY) - parseInt(mc.CurrentQTY),
-      };
+                setDataSets((prevState) => {
+                    return { ...prevState, currentJob: jd };
+                });
+            }
+        } catch (ex) {
+            console.log(ex);
 
-      setDataSets((prevState) => {
-        return { ...prevState, currentJob: jd };
-      });
-    } catch (ex) {
-      console.log(ex);
+            setDataSets((prevState) => {
+                return { ...prevState, currentJob: null };
+            });
+        }
+    };
 
-      setDataSets((prevState) => {
-        return { ...prevState, currentJob: null };
-      });
-    }
-  };
+    const handleJobDetailsReceipt = (jd) => {
+        // return {mcID:jobDetails.current.mcID ,cellRef:jobDetails.current.cell}
+        jobDetails.current = jd;
+    };
+    const handleJobDetailsDelivery = () => {
+        return jobDetails.current;
+    };
 
-  const handleJobDetailsReceipt = (jd) => {
-    // return {mcID:jobDetails.current.mcID ,cellRef:jobDetails.current.cell}
-    jobDetails.current = jd;
-  };
-  const handleJobDetailsDelivery = () => {
-    return jobDetails.current;
-  };
+    return (
+        <React.Fragment>
+            {console.log("Render Content.js")}
+            {/* https://mui.com/material-ui/react-grid/ */}
+            <Grid container spacing={1} marginTop={0}>
+                <Grid item xl={12} xs={12} padding={0}>
+                    <Paper elevation={10}>
+                        <Typography
+                            variant="h3"
+                            gutterBottom
+                            padding={sistTheme.spacing(1)}
+                        >
+                            Inventory Booking
+                        </Typography>
+                    </Paper>
+                </Grid>
 
-  return (
-    <React.Fragment>
-      {console.log("Render Content.js")}
-      {/* https://mui.com/material-ui/react-grid/ */}
-      <Grid container spacing={1} marginTop={0}>
-        <Grid item xl={12} xs={12} padding={0}>
-          <Paper elevation={10}>
-            <Typography
-              variant="h3"
-              gutterBottom
-              padding={sistTheme.spacing(1)}
-            >
-              Inventory Booking
-            </Typography>
-          </Paper>
-        </Grid>
-
-        {datasets.currentJob !== null &&
-        typeof datasets.currentJob !== "undefined" ? (
-          <>
-            <Grid item xs={5} padding={0}>
-              <Paper elevation={10}>
-                <JobDetails
-                  mcID={machineID}
-                  datasets={datasets}
-                  feedback={handleJobDetailsReceipt}
-                />
-              </Paper>
+                {datasets.currentJob !== null &&
+                typeof datasets.currentJob !== "undefined" ? (
+                    <>
+                        <Grid item xs={5} padding={0}>
+                            <Paper elevation={10}>
+                                <JobDetails
+                                    mcID={machineID}
+                                    datasets={datasets}
+                                    feedback={handleJobDetailsReceipt}
+                                />
+                            </Paper>
+                        </Grid>
+                        <Grid item xs={5} padding={0}>
+                            <Paper elevation={10}>
+                                <JobStatus
+                                    machineID={machineID}
+                                    datasets={datasets}
+                                />
+                                <LastPallet
+                                    machineID={machineID}
+                                    datasets={datasets}
+                                />
+                            </Paper>
+                        </Grid>
+                        <Grid item xs={2} padding={0}>
+                            <Paper elevation={10}>
+                                <Actions
+                                    datasets={datasets}
+                                    // fetchJobDetails={handleJobDetailsDelivery}
+                                />
+                            </Paper>
+                        </Grid>
+                    </>
+                ) : (
+                    <div>
+                        <Typography
+                            variant="h5"
+                            gutterBottom
+                            padding={sistTheme.spacing(1)}
+                        >
+                            {msgJobNotFound}
+                        </Typography>
+                    </div>
+                )}
             </Grid>
-            <Grid item xs={5} padding={0}>
-              <Paper elevation={10}>
-               <JobStatus machineID={machineID} datasets={datasets} />
-                 <LastPallet machineID={machineID} datasets={datasets} />
-              </Paper>
-            </Grid>
-            <Grid item xs={2} padding={0}>
-              <Paper elevation={10}>
-                <Actions
-                  datasets={datasets}
-                  // fetchJobDetails={handleJobDetailsDelivery}
-                />
-              </Paper>
-            </Grid>
-          </>
-        ) : (
-          <div>
-            <Typography
-              variant="h5"
-              gutterBottom
-              padding={sistTheme.spacing(1)}
-            >
-              No Job data to show for {machineID}
-            </Typography>
-          </div>
-        )}
-      </Grid>
-    </React.Fragment>
-  );
+        </React.Fragment>
+    );
 }
 //#region mcData
 /*

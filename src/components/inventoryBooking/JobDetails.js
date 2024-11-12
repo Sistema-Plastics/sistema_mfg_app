@@ -53,104 +53,124 @@ const JobDetails = ({ mcID, datasets, feedback }) => {
   //   } catch (ex) {}
   // }, []);
 
-  return datasets.currentJob === null ?(
-    <React.Fragment>
-      <Container>
-        <h1> No Job Data found</h1>
-      </Container>
-    </React.Fragment>
+  return datasets.currentJob === null ? (
+      <React.Fragment>
+          <Container>
+              <h1> No Job Data found</h1>
+          </Container>
+      </React.Fragment>
   ) : (
-    <React.Fragment>
-      <Grid container>
-        <Grid
-          item
-          xs={12}
-          sx={{
-            paddingLeft: 2,
-            paddingTop: 1,
-            paddingBottom: 1,
-            marginBottom: 1,
-            backgroundColor: tableTheme.palette.sistema.klipit.light,
-          }}
-        >
-          <TableRowTypography
-            variant="h2"
-            paddingRight={16}
-            alignSelf={"center"}
-            color={tableTheme.palette.sistema.klipit.contrastText}
-          >
-            Job Details
-          </TableRowTypography>
-        </Grid>
-        <Grid item xs={4}>
-          <TableRowTypography variant="h4">Machine</TableRowTypography>
-        </Grid>
-        <Grid item xs={8}>
-          <TableRowTypography variant="h3">{datasets.currentJob.mc.toUpperCase()}</TableRowTypography>
-        </Grid>
-        <Grid item xs={4}>
-          <TableRowTypography variant="h4">Job</TableRowTypography>
-        </Grid>
-        <Grid item xs={8}>
-          {
-            <TableRowTypography variant="h3">
-              {datasets.currentJob.jn} ASM: {datasets.currentJob.asm} Rev :{" "}
-              {datasets.currentJob.rev}{" "}
-            </TableRowTypography>
-          }
-        </Grid>
-        <Grid item xs={4}>
-          <TableRowTypography variant="h4">Part Number</TableRowTypography>
-        </Grid>
-        <Grid item xs={8}>
-          {
-            <TableRowTypography variant="h3">
-              {datasets.currentJob.pn}
-            </TableRowTypography>
-          }
-        </Grid>
-        <Grid item xs={4}>
-          <TableRowTypography variant="h4">Part Desc</TableRowTypography>
-        </Grid>
-        <Grid item xs={8}>
-          {
-            <TableRowTypography variant="h3">
-              {datasets.currentJob.pd}
-            </TableRowTypography>
-          }
-        </Grid>
-        <Grid item xs={4}>
-          <TableRowTypography variant="h4">Inventory UOM</TableRowTypography>
-        </Grid>
-        <Grid item xs={8}>
-          {<TableRowTypography variant="h3"> {datasets.currentJob.ium}</TableRowTypography>}
-        </Grid>
-        <Grid item xs={4}>
-          <TableRowTypography variant="h4">Qty Per Carton</TableRowTypography>
-        </Grid>
-        <Grid item xs={8}>
-          {
-            <TableRowTypography variant="h3">
-              {datasets.currentJob.cq} ea
-            </TableRowTypography>
-          }
-        </Grid>
-        <Grid item xs={4}>
-          <TableRowTypography variant="h4">Qty Per Pallet</TableRowTypography>
-        </Grid>
-        <Grid item xs={8}>
-          {
-            <TableRowTypography variant="h3">
-              {datasets.currentJob.ium && datasets.currentJob.ium.toLowerCase() === "ct"
-                ? parseFloat(datasets.currentJob.pq) /
-                    parseFloat(datasets.currentJob.cq) +
-                  " ctns"
-                : datasets.currentJob.pq + " ea"}
-            </TableRowTypography>
-          }
-        </Grid>
-      </Grid>
-    </React.Fragment>
+      <React.Fragment>
+          <Grid container>
+              <Grid
+                  item
+                  xs={12}
+                  sx={{
+                      paddingLeft: 2,
+                      paddingTop: 1,
+                      paddingBottom: 1,
+                      marginBottom: 1,
+                      backgroundColor: tableTheme.palette.sistema.klipit.light,
+                  }}
+              >
+                  <TableRowTypography
+                      variant="h2"
+                      paddingRight={16}
+                      alignSelf={"center"}
+                      color={tableTheme.palette.sistema.klipit.contrastText}
+                  >
+                      Job Details
+                  </TableRowTypography>
+              </Grid>
+              <Grid item xs={4}>
+                  <TableRowTypography variant="h4">Machine</TableRowTypography>
+              </Grid>
+              <Grid item xs={8}>
+                  <TableRowTypography variant="h3">
+                      {datasets.currentJob.mc.toUpperCase()}
+                  </TableRowTypography>
+              </Grid>
+              <Grid item xs={4}>
+                  <TableRowTypography variant="h4">Job</TableRowTypography>
+              </Grid>
+              <Grid item xs={8}>
+                  {
+                      <TableRowTypography variant="h3">
+                          {datasets.currentJob.jn} ASM:{" "}
+                          {datasets.currentJob.asm} Opr:{" "}
+                          {datasets.currentJob.opr} Rev:{" "}
+                          {datasets.currentJob.rev}{" "}
+                      </TableRowTypography>
+                  }
+              </Grid>
+              <Grid item xs={4}>
+                  <TableRowTypography variant="h4">
+                      Part Number
+                  </TableRowTypography>
+              </Grid>
+              <Grid item xs={8}>
+                  {
+                      <TableRowTypography variant="h3">
+                          {datasets.currentJob.pn}
+                      </TableRowTypography>
+                  }
+              </Grid>
+              <Grid item xs={4}>
+                  <TableRowTypography variant="h4">
+                      Part Desc
+                  </TableRowTypography>
+              </Grid>
+              <Grid item xs={8}>
+                  {
+                      <TableRowTypography variant="h3">
+                          {datasets.currentJob.pd}
+                      </TableRowTypography>
+                  }
+              </Grid>
+              <Grid item xs={4}>
+                  <TableRowTypography variant="h4">
+                      Inventory UOM
+                  </TableRowTypography>
+              </Grid>
+              <Grid item xs={8}>
+                  {
+                      <TableRowTypography variant="h3">
+                          {" "}
+                          {datasets.currentJob.ium}
+                      </TableRowTypography>
+                  }
+              </Grid>
+              <Grid item xs={4}>
+                  <TableRowTypography variant="h4">
+                      Qty Per Carton
+                  </TableRowTypography>
+              </Grid>
+              <Grid item xs={8}>
+                  {
+                      <TableRowTypography variant="h3">
+                          {datasets.currentJob.cq} ea
+                      </TableRowTypography>
+                  }
+              </Grid>
+              <Grid item xs={4}>
+                  <TableRowTypography variant="h4">
+                      Qty Per Pallet
+                  </TableRowTypography>
+              </Grid>
+              <Grid item xs={8}>
+                  {
+                      <TableRowTypography variant="h3">
+                          {datasets.currentJob.ium &&
+                          datasets.currentJob.ium.toLowerCase() === "ct"
+                              ? parseFloat(datasets.currentJob.pq) /
+                                    parseFloat(datasets.currentJob.cq) +
+                                " ctns"
+                              : datasets.currentJob.pq + " ea"}
+                      </TableRowTypography>
+                  }
+              </Grid>
+          </Grid>
+      </React.Fragment>
   );
 };
 export default JobDetails;
