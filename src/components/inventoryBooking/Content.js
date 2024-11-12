@@ -6,7 +6,7 @@ import LastPallet from "./LastPallet";
 import { Grid, Paper, Typography } from "@mui/material";
 import useTheme from "@mui/material/styles/useTheme";
 import { mfgDashboardFunctions } from "../../helpers/HelperScripts";
-
+//
 export default function Content({ machineID, ibdData }) {
     // const params = new URLSearchParams(document.location.search);
     // const machineID = params.get("mcID"); //.toLowerCase();
