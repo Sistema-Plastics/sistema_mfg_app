@@ -7,26 +7,38 @@ import { Grid, Paper, Typography } from "@mui/material";
 import useTheme from "@mui/material/styles/useTheme";
 import { mfgDashboardFunctions } from "../../helpers/HelperScripts";
 
+//TODO Check cell information is attache to Resources. This is because cell is used in the MQTT topic and a blank cell value cannot be read even when using a '+' when subscribing to topics
+
 export default function Content({ machineID, ibdData }) {
     // const params = new URLSearchParams(document.location.search);
     // const machineID = params.get("mcID"); //.toLowerCase();
     const [datasets, setDataSets] = useState(ibdData);
+    const debug = false;
 
     //List of Resource Group Departments
     const resGrpDept = ["MACH", "PK Table"];
     const jobDetails = useRef();
+
+    let msgJobNotFound = `No job currently scheduled on ${machineID.toUpperCase()}.\n\nIf this is a non-Mattec resource, please start activity on Epicor MES.`;
+
     useEffect(() => {
+        if (debug) console.log("First Render");
         setDataSets(ibdData);
         getCurrentJobData();
     }, []);
 
     useEffect(() => {
-        setDataSets(ibdData);
-        getCurrentJobData();
+        const unchangedData =
+            JSON.stringify(datasets) === JSON.stringify(ibdData);
+        if (!unchangedData) {
+            setDataSets(ibdData);
+
+            getCurrentJobData();
+        }
+        if (debug) console.log("Second Render");
     }, [ibdData]);
 
     const sistTheme = useTheme();
-    let msgJobNotFound = `No job currently scheduled on ${machineID.toUpperCase()}`;
 
     const getCurrentJobData = () => {
         let retval = null;
@@ -48,18 +60,21 @@ export default function Content({ machineID, ibdData }) {
             )[0];
 
             if (tmpRT === undefined) {
+                console.log(`Resource ${machineID.toUpperCase()} does not have job details in mattec realtime data. May be a non-Mattec resource.`);
                 const ld = ibdData.labourdtl.value.filter(
                     (ld) =>
                         ld.ResourceID.toLowerCase() === machineID.toLowerCase()
                 )[0];
-                //console.log("Machine is not in Mattec. tmpRT is undefined");
+                //console.log("Machine is not setup in Mattec. Checking LabourDtl records.");
                 if (ld !== null && ld !== undefined) {
                     jn = ld.JobNum;
                     asm = ld.AssemblySeq;
-                } else if (ld == null) {
+                    console.log("Labour Detail Current Job: " + jn);
+                } else {
                     msgJobNotFound +=
                         "\nPlease start job in Epicor MES if a scheduled job is not displaying";
-                }
+                console.log( msgJobNotFound);
+                    }
             } else {
                 //const mc = ibdData.machinedata.value.filter(
                 mc = ibdData.machinedata.value.filter(
@@ -84,50 +99,53 @@ export default function Content({ machineID, ibdData }) {
                 const tmpJob = datasets.jobsopenops.value.filter(
                     (jb) =>
                         jb.JobNum === jn &&
-                        jb.AssemblySeq === asm &&
+                        jb.AssemblySeq.toString() === asm.toString() &&
                         jb.ResourceID.toLowerCase() ===
                             machineID.toLowerCase() &&
                         resGrpDept.includes(jb.JCDept)
                 )[0];
-                if (deptDesc == null) {
-                    deptDesc = tmpJob.JCDept_Description;
-                }
-                if (cell == null) {
-                    cell = tmpJob.Cell_c;
-                }
-                if (timeToGo == null) {
-                    timeToGo = tmpJob.TimeLeft;
-                }
-                if (requiredQTY == null || isNaN(requiredQTY)) {
-                    requiredQTY = parseInt(tmpJob.RequiredQty);
-                }
-                if (currentQTY == null || isNaN(currentQTY)) {
-                    currentQTY = parseInt(tmpJob.QtyCompleted);
-                }
-                if (remqty == null || isNaN(remqty)) {
-                    remqty = parseInt(tmpJob.WIPQty);
-                }
-                const jd = {
-                    jn: tmpJob.JobNum,
-                    asm: tmpJob.AssemblySeq,
-                    opr: tmpJob.OprSeq,
-                    rev: tmpJob.RevisionNum,
-                    mc: machineID,
-                    cell: cell,
-                    cq: tmpJob.QtyPerCarton_c,
-                    pq: tmpJob.QtyPerPallet_c,
-                    pn: tmpJob.PartNum,
-                    pd: tmpJob.PartDescription,
-                    ium: tmpJob.IUM,
-                    timetogo: timeToGo,
-                    reqdqty: requiredQTY,
-                    goodqty: currentQTY,
-                    remqty: remqty,
-                };
 
-                setDataSets((prevState) => {
-                    return { ...prevState, currentJob: jd };
-                });
+                if (tmpJob != null) {
+                    if (deptDesc == null) {
+                        deptDesc = tmpJob.JCDept_Description;
+                    }
+                    if (cell == null) {
+                        cell = tmpJob.Cell_c;
+                    }
+                    if (timeToGo == null) {
+                        timeToGo = tmpJob.TimeLeft < 0 ? 0 : tmpJob.TimeLeft;
+                    }
+                    if (requiredQTY == null || isNaN(requiredQTY)) {
+                        requiredQTY = parseInt(tmpJob.RequiredQty) || 0;
+                    }
+                    if (currentQTY == null || isNaN(currentQTY)) {
+                        currentQTY = parseInt(tmpJob.QtyCompleted) || 0;
+                    }
+                    if (remqty == null || isNaN(remqty)) {
+                        remqty = parseInt(tmpJob.WIPQty) || 0;
+                    }
+                    const jd = {
+                        jn: tmpJob.JobNum,
+                        asm: tmpJob.AssemblySeq,
+                        opr: tmpJob.OprSeq,
+                        rev: tmpJob.RevisionNum,
+                        mc: machineID,
+                        cell: cell,
+                        cq: tmpJob.QtyPerCarton_c,
+                        pq: tmpJob.QtyPerPallet_c,
+                        pn: tmpJob.PartNum,
+                        pd: tmpJob.PartDescription,
+                        ium: tmpJob.IUM,
+                        timetogo: timeToGo,
+                        reqdqty: requiredQTY,
+                        goodqty: currentQTY,
+                        remqty: remqty,
+                    };
+
+                    setDataSets((prevState) => {
+                        return { ...prevState, currentJob: jd };
+                    });
+                }
             }
         } catch (ex) {
             console.log(ex);
@@ -203,7 +221,12 @@ export default function Content({ machineID, ibdData }) {
                             gutterBottom
                             padding={sistTheme.spacing(1)}
                         >
-                            {msgJobNotFound}
+                            {msgJobNotFound.split("\n").map((line, index) => (
+                                <React.Fragment key={index}>
+                                    {line}
+                                    <br />
+                                </React.Fragment>
+                            ))}
                         </Typography>
                     </div>
                 )}

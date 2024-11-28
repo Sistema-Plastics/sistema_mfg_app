@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, { useState,  useEffect} from "react";
 import { SistemaContext } from "../../assets/components/SistemaHeader";
 import { Container } from "@mui/material";
 import Content from "./Content";
@@ -22,6 +22,7 @@ const InventoryBooking = () => {
         jobsopenops: null,
         machinedata: null,
         palletdata: null,
+        palletdataconf: null,
         labourdtl: null,
     });
 
@@ -31,6 +32,7 @@ const InventoryBooking = () => {
     const baseTopic = connections.getBaseMQTTTopicFromPort();
 
     const pltTopic = `+/${machineID.toLowerCase()}/inventorymove/receivemfgparttoinventory`;
+    const pltTopicConf = `+/${machineID.toLowerCase()}/inventorymove/receivemfgparttoinventory/confirmation`;
     // const pltTopic = '+/f04/inventorymove/receivemfgparttoinventory'
     //setup topics
     let topics = [
@@ -40,6 +42,7 @@ const InventoryBooking = () => {
         "systemdata/dashboards/mattec/machinedata",
         "systemdata/dashboards/epicor/labourdtl",
         pltTopic,
+        pltTopicConf,
     ];
 
     //now add bse topic as prefx
@@ -104,6 +107,11 @@ const InventoryBooking = () => {
                         return { ...prevState, machinedata: msg };
                     });
                     break;
+                case topic.includes(`confirmation`):
+                    setDatasets((prevState) => {
+                        return { ...prevState, palletdataconf: msg };
+                    });
+                    break;
                 case topic.includes("receivemfgparttoinventory"):
                     //tmpDatasets.current.palletdata = msg;
                     setDatasets((prevState) => {
@@ -133,7 +141,7 @@ const InventoryBooking = () => {
         if (isConnected) {
             for (var i = 0; i < topics.length; i++) {
                 client.subscribe(topics[i], function () {
-                    console.log("subscribed to ", topics[i]);
+                    //console.log("subscribed to ", topics[i]);
                 });
             }
         }
@@ -145,9 +153,9 @@ const InventoryBooking = () => {
         </React.Fragment>
     ) : (
         <React.Fragment>
-            <Container>
+            <Container> 
                 <h1> MQTT is {isConnected ? "connected" : "not connected"}</h1>
-                <h2> {isConnected ? "Fetchng Datasets" : " "}</h2>
+                <h2> {isConnected ? "Fetching Datasets" : " "}</h2>
             </Container>
         </React.Fragment>
     );
