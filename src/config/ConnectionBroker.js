@@ -72,20 +72,20 @@ export const connections = {
       case 8080:
       case 5001:
       case 443:
-        {
-          console.log(
-            "Port " + webPort + " so live server Topic base is food/st04"
-          );
-        }
+        // {
+        //   console.log(
+        //     "Port " + webPort + " so live server Topic base is food/st04"
+        //   );
+        // }
         baseTopic = "food/st04/";
         break;
 
       default:
-        {
-          console.log(
-            "Port " + webPort + " so logging to test Topic Base test/food/st04"
-          );
-        }
+        // {
+        //   console.log(
+        //     "Port " + webPort + " so logging to test Topic Base test/food/st04"
+        //   );
+        // }
         baseTopic = "test/food/st04/";
         break;
     }
