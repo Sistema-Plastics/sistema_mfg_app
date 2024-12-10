@@ -111,19 +111,21 @@ const JobStatus = ({ machineID, datasets }) => {
     function dispRegQty() {
         let ium = datasets.currentJob.ium.toLowerCase();
 
-        if (datasets.currentJob.pn.startsWith("3")) {
-            ium = "tote";
-        }
+        // if (datasets.currentJob.pn.startsWith("3")) {
+        //     ium = "tote";
+        // }
 
+        // let vStr =
+        //     datasets.currentJob.reqdqty +
+        //     " ea / " +
+        //     datasets.currentJob.reqdqty / datasets.currentJob.cq +
+        //     " " +
+        //     ium +
+        //     " / " +
+        //     datasets.currentJob.reqdqty / datasets.currentJob.pq +
+        //     " plts";
         let vStr =
-            datasets.currentJob.reqdqty +
-            " ea / " +
-            datasets.currentJob.reqdqty / datasets.currentJob.cq +
-            " " +
-            ium +
-            " / " +
-            datasets.currentJob.reqdqty / datasets.currentJob.pq +
-            " plts";
+			datasets.currentJob.reqdqty + " " +  datasets.currentJob.ium.toUpperCase();
         return vStr;
     }
     return (
