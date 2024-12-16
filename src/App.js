@@ -59,6 +59,7 @@ import ThemesCheck from "./assets/components/ThemesCheck";
 import ShiftSchedule from "./components/shiftSchedule/ShiftSchedule";
 import InventoryBooking from "./components/inventoryBooking/InventoryBooking";
 import BarcodeLabelPrinting from "./components/labelPrinting/BarcodeLabelPrinting";
+import PickingSchedule from "./components/pickingSchedule/PickingSchedule";
 // import InventoryMovements from "./components/inventoryDashboards/inventoryMovements/InventoryMovements";
 
 // --- Purchase Orders
@@ -185,6 +186,10 @@ function App() {
                     <Route
                       path="/Assembly/EmployeeCellPlanDnd"
                       element={<EmployeeCellPlanDnd />}
+                    />
+                      <Route
+                      path="/PickSched" 
+                      element={<PickingSchedule />}
                     />
                   </Routes>
                 </SistemaHeader>

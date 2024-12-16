@@ -220,11 +220,10 @@ export default function Index() {
               </GridItem>
               <GridItem>
                 <LinkTypography variant='h6'>
-                  <BlankLink
-                    href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/Pickingandstaging.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                
+                     <BlankLink to="/PickSched">
+                    
+                
                     Picking Schedule
                   </BlankLink>
                 </LinkTypography>
