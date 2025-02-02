@@ -67,6 +67,7 @@ import POApproval from "./components/purchaseOrders/POApproval";
 
 // --- Assembly
 import JobsCellDB from "./components/assembly/assyPages/JobsCellDB";
+import PremixSchedule from "./components/premixSchedule/PremixSchedule";
 import EmployeeCellPlanDnd from "./components/assembly/assyPages/EmployeeCellPlanDnd";
 
 // import EmployeeCellCurrentDB from "./components/assembly/assyPages/EmployeeCellCurrentDB";
@@ -185,6 +186,10 @@ function App() {
                     <Route
                       path="/Assembly/EmployeeCellPlanDnd"
                       element={<EmployeeCellPlanDnd />}
+                    />
+                     <Route
+                      path="/PremixSched"
+                      element={<PremixSchedule />}
                     />
                   </Routes>
                 </SistemaHeader>

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CurrentDate from "./Date";
 import { useTheme } from "@mui/material/styles";
+import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 
 import {
   AppBar,
@@ -73,6 +74,9 @@ export default function SistemaHeader(props) {
     flexGrow: 1,
     margin: 0,
     padding: 0,
+    color: "white",
+    fontWeight: "bold",
+    //fontSize: 20
   };
 
   const menuButton = {
@@ -202,7 +206,8 @@ export default function SistemaHeader(props) {
                 disabled={pageFilters.length === 0}
                 // className={clsx(classes.menuButton, drawerOpen && classes.hide)}
               >
-                <FilterListIcon />
+                {/* </FilterListIcon> */}
+                <FilterAltOutlinedIcon />
               </IconButton>
             </span>
           </Tooltip>
@@ -296,6 +301,7 @@ export default function SistemaHeader(props) {
                       fullWidth
                       margin="normal"
                       value={f.currentValue}
+                      className="vertical-dropdown"
                       onChange={(e) =>
                         setPageFilters(
                           pageFilters.map((pf) =>
@@ -328,8 +334,8 @@ export default function SistemaHeader(props) {
       //   [classes.contentShift]: drawerOpen,
       // })}
       >
-        <Box display="flex" >
-          <Box width="1%"/>
+        <Box display="flex">
+          <Box width="1%" />
           <SistemaContext.Provider
             value={{
               setPageTitle,

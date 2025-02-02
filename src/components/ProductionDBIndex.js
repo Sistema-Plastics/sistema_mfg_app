@@ -242,13 +242,7 @@ export default function Index() {
               </GridItem>
               <GridItem>
                 <LinkTypography variant='h6'>
-                  <BlankLink
-                    href="https://aauc3spwniis001.nr.ad.newellco.com/sistema/PremixSchedule.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Premix Schedule
-                  </BlankLink>
+                <BlankLink to="/PremixSched">Premix Schedule</BlankLink>
                 </LinkTypography>
               </GridItem>
               <GridItem>
