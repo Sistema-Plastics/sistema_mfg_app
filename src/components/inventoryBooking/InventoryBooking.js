@@ -1,20 +1,21 @@
-import React, { useState,  useEffect} from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { SistemaContext } from "../../assets/components/SistemaHeader";
+
 import { Container } from "@mui/material";
 import Content from "./Content";
-
 import { connections } from "../../config/ConnectionBroker";
-
 import mqtt from "mqtt";
 import { mqttFunctions } from "./../../helpers/HelperScripts";
 
 const InventoryBooking = () => {
+    const sistemaContext = useContext(SistemaContext);
     const [isConnected, setIsConnected] = useState(false);
     const [dataComplete, setDataComplete] = useState(false);
 
     const [client, setClient] = useState(null);
     const params = new URLSearchParams(document.location.search);
-    const machineID = params.get("mcID").toUpperCase(); //.toLowerCase();
+    const mc = params.get("mcID");
+    const machineID = mc ? mc.trim().toUpperCase() : "";
 
     const [datasets, setDatasets] = useState({
         employees: null,
@@ -49,6 +50,14 @@ const InventoryBooking = () => {
     topics = topics.map((m) => baseTopic + m);
 
     useEffect(() => {
+
+        let title = "Inventory Booking";
+
+        if (machineID) title += `- ${machineID}`;
+
+        sistemaContext.setPageTitle(title);
+
+
         // https://www.hivemq.com/blog/ultimate-guide-on-how-to-use-mqtt-with-node-js/
 
         setClient(
@@ -153,7 +162,7 @@ const InventoryBooking = () => {
         </React.Fragment>
     ) : (
         <React.Fragment>
-            <Container> 
+            <Container>
                 <h1> MQTT is {isConnected ? "connected" : "not connected"}</h1>
                 <h2> {isConnected ? "Fetching Datasets" : " "}</h2>
             </Container>
