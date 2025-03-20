@@ -10,11 +10,12 @@ import {
     cyan,
 } from "@mui/material/colors";
 import { styled } from "@mui/material/styles";
-import TableCell from "@mui/material/TableCell";
-import Typography from "@mui/material/Typography";
-import { typographyClasses } from "@mui/material/Typography";
-
-import { tableCellClasses } from "@mui/material/TableCell";
+//import TableCell from "@mui/material/TableCell";
+//import { typographyClasses } from "@mui/material/Typography";
+import { RichTreeView, TreeItem, treeItemClasses } from '@mui/x-tree-view';
+import { /*tableCellClasses*/ } from "@mui/material/TableCell";
+//import { Grid, Paper, Typography, Button, Dialog, DialogContent, DialogTitle, DialogActions } from "@mui/material";
+import { Box, Dialog, TableCell, tableCellClasses, Typography, typographyClasses } from "@mui/material";
 
 const sistColours = {
     "klipit-Main": "#0032A0",
@@ -225,13 +226,12 @@ export const muiThemes = {
                     color: sistColours["klipit-Light"],
                 },
             },
-
             components: {
                 MuiCssBaseline: {
                     styleOverrides: `
             h1 {
               color: blue;
-            }, 
+                },
             h3 {
               color: blue;
             }, 
@@ -257,7 +257,6 @@ export const muiThemes = {
                         },
                     },
                 },
-
                 MuiFormControl: {
                     styleOverrides: {
                         root: {
@@ -265,10 +264,8 @@ export const muiThemes = {
                         },
                     },
                 },
-
                 MuiFormControlLabel: {
                     //controls button backgrounds
-
                     styleOverrides: {
                         label: { placeSelf: "top" },
 
@@ -420,8 +417,158 @@ export const muiThemes = {
             },
         });
         return tableTheme;
+
+
     },
 };
+
+const defaultTheme = createTheme();
+export const sistemaTheme = createTheme(defaultTheme, {
+    palette: {
+        text: {
+            primary: sistColours["klipit-Light"],
+            secondary: sistColours["klipit-Main"],
+        },
+    },
+    typography: {
+        fontFamily: [
+            "-apple-system",
+            "BlinkMacSystemFont",
+            '"Segoe UI"',
+            "Roboto",
+            '"Helvetica Neue"',
+            "Arial",
+            "sans-serif",
+            '"Apple Color Emoji"',
+            '"Segoe UI Emoji"',
+            '"Segoe UI Symbol"',
+        ].join(","),
+
+        body: {
+            color: sistColours["klipit-Light"],
+        },
+
+        tableCellHeading: {
+            fontSize: "1rem",
+            fontWeight: 400,
+        },
+        tableCellData: {
+            fontSize: "1rem",
+            fontWeight: 800,
+        },
+        allVariants: {
+            color: sistColours["klipit-Light"],
+        },
+    },
+    //spacing: 8,
+    breakpoints: {},
+    zIndex: {},
+    transitions: {},
+    components: {
+        MuiBox: {
+            styleOverrides: {
+                root: {
+                    Width: "95%",
+                    backgroundColor: sistColours["klipit-Main"],
+                    fontcolor: sistColours["klipit-Text"],
+                },
+            },
+        },
+        MuiDialog: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: sistColours["klipit-Main"],
+                    fontcolor: sistColours["klipit-Text"],
+                },
+            },
+        },
+
+        MuiRichTreeView: {
+
+        },
+
+        MuiDialogTitle: {
+            styleOverrides: {
+                root: {
+                    padding: "16px",
+                    fontWeight: "bold",
+                },
+                //paper: {
+                //    backgroundColor: "yellow", // Light grey background
+                //    borderRadius: "12px", // Rounded corners
+                //    padding: "16px",
+                //},
+            },
+        },
+        MuiTreeItem: {
+            styleOverrides: {
+                root: {
+                    color: sistColours["klipit-Light"],
+                    "&.hover": {
+                        backgroundColor: "#e3f2fd", // Light blue on hover
+                        color: sistColours["klipit-Light"],
+                    },
+                    "&.Mui-selected": {
+                        backgroundColor: sistColours["klipit-Main"], // Blue background when selected
+                        color: sistColours["klipit-Light"],
+                        "&:hover": {
+                            backgroundColor: sistColours["klipit-Light"], // Darker blue on hover
+                        },
+                    },
+                },
+                label: {
+                    fontWeight: "bold",
+                },
+                content: {
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                },
+                iconContainer: {
+                    //borderRadius: '50%',
+                    backgroundColor: sistColours["klipit-Light"],
+                    padding: 1,
+                },
+                groupTransition: {
+                    marginLeft: 15,
+                    paddingLeft: 18,
+                },
+            },
+        },
+    },
+});
+
+//export const sistTreeItem = styled(TreeItem)(({ theme }) => ({
+//    fontsize: "larger",
+//    color: sistColours["klipit-Main"],
+//    [`& .${treeItemClasses.content}`]: {
+//        borderRadius: theme.spacing(0.5),
+//        padding: theme.spacing(0.5, 1),
+//        margin: theme.spacing(0.2, 0),
+//        [`& .${treeItemClasses.label}`]: {
+//            color: sistColours["klipit-Main"],
+//        },
+//    },
+//    [`& .${treeItemClasses.iconContainer}`]: {
+//        borderRadius: '50%',
+//        backgroundColor: 'red',
+//        padding: theme.spacing(0, 1.2),
+//        ...theme.applyStyles('light', {
+//            backgroundColor: (theme.palette.primary.main, 0.25),
+//        }),
+//        ...theme.applyStyles('dark', {
+//            color: theme.palette.primary.contrastText,
+//        }),
+//    },
+//    [`& .${treeItemClasses.groupTransition}`]: {
+//        marginLeft: 15,
+//        paddingLeft: 18,
+//        borderLeft: `1px dashed ${(theme.palette.text.primary, 0.4)}`,
+//    },
+//    ...theme.applyStyles('light', {
+//        color: theme.palette.grey[800],
+//    }),
+//}));
+
 
 export const TableRowTypography = styled(Typography)(({ theme }) => ({
     [`&.${typographyClasses.h1}`]: {
@@ -446,7 +593,7 @@ export const TableRowTypography = styled(Typography)(({ theme }) => ({
         padding: 5,
         marginLeft: 10,
         marginRight: 10,
-        fontSize: "1rem",        
+        fontSize: "1rem",
     },
     [`&.${typographyClasses.h5}`]: {
         padding: 5,

@@ -3,8 +3,13 @@ import JobStatus from "./JobStats";
 import JobDetails from "./JobDetails";
 import Actions from "./Actions";
 import LastPallet from "./LastPallet";
-import { Grid, Paper, Typography, Button, Dialog, DialogContent, DialogTitle, DialogActions } from "@mui/material";
-import useTheme from "@mui/material/styles/useTheme";
+import { ThemeProvider } from "@mui/material/styles";
+import { Box, Grid, Paper, Typography, Button, Dialog, DialogContent, DialogTitle, DialogActions } from "@mui/material";
+import { RichTreeView, TreeViewItems } from '@mui/x-tree-view';
+//import { ChevronRightIcon, ExpandMoreIcon } from '@mui/icons-material';
+//import useTheme from "@mui/material/styles/useTheme";
+//import { sistemaTheme, sistTreeItem } from "../../assets/styling/muiThemes";
+import { sistemaTheme } from "../../assets/styling/muiThemes";
 import { mfgDashboardFunctions } from "../../helpers/HelperScripts";
 
 export default function Content({ machineID, ibdData }) {
@@ -12,15 +17,13 @@ export default function Content({ machineID, ibdData }) {
     const [isMattecMachine, setIsMattecMachine] = useState(false);
     const [hasJobAssigned, sethasJobAssigned] = useState(false);
     const [displayContent, setDisplayContent] = useState(false);
-    const [openReport, setOpenReport] = useState(false);
-    const [reportUrl, setReportUrl] = useState("");
-    const [reportError, setReportError] = useState("");
-
-    let errorMsg = null;
-
+    const [openDialog, setOpenDialog] = useState(false);
     const resGrpDept = ["MACH", "PK Table"];
     const jobDetails = useRef();
     let msgJobNotFound = `No job currently scheduled on ${machineID.toUpperCase()}.\n\nIf this is a non-Mattec resource, please start activity on Epicor MES.`;
+
+
+    const sistTheme = sistemaTheme;
 
     useEffect(() => {
         if (machineID) {
@@ -39,8 +42,6 @@ export default function Content({ machineID, ibdData }) {
             }
         }
     }, [ibdData, machineID]);
-
-    const sistTheme = useTheme();
 
     const getCurrentJobData = () => {
         let jn = null;
@@ -77,7 +78,6 @@ export default function Content({ machineID, ibdData }) {
                 } else {
                     msg += 'NOT FOUND\n';
                     msg += "\nPLEASE START JOB IN EPICOR MES";
-                    errorMsg = `Resource ${machineID} may be a non-Mattec resource. Please start job in Epicor MES`;
                 }
             } else {
                 setIsMattecMachine(true);
@@ -111,7 +111,6 @@ export default function Content({ machineID, ibdData }) {
                 else {
                     msg += 'NOT FOUND\n';
                     msg += `\nMattec machine data is unavailable for Resource ${machineID.toUpperCase()}. \n\nPLEASE CHECK MATTEC TO SEE IF RESOURCE HAS JOB ASSIGNED.`;
-                    errorMsg = `\nMattec machine data is unavailable for Resource ${machineID.toUpperCase()}. PLEASE CHECK MATTEC TO SEE IF RESOURCE HAS JOB ASSIGNED.`;
                 }
             }
 
@@ -155,10 +154,19 @@ export default function Content({ machineID, ibdData }) {
                         remqty: remqty,
                     };
 
+                    const jobTraveller = datasets.jobtraveller.value.filter((job) => job.JobNum === jn);
+
                     setDataSets((prevState) => {
-                        return { ...prevState, currentJob: jd };
+                        return {
+                            ...prevState,
+                            currentJob: {
+                                ...jd,
+                                jobTraveller: jobTraveller[0]
+                            }
+                        };
 
                     });
+                    console.log('Datasets: ', datasets);
                 }
                 else {
                     msg += 'NOT FOUND1';
@@ -181,42 +189,69 @@ export default function Content({ machineID, ibdData }) {
 
     const displayError = (msg) => {
         return (
-            <Typography
-
-                variant='h5'
-                gutterBottom
-                padding={sistTheme.spacing(1)}
-            >
-                {msg}
-            </Typography>
+            <themeProvider theme={sistemaTheme}>
+                <Typography
+                    variant='h5'
+                    gutterBottom
+                >
+                    {msg}
+                </Typography>
+            </themeProvider>
         );
     }
 
-    const generateSSRSReport = () => {
-        console.log("SSRS button clicked"); // Debugging
-        // Replace with your actual API endpoint and parameters
-        const reportUrl = `https://www.sldttc.org/allpdf/21583473018.pdf`;
-        setReportUrl(reportUrl);
-        setReportError("");
-        setOpenReport(true);
-    };
-
     const openJobTraveller = () => {
-        setOpenReport(true);
+        setOpenDialog(true);
+
     };
 
-    const handleCloseReport = () => {
-        setOpenReport(false);
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
     };
 
-    const handleReportError = () => {
-        setReportError("Failed to load the SSRS report. Please try again later.");
+    const buildTreeData = (job) => {
+        if (!Array.isArray(job.JobAsmbl)) return [];
+
+        return job.JobAsmbl.map((jobAsmbl, index) => ({
+            id: index,
+            label: `ASM: ${jobAsmbl.AssemblySeq}\t${jobAsmbl.Description.toUpperCase()}`,
+        }));
+
+        //return jobTravellerData.map((job, index) => ({
+        //    id: index,
+        //    label: `JobAsmbl: ${job.JobAsmbl.AssemblySeq}`,
+        //    //children: job.JobOper?.map((opr, oprIndex) => ({
+        //    //    id: `JobOper-${job.JobAsmbl}-${opr.OprSeq}-${oprIndex}`,
+        //    //    label: `JobOper: ${opr.OprSeq} - ${opr.OpDesc}`,
+        //    //    children: opr.JobOpDtl?.map((opDtl, dtlIndex) => ({
+        //    //        id: `JobOpDtl-${job.JobAsmbl}-${opr.OprSeq}-${dtlIndex}`,
+        //    //        label: `JobOpDtl: ${opDtl.DetailDesc}`,
+        //    //    })) || [],
+        //    //})) || [],
+        //}));
     };
+
+    const jobTravellerTreeData = (datasets.currentJob?.jobTraveller && Array.isArray(datasets.currentJob.jobTraveller.JobAsmbl))
+        ? buildTreeData(datasets.currentJob.jobTraveller)
+        : [];
+
+    //console.log("RAYHAAN", jobTravellerTreeData);
+    ////const renderTree = (node) => {
+    ////    if (!node) return null;
+    ////    return (
+    ////        <TreeItem key={node.id} nodeId={node.id} label={node.label}>
+    ////            {node.children?.map((child) => renderTree(child))}
+    ////        </TreeItem>
+    ////    );
+    ////};
+
+
+
+
 
     const displayScreenContent = () => {
         return (
             <React.Fragment>
-
                 <Grid container spacing={1} marginTop={0}>
                     {datasets.currentJob !== null &&
                         typeof datasets.currentJob !== "undefined" ? (
@@ -250,13 +285,6 @@ export default function Content({ machineID, ibdData }) {
                                 </Paper>
                             </Grid>
                             <Grid item xs={12} padding={0}>
-                                {/*<Button*/}
-                                {/*    variant="contained"*/}
-                                {/*    color="primary"*/}
-                                {/*    onClick={generateSSRSReport}*/}
-                                {/*>*/}
-                                {/*    Use for Spec Sheet*/}
-                                {/*</Button>*/}
                                 <Button id="btnJobTraveller"
                                     variant="contained"
                                     color="primary"
@@ -284,34 +312,27 @@ export default function Content({ machineID, ibdData }) {
                     )}
                 </Grid>
 
-                <Dialog
-                    open={openReport}
-                    onClose={handleCloseReport}
-                    maxWidth="100%"
-                    fullWidth
-                >
-                    <DialogTitle>Job Traveller {datasets.jn}</DialogTitle>
-                    <DialogContent>
-                        {reportError ? (
-                            <Typography color="error">{reportError}</Typography>
-                        ) : (
-                            <iframe
-                                src={reportUrl}
-                                width="100%"
-                                height="600px"
-                                title="SSRS Report"
-                                onError={handleReportError}
-                            />
-                        )}
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseReport} color="primary">
-                            Close
-                        </Button>
-                    </DialogActions>
-                </Dialog>
 
+                <ThemeProvider theme={sistemaTheme}>
+                    <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth>
+                        <DialogTitle>Job Traveller {datasets.currentJob?.jn}</DialogTitle>
+                        <DialogContent>
+                            <Box>
+                                <Grid>
+                                    <RichTreeView
+                                        defaultExpandedItems={['grid']}
+                                        items={jobTravellerTreeData}
+                                    />
+                                </Grid>
+                            </Box>
+
+
+                        </DialogContent>
+                        <DialogActions><Button onClick={() => setOpenDialog(false)}>Close</Button></DialogActions>
+                    </Dialog>
+                </ThemeProvider>
             </React.Fragment>
+
         );
     }
 
