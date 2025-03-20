@@ -1,78 +1,27 @@
-msg.startTstamp = msg.payload;
-msg.transferfile = false;
+const buildTreeData = (job) => {
+    if (!Array.isArray(job.JobAsmbl)) return [];  // If JobAsmbl is not an array, return empty array
 
-const d = new Date();
-const dy = d.getFullYear().toString();
-const dm = d.getMonth().toString().length == 1 ? '0' + (d.getMonth() + 1) : d.getMonth() + 1
-const dd = d.getDate().toString().length == 1 ? '0' + (d.getDate()) : d.getDate()
+    return job.JobAsmbl.map((jobAsmbl, jobAsmblIndex) => {
+        const { AssemblySeq, Description, JobOper } = jobAsmbl;  // Destructuring for clarity
 
-const logDate = dy + dm + dd;
+        const jobOperations = JobOper?.map((jobOper, jobOperIndex) => {
+            const { OprSeq, OpDesc, JobOpDtl } = jobOper;  // Destructuring for clarity
+            const jobOpDetails = JobOpDtl?.map((jobOpDtl, jobOpDtlIndex) => ({
+                id: `JobOpDtl-${jobAsmblIndex}-${jobOperIndex}-${jobOpDtlIndex}`,
+                label: `JobOpDtl: ${jobOpDtl.DetailDesc}`,
+            })) || [];
 
-msg.details = {};
-msg.details.dir = {};
-msg.retain = true;
+            return {
+                id: `JobOper-${jobAsmblIndex}-${jobOperIndex}`,
+                label: `JobOper: ${OprSeq} - ${OpDesc}`,
+                children: jobOpDetails,  // Nested job operation details
+            };
+        }) || [];
 
-//FTP SERVER
-// FTP SERVER
-
-msg.details.sftp = {
-    hostname: 'ftp.newellrubbermaid.com',
-    username: 'xf00347',
-    password: 'Bl@cKH*t6F0rU'
+        return {
+            id: `JobAsmbl-${jobAsmblIndex}`,
+            label: `ASM: ${AssemblySeq}\t${Description.toUpperCase()}`,  // Better readability with uppercase description
+            children: jobOperations,  // Children are the job operations
+        };
+    });
 };
-
-switch (msg.environment.toUpperCase()) {
-    case 'LIVE':
-        msg.details.dir.sftp = global.get("epicorsftp");
-
-        switch (msg.company.toUpperCase()) {
-            case 'SUNBM':
-                msg.localfilepath = msg.details.dir.sftp + 'Sunbeam/Outbound/';
-                msg.localbackupfilepath = msg.details.dir.sftp + 'Sunbeam/Outbound/Backup/';
-                msg.remotefilepath = '/inbound/';
-                msg.details.sftp.username = 'xf00348';
-                msg.details.sftp.password = 'Ten%IS#29B@L!';
-                msg.transferfile = true;
-                break;
-            default:
-                break;
-        }
-        break;
-    case 'KINETIC':
-        msg.details.dir.sftp = global.get("epicorkineticsftp");
-
-        switch (msg.company.toUpperCase()) {
-            case 'SUNBM':
-                msg.localfilepath = msg.details.dir.sftp + 'Sunbeam/Outbound/';
-                msg.localbackupfilepath = msg.details.dir.sftp + 'Sunbeam/Outbound/Backup/';
-                msg.remotefilepath = '/inbound/';
-                msg.transferfile = true;
-                break;
-            default:
-                break;
-        }
-        break;
-    case 'TEST':
-        msg.details.dir.sftp = global.get("epicortestsftp");
-
-        switch (msg.company.toUpperCase()) {
-            case 'SUNBM':
-                msg.localfilepath = msg.details.dir.sftp + 'Sunbeam/Outbound/';
-                msg.localbackupfilepath = msg.details.dir.sftp + 'Sunbeam/Outbound/Backup/';
-                msg.remotefilepath = '/inbound/';
-                msg.transferfile = true;
-                break;
-            default:
-                break;
-        }
-        break;
-    default:
-        break;
-}
-
-if (msg.transferfile) {
-
-    msg.logfilename = msg.localfilepath + '_logs/nodered.log_' + logDate + '.txt';
-    msg.rate = 500;
-    return msg;
-}

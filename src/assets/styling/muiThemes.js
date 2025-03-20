@@ -465,6 +465,14 @@ export const sistemaTheme = createTheme(defaultTheme, {
     zIndex: {},
     transitions: {},
     components: {
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: sistColours["klipit-Light"],
+                    color: sistColours["klipit-Text"],
+                },
+            },
+        },
         MuiBox: {
             styleOverrides: {
                 root: {
@@ -477,8 +485,6 @@ export const sistemaTheme = createTheme(defaultTheme, {
         MuiDialog: {
             styleOverrides: {
                 root: {
-                    backgroundColor: sistColours["klipit-Main"],
-                    fontcolor: sistColours["klipit-Text"],
                 },
             },
         },
@@ -524,9 +530,10 @@ export const sistemaTheme = createTheme(defaultTheme, {
                     borderRadius: "4px",
                 },
                 iconContainer: {
-                    //borderRadius: '50%',
-                    backgroundColor: sistColours["klipit-Light"],
                     padding: 1,
+                    "& svg": {
+                        color: grey[800], // Set icon color
+                    },
                 },
                 groupTransition: {
                     marginLeft: 15,

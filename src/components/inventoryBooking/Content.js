@@ -202,7 +202,6 @@ export default function Content({ machineID, ibdData }) {
 
     const openJobTraveller = () => {
         setOpenDialog(true);
-
     };
 
     const handleCloseDialog = () => {
@@ -210,44 +209,35 @@ export default function Content({ machineID, ibdData }) {
     };
 
     const buildTreeData = (job) => {
-        if (!Array.isArray(job.JobAsmbl)) return [];
+        return job.JobAsmbl?.map((jobAsmbl, jobAsmblIndex) => {
+            const { AssemblySeq, PartNum, Description, JobOper } = jobAsmbl;
 
-        return job.JobAsmbl.map((jobAsmbl, index) => ({
-            id: index,
-            label: `ASM: ${jobAsmbl.AssemblySeq}\t${jobAsmbl.Description.toUpperCase()}`,
-        }));
+            const jobOperations = JobOper?.map((jobOper, jobOperIndex) => {
+                const { OprSeq, OpCode, OpDesc, JobOpDtl } = jobOper;
 
-        //return jobTravellerData.map((job, index) => ({
-        //    id: index,
-        //    label: `JobAsmbl: ${job.JobAsmbl.AssemblySeq}`,
-        //    //children: job.JobOper?.map((opr, oprIndex) => ({
-        //    //    id: `JobOper-${job.JobAsmbl}-${opr.OprSeq}-${oprIndex}`,
-        //    //    label: `JobOper: ${opr.OprSeq} - ${opr.OpDesc}`,
-        //    //    children: opr.JobOpDtl?.map((opDtl, dtlIndex) => ({
-        //    //        id: `JobOpDtl-${job.JobAsmbl}-${opr.OprSeq}-${dtlIndex}`,
-        //    //        label: `JobOpDtl: ${opDtl.DetailDesc}`,
-        //    //    })) || [],
-        //    //})) || [],
-        //}));
+                const jobOpDetails = JobOpDtl?.map((jobOpDtl, jobOpDtlIndex) => ({
+                    id: `OpDtl-${jobAsmblIndex}-${jobOperIndex}-${jobOpDtlIndex}`,
+                    label: `Op Dtl ${jobOpDtl.OpDtlSeq}: ${jobOpDtl.ResourceID?.toUpperCase()}- ${jobOpDtl.ResourceDescription?.toString()}`,
+                })) || [];
+
+                return {
+                    id: `Oper-${jobAsmblIndex}-${jobOperIndex}`,
+                    label: `Opr ${OprSeq}: ${OpCode.toUpperCase()}- ${OpDesc}`,
+                    children: jobOpDetails,  // Nested job operation details
+                };
+            }) || [];
+
+            return {
+                id: `JobAsmbl-${jobAsmblIndex}`,
+                label: `ASM ${AssemblySeq}: ${PartNum.toUpperCase()}- ${Description.toUpperCase()}`,  // Better readability with uppercase description
+                children: jobOperations,  // Children are the job operations
+            };
+        }) || [];
     };
 
     const jobTravellerTreeData = (datasets.currentJob?.jobTraveller && Array.isArray(datasets.currentJob.jobTraveller.JobAsmbl))
         ? buildTreeData(datasets.currentJob.jobTraveller)
         : [];
-
-    //console.log("RAYHAAN", jobTravellerTreeData);
-    ////const renderTree = (node) => {
-    ////    if (!node) return null;
-    ////    return (
-    ////        <TreeItem key={node.id} nodeId={node.id} label={node.label}>
-    ////            {node.children?.map((child) => renderTree(child))}
-    ////        </TreeItem>
-    ////    );
-    ////};
-
-
-
-
 
     const displayScreenContent = () => {
         return (
@@ -285,13 +275,15 @@ export default function Content({ machineID, ibdData }) {
                                 </Paper>
                             </Grid>
                             <Grid item xs={12} padding={0}>
-                                <Button id="btnJobTraveller"
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={openJobTraveller}
-                                >
-                                    Job Traveller
-                                </Button>
+                                <ThemeProvider theme={sistemaTheme}>
+                                    <Button id="btnJobTraveller"
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={openJobTraveller}
+                                    >
+                                        Job Traveller
+                                    </Button>
+                                </ThemeProvider>
                             </Grid>
                         </>
                     ) : (
@@ -325,8 +317,6 @@ export default function Content({ machineID, ibdData }) {
                                     />
                                 </Grid>
                             </Box>
-
-
                         </DialogContent>
                         <DialogActions><Button onClick={() => setOpenDialog(false)}>Close</Button></DialogActions>
                     </Dialog>
