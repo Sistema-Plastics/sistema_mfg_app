@@ -4,12 +4,12 @@ import "./App.css";
 import React from "react";
 import { blue, green, yellow, bluegrey, red, grey } from "@mui/material/colors";
 import {
-  //createBrowserRouter,
-  BrowserRouter,
-  //RouterProvider,
-  Route,
-  Routes,
-  //Link,
+    //createBrowserRouter,
+    BrowserRouter,
+    //RouterProvider,
+    Route,
+    Routes,
+    //Link,
 } from "react-router-dom";
 
 import { ThemeProvider, createTheme } from "@mui/material";
@@ -154,47 +154,37 @@ const queryClient = new QueryClient();
 //#endregion
 
 function App() {
-  return (
-    <React.Fragment>
-      <ThemeProvider theme={sistemaTheme}>
-        <BrowserRouter>
-          <Container maxWidth="false">
-            {/* //false disables maxwidth setting */}
-            <Box component={"section"}>
-              <CssBaseline />
-              <QueryClientProvider client={queryClient}>
-                <SistemaHeader>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/Index" element={<Index />} />
-                    <Route path="/Clock" element={<DigitalClock />} />
-                    <Route path="/InvBooking" element={<InventoryBooking />} />
-                    <Route path="/BarcodeLabelPrinting" element={<BarcodeLabelPrinting />} />
-                    <Route path="/ShiftSchedule" element={<ShiftSchedule />} />
-                    <Route path="/ThemesCheck" element={<ThemesCheck />} />
-                    <Route
-                      path="/PendingPOs/"
-                      element={<POApprovalDashboard />}
-                    />
-                    <Route path="/PendingPOs/:poNum" element={<POApproval />} />
-                    <Route
-                      path="/Assembly/JobsCellDB"
-                      element={<JobsCellDB />}
-                    />
-
-                    <Route
-                      path="/Assembly/EmployeeCellPlanDnd"
-                      element={<EmployeeCellPlanDnd />}
-                    />
-                  </Routes>
-                </SistemaHeader>
-              </QueryClientProvider>
-            </Box>
-          </Container>
-        </BrowserRouter>
-      </ThemeProvider>
-    </React.Fragment>
-  );
+    return (
+        <React.Fragment>
+            <ThemeProvider theme={sistemaTheme}>
+                <BrowserRouter>
+                    <Container maxWidth="false">
+                        {/* //false disables maxwidth setting */}
+                        <Box component={"section"}>
+                            <CssBaseline />
+                            <QueryClientProvider client={queryClient}>
+                                <SistemaHeader>
+                                    <Routes>
+                                        <Route path="/" element={<Index />} />
+                                        <Route path="/Index" element={<Index />} />
+                                        <Route path="/Clock" element={<DigitalClock />} />
+                                        <Route path="/InvBooking" element={<InventoryBooking />} />
+                                        <Route path="/BarcodeLabelPrinting" element={<BarcodeLabelPrinting />} />
+                                        <Route path="/ShiftSchedule" element={<ShiftSchedule />} />
+                                        <Route path="/ThemesCheck" element={<ThemesCheck />} />
+                                        <Route path="/PendingPOs/" element={<POApprovalDashboard />} />
+                                        <Route path="/PendingPOs/:poNum" element={<POApproval />} />
+                                        <Route path="/Assembly/JobsCellDB" element={<JobsCellDB />} />
+                                        <Route path="/Assembly/EmployeeCellPlanDnd" element={<EmployeeCellPlanDnd />} />
+                                    </Routes>
+                                </SistemaHeader>
+                            </QueryClientProvider>
+                        </Box>
+                    </Container>
+                </BrowserRouter>
+            </ThemeProvider>
+        </React.Fragment>
+    );
 }
 
 export default App;

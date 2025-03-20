@@ -4,12 +4,9 @@
     "\\src",
     "\\src\\assets",
     "\\src\\assets\\components",
-    "\\src\\components",
-    "\\src\\components\\assembly",
-    "\\src\\components\\inventoryBooking",
-    "\\src\\components\\labelPrinting",
-    "\\src\\components\\shiftSchedule"
+    "\\src\\assets\\styling",
+    "\\src\\components"
   ],
-  "SelectedNode": "\\src\\components\\shiftSchedule\\ShiftSchedule.js",
+  "SelectedNode": "\\src\\assets\\styling\\muiThemes.js",
   "PreviewInSolutionExplorer": false
 }

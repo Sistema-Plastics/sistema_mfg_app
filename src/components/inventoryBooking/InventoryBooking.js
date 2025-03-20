@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
 import { SistemaContext } from "../../assets/components/SistemaHeader";
-
 import { Container } from "@mui/material";
 import Content from "./Content";
 import { connections } from "../../config/ConnectionBroker";
@@ -25,6 +24,7 @@ const InventoryBooking = () => {
         palletdata: null,
         palletdataconf: null,
         labourdtl: null,
+        jobtraveller: null,
     });
 
     //TODO: refresh pallet subscription
@@ -42,6 +42,7 @@ const InventoryBooking = () => {
         "systemdata/dashboards/epicor/jobsopenops",
         "systemdata/dashboards/mattec/machinedata",
         "systemdata/dashboards/epicor/labourdtl",
+        "systemdata/dashboards/epicor/jobtraveller",
         pltTopic,
         pltTopicConf,
     ];
@@ -127,6 +128,12 @@ const InventoryBooking = () => {
                         return { ...prevState, palletdata: msg };
                     });
                     break;
+                case topic.includes("jobtraveller"):
+                    //tmpDatasets.current.palletdata = msg;
+                    setDatasets((prevState) => {
+                        return { ...prevState, jobtraveller: msg };
+                    });
+                    break;
                 default:
             }
             // console.log("Received  '" + topic + "'");
@@ -139,7 +146,8 @@ const InventoryBooking = () => {
             datasets.jobsopenops !== null &&
             datasets.employees !== null &&
             datasets.realtime !== null &&
-            datasets.labourdtl !== null //&&
+            datasets.labourdtl !== null &&
+            datasets.jobtraveller !== null //&&
             // datasets.current.palletdata !== null
         ) {
             setDataComplete(true);
