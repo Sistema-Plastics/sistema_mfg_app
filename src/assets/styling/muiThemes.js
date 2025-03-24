@@ -14,9 +14,9 @@ import { styled } from "@mui/material/styles";
 //import { typographyClasses } from "@mui/material/Typography";
 import { RichTreeView, TreeItem, treeItemClasses } from '@mui/x-tree-view';
 import { /*tableCellClasses*/ } from "@mui/material/TableCell";
-//import { Grid, Paper, Typography, Button, Dialog, DialogContent, DialogTitle, DialogActions } from "@mui/material";
 import { Box, Dialog, TableCell, tableCellClasses, Typography, typographyClasses } from "@mui/material";
 //import { DataGrid } from '@mui/x-data-grid';
+//import Grid from '@mui/material/Grid2';
 
 const sistColours = {
     "klipit-Main": "#0032A0",

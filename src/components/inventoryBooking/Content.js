@@ -213,15 +213,15 @@ export default function Content({ machineID, ibdData }) {
     const handleTreeItemClick = (itemId) => {
         console.log("Clicked item:", itemId);
         if (itemId && itemId.includes('RawMtl')) {
-            const [, asm, oprSeq] = itemId.split('-').map(Number);
+            const [, jobAsmblIndex, jobOperIndex] = itemId.split('-').map(Number);
 
-            console.log("ASM:" + asm + "\toprSeq:", oprSeq);
-            const jobOper = datasets.currentJob?.jobTraveller?.JobAsmbl[asm]?.JobOper[oprSeq];
+            const jobOper = datasets.currentJob?.jobTraveller?.JobAsmbl[jobAsmblIndex]?.JobOper[jobOperIndex];
 
             if (jobOper) {
-                const jobMtl = jobOper.JobMtl?.[oprSeq];
+                const jobMtl = jobOper.JobMtl || [];
                 if (jobMtl) {
-                    setDisplayJobMtl([jobMtl]);  // Ensure the JobMtl data is set correctly
+                    console.log("jobMtl:", jobMtl);
+                    setDisplayJobMtl(jobMtl);  // Ensure the JobMtl data is set correctly
                 }
             }
         }
@@ -240,7 +240,7 @@ export default function Content({ machineID, ibdData }) {
                 })) || [];
 
                 const rawMaterials = jobmtl.length > 0 ? [{
-                    id: `RawMtl-${AssemblySeq}-${OprSeq}`,
+                    id: `RawMtl-${jobAsmblIndex}-${jobOperIndex}`,
                     label: "Raw Materials".toUpperCase(),
                 }] : [];
 
@@ -359,17 +359,21 @@ export default function Content({ machineID, ibdData }) {
                                             <Typography variant="h6">Raw Materials</Typography>
                                             <Grid container spacing={1}>
                                                 {displayJobMtl.map((mtl, index) => (
-                                                    <Grid item xs={12} key={index}>
-                                                        <Paper elevation={2} style={{ padding: "8px" }}>
-                                                            <Typography variant="body1">
-                                                                {mtl.PartNum} - {mtl.PartDescription}
-                                                            </Typography>
-                                                        </Paper>
+                                                    //<Grid item xs={12} key={index}>
+                                                    //    <Paper elevation={2} style={{ padding: "8px" }}>
+                                                    //        {index} {mtl.PartNum} - {mtl.PartDescription}
+                                                    //    </Paper>
+                                                    //</Grid>
+                                                    <Grid container spacing={1}>
+                                                        <Grid item xs={1}>{index + 1}.</Grid>
+                                                        <Grid item xs={2}>{mtl.PartNum || "No Part Number"}</Grid>
+                                                        <Grid item xs={9}>{mtl.Description || "No Description"}
+                                                        </Grid>
                                                     </Grid>
                                                 ))}
                                             </Grid>
                                         </Paper>
-                                    ) : null}
+                                    ) : ""}
                                 </Grid>
                             </Grid>
                         </DialogContent>
