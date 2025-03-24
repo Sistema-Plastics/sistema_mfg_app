@@ -16,6 +16,7 @@ import { RichTreeView, TreeItem, treeItemClasses } from '@mui/x-tree-view';
 import { /*tableCellClasses*/ } from "@mui/material/TableCell";
 //import { Grid, Paper, Typography, Button, Dialog, DialogContent, DialogTitle, DialogActions } from "@mui/material";
 import { Box, Dialog, TableCell, tableCellClasses, Typography, typographyClasses } from "@mui/material";
+//import { DataGrid } from '@mui/x-data-grid';
 
 const sistColours = {
     "klipit-Main": "#0032A0",
@@ -476,21 +477,33 @@ export const sistemaTheme = createTheme(defaultTheme, {
         MuiBox: {
             styleOverrides: {
                 root: {
-                    Width: "95%",
+                    Width: "auto",
                     backgroundColor: sistColours["klipit-Main"],
                     fontcolor: sistColours["klipit-Text"],
                 },
             },
         },
-        MuiDialog: {
+
+        MuiRichTreeView: {
             styleOverrides: {
                 root: {
+                    //height: '100%',
+                    //display: 'block',
+                    //overflow: "auto",
                 },
             },
         },
 
-        MuiRichTreeView: {
-
+        MuiDialog: {
+            styleOverrides: {
+                root: {
+                    fullWidth: true,
+                },
+                paper: {
+                    maxWidth: 'unset',
+                    width: '-webkit-fill-available', 
+                },
+            },
         },
 
         MuiDialogTitle: {
@@ -498,18 +511,17 @@ export const sistemaTheme = createTheme(defaultTheme, {
                 root: {
                     padding: "16px",
                     fontWeight: "bold",
+                    backgroundColor: sistColours["klipit-Light"],
+                    color: 'white',
                 },
-                //paper: {
-                //    backgroundColor: "yellow", // Light grey background
-                //    borderRadius: "12px", // Rounded corners
-                //    padding: "16px",
-                //},
             },
         },
+
         MuiTreeItem: {
             styleOverrides: {
                 root: {
                     color: sistColours["klipit-Light"],
+                    display: "contents",
                     "&.hover": {
                         backgroundColor: "#e3f2fd", // Light blue on hover
                         color: sistColours["klipit-Light"],
@@ -524,13 +536,18 @@ export const sistemaTheme = createTheme(defaultTheme, {
                 },
                 label: {
                     fontWeight: "bold",
+                    width: 'auto',
                 },
                 content: {
+                    display: "flex",
                     padding: "4px 8px",
                     borderRadius: "4px",
+                    width: 'auto',
                 },
                 iconContainer: {
                     padding: 1,
+                    display: "flex",
+                    width: 'auto',
                     "& svg": {
                         color: grey[800], // Set icon color
                     },
@@ -544,46 +561,9 @@ export const sistemaTheme = createTheme(defaultTheme, {
     },
 });
 
-//export const sistTreeItem = styled(TreeItem)(({ theme }) => ({
-//    fontsize: "larger",
-//    color: sistColours["klipit-Main"],
-//    [`& .${treeItemClasses.content}`]: {
-//        borderRadius: theme.spacing(0.5),
-//        padding: theme.spacing(0.5, 1),
-//        margin: theme.spacing(0.2, 0),
-//        [`& .${treeItemClasses.label}`]: {
-//            color: sistColours["klipit-Main"],
-//        },
-//    },
-//    [`& .${treeItemClasses.iconContainer}`]: {
-//        borderRadius: '50%',
-//        backgroundColor: 'red',
-//        padding: theme.spacing(0, 1.2),
-//        ...theme.applyStyles('light', {
-//            backgroundColor: (theme.palette.primary.main, 0.25),
-//        }),
-//        ...theme.applyStyles('dark', {
-//            color: theme.palette.primary.contrastText,
-//        }),
-//    },
-//    [`& .${treeItemClasses.groupTransition}`]: {
-//        marginLeft: 15,
-//        paddingLeft: 18,
-//        borderLeft: `1px dashed ${(theme.palette.text.primary, 0.4)}`,
-//    },
-//    ...theme.applyStyles('light', {
-//        color: theme.palette.grey[800],
-//    }),
-//}));
-
 
 export const TableRowTypography = styled(Typography)(({ theme }) => ({
     [`&.${typographyClasses.h1}`]: {
-        // backgroundColor: muiThemes.getSistemaTheme().palette.sistema.klipit.light,
-        // color: muiThemes.getSistemaTheme().palette.sistema.klipit.main,
-        // borderBottom: "none",
-        // paddingBottom: 4,
-        // paddingTop: 4,
         fontSize: "1.6rem",
         fontWeight: 600,
     },

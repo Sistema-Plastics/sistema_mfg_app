@@ -18,6 +18,8 @@ export default function Content({ machineID, ibdData }) {
     const [hasJobAssigned, sethasJobAssigned] = useState(false);
     const [displayContent, setDisplayContent] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
+    const [displayJobMtl, setDisplayJobMtl] = useState([]);
+
     const resGrpDept = ["MACH", "PK Table"];
     const jobDetails = useRef();
     let msgJobNotFound = `No job currently scheduled on ${machineID.toUpperCase()}.\n\nIf this is a non-Mattec resource, please start activity on Epicor MES.`;
@@ -172,7 +174,7 @@ export default function Content({ machineID, ibdData }) {
                     msg += 'NOT FOUND1';
                     msg += `\nResource ${machineID.toUpperCase()} does not have a job assigned.`;
                 }
-                console.log(msg);
+                //console.log(msg);
             }
         } catch (ex) {
             console.log(ex);
@@ -208,32 +210,65 @@ export default function Content({ machineID, ibdData }) {
         setOpenDialog(false);
     };
 
+    const handleTreeItemClick = (itemId) => {
+        console.log("Clicked item:", itemId);
+        if (itemId && itemId.includes('RawMtl')) {
+            const [, asm, oprSeq] = itemId.split('-').map(Number);
+
+            console.log("ASM:" + asm + "\toprSeq:", oprSeq);
+            const jobOper = datasets.currentJob?.jobTraveller?.JobAsmbl[asm]?.JobOper[oprSeq];
+
+            if (jobOper) {
+                const jobMtl = jobOper.JobMtl?.[oprSeq];
+                if (jobMtl) {
+                    setDisplayJobMtl([jobMtl]);  // Ensure the JobMtl data is set correctly
+                }
+            }
+        }
+    };
+
     const buildTreeData = (job) => {
-        return job.JobAsmbl?.map((jobAsmbl, jobAsmblIndex) => {
+        const treeData = job.JobAsmbl?.map((jobAsmbl, jobAsmblIndex) => {
             const { AssemblySeq, PartNum, Description, JobOper } = jobAsmbl;
 
             const jobOperations = JobOper?.map((jobOper, jobOperIndex) => {
-                const { OprSeq, OpCode, OpDesc, JobOpDtl } = jobOper;
+                const { OprSeq, OpCode, OpDesc, JobMtl, JobOpDtl } = jobOper;
+
+                const jobmtl = JobMtl?.map((jobMtl, jobMtlIndex) => ({
+                    id: `Mtl-${jobAsmblIndex}-${jobOperIndex}-${jobMtlIndex}`,
+                    label: `Mtl ${jobMtl.MtlSeq}: ${jobMtl.PartNum?.toUpperCase()}- ${jobMtl.PartDescription?.toUpperCase()}`,
+                })) || [];
+
+                const rawMaterials = jobmtl.length > 0 ? [{
+                    id: `RawMtl-${AssemblySeq}-${OprSeq}`,
+                    label: "Raw Materials".toUpperCase(),
+                }] : [];
 
                 const jobOpDetails = JobOpDtl?.map((jobOpDtl, jobOpDtlIndex) => ({
                     id: `OpDtl-${jobAsmblIndex}-${jobOperIndex}-${jobOpDtlIndex}`,
-                    label: `Op Dtl ${jobOpDtl.OpDtlSeq}: ${jobOpDtl.ResourceID?.toUpperCase()}- ${jobOpDtl.ResourceDescription?.toString()}`,
+                    label: `Op Dtl ${jobOpDtl.OpDtlSeq}: ${jobOpDtl.OpDtlDesc?.toUpperCase()}`,
                 })) || [];
 
+                const children = [...rawMaterials, ...jobOpDetails];
                 return {
-                    id: `Oper-${jobAsmblIndex}-${jobOperIndex}`,
+                    id: `JobOper-${AssemblySeq}-${OprSeq}`,
                     label: `Opr ${OprSeq}: ${OpCode.toUpperCase()}- ${OpDesc}`,
-                    children: jobOpDetails,  // Nested job operation details
+                    children: children,
                 };
             }) || [];
 
             return {
-                id: `JobAsmbl-${jobAsmblIndex}`,
-                label: `ASM ${AssemblySeq}: ${PartNum.toUpperCase()}- ${Description.toUpperCase()}`,  // Better readability with uppercase description
-                children: jobOperations,  // Children are the job operations
+                id: `AssemblySeq-${AssemblySeq}`,
+                label: `ASM ${AssemblySeq}: ${PartNum.toUpperCase()}- ${Description.toUpperCase()}`,
+                children: jobOperations,
             };
         }) || [];
+
+        console.log("Generated tree data:", treeData);  // Add this to debug the tree structure
+
+        return treeData;
     };
+
 
     const jobTravellerTreeData = (datasets.currentJob?.jobTraveller && Array.isArray(datasets.currentJob.jobTraveller.JobAsmbl))
         ? buildTreeData(datasets.currentJob.jobTraveller)
@@ -306,17 +341,37 @@ export default function Content({ machineID, ibdData }) {
 
 
                 <ThemeProvider theme={sistemaTheme}>
-                    <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth>
+                    <Dialog open={openDialog} onClose={handleCloseDialog} >
                         <DialogTitle>Job Traveller {datasets.currentJob?.jn}</DialogTitle>
                         <DialogContent>
-                            <Box>
-                                <Grid>
+                            <Grid container spacing={2} >
+                                <Grid item xs={5}>
                                     <RichTreeView
                                         defaultExpandedItems={['grid']}
                                         items={jobTravellerTreeData}
+                                        //onItemClick={handleTreeItemClick}
+                                        onItemClick={(event, item) => handleTreeItemClick(item)}
                                     />
                                 </Grid>
-                            </Box>
+                                <Grid item xs={7}>
+                                    {displayJobMtl.length > 0 ? (
+                                        <Paper elevation={3} style={{ padding: "10px" }}>
+                                            <Typography variant="h6">Raw Materials</Typography>
+                                            <Grid container spacing={1}>
+                                                {displayJobMtl.map((mtl, index) => (
+                                                    <Grid item xs={12} key={index}>
+                                                        <Paper elevation={2} style={{ padding: "8px" }}>
+                                                            <Typography variant="body1">
+                                                                {mtl.PartNum} - {mtl.PartDescription}
+                                                            </Typography>
+                                                        </Paper>
+                                                    </Grid>
+                                                ))}
+                                            </Grid>
+                                        </Paper>
+                                    ) : null}
+                                </Grid>
+                            </Grid>
                         </DialogContent>
                         <DialogActions><Button onClick={() => setOpenDialog(false)}>Close</Button></DialogActions>
                     </Dialog>
