@@ -494,6 +494,17 @@ export const sistemaTheme = createTheme(defaultTheme, {
             },
         },
 
+        MuiDataGrid: {
+            styleOverrides: {
+                columnHeaderTitle: {
+                    alignItems: 'center',  
+                    fontWeight: 'bold',
+                    fontSize: '16px',
+                    textTransform: 'uppercase',
+                },
+            },
+        },
+
         MuiDialog: {
             styleOverrides: {
                 root: {
@@ -501,7 +512,7 @@ export const sistemaTheme = createTheme(defaultTheme, {
                 },
                 paper: {
                     maxWidth: 'unset',
-                    width: '-webkit-fill-available', 
+                    width: '-webkit-fill-available',
                 },
             },
         },

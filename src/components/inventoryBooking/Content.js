@@ -6,9 +6,7 @@ import LastPallet from "./LastPallet";
 import { ThemeProvider } from "@mui/material/styles";
 import { Box, Grid, Paper, Typography, Button, Dialog, DialogContent, DialogTitle, DialogActions } from "@mui/material";
 import { RichTreeView, TreeViewItems } from '@mui/x-tree-view';
-//import { ChevronRightIcon, ExpandMoreIcon } from '@mui/icons-material';
-//import useTheme from "@mui/material/styles/useTheme";
-//import { sistemaTheme, sistTreeItem } from "../../assets/styling/muiThemes";
+import { DataGrid } from '@mui/x-data-grid';
 import { sistemaTheme } from "../../assets/styling/muiThemes";
 import { mfgDashboardFunctions } from "../../helpers/HelperScripts";
 
@@ -19,6 +17,7 @@ export default function Content({ machineID, ibdData }) {
     const [displayContent, setDisplayContent] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [displayJobMtl, setDisplayJobMtl] = useState([]);
+    const [selectedColumns, setSelectedColumns] = useState([]);
 
     const resGrpDept = ["MACH", "PK Table"];
     const jobDetails = useRef();
@@ -211,17 +210,25 @@ export default function Content({ machineID, ibdData }) {
     };
 
     const handleTreeItemClick = (itemId) => {
+        setDisplayJobMtl([]);  // Clear the JobMtl data before setting it again
+        setSelectedColumns([]);  // Clear the columns before setting it again
+
         console.log("Clicked item:", itemId);
-        if (itemId && itemId.includes('RawMtl')) {
+
+        if (itemId) {
             const [, jobAsmblIndex, jobOperIndex] = itemId.split('-').map(Number);
 
-            const jobOper = datasets.currentJob?.jobTraveller?.JobAsmbl[jobAsmblIndex]?.JobOper[jobOperIndex];
+            if (itemId.includes('RawMtl')) {
 
-            if (jobOper) {
-                const jobMtl = jobOper.JobMtl || [];
-                if (jobMtl) {
-                    console.log("jobMtl:", jobMtl);
-                    setDisplayJobMtl(jobMtl);  // Ensure the JobMtl data is set correctly
+                const jobOper = datasets.currentJob?.jobTraveller?.JobAsmbl[jobAsmblIndex]?.JobOper[jobOperIndex];
+
+                if (jobOper) {
+                    const jobMtl = jobOper.JobMtl || [];
+                    if (jobMtl) {
+                        console.log("jobMtl:", jobMtl);
+                        setDisplayJobMtl(jobMtl);  // Ensure the JobMtl data is set correctly
+                        setSelectedColumns(jobMtlColumns);
+                    }
                 }
             }
         }
@@ -245,7 +252,7 @@ export default function Content({ machineID, ibdData }) {
                 }] : [];
 
                 const jobOpDetails = JobOpDtl?.map((jobOpDtl, jobOpDtlIndex) => ({
-                    id: `OpDtl-${jobAsmblIndex}-${jobOperIndex}-${jobOpDtlIndex}`,
+                    id: `JobOpDtl-${jobAsmblIndex}-${jobOperIndex}-${jobOpDtlIndex}`,
                     label: `Op Dtl ${jobOpDtl.OpDtlSeq}: ${jobOpDtl.OpDtlDesc?.toUpperCase()}`,
                 })) || [];
 
@@ -269,10 +276,33 @@ export default function Content({ machineID, ibdData }) {
         return treeData;
     };
 
-
     const jobTravellerTreeData = (datasets.currentJob?.jobTraveller && Array.isArray(datasets.currentJob.jobTraveller.JobAsmbl))
         ? buildTreeData(datasets.currentJob.jobTraveller)
         : [];
+
+    const jobMtlColumns = [
+        { field: 'MtlSeq', headerName: 'Mtl Seq', flex: 0.5 },
+        { field: 'PartNum', headerName: 'Part Number', flex: 1 },
+        { field: 'Description', headerName: 'Part Description', flex: 2 },
+        { field: 'RequiredQty', headerName: 'Required Qty', flex: 1 },
+        { field: 'IUM', headerName: 'UOM', flex: 0.5 },
+        { field: 'WarehouseCode', headerName: 'Warehouse', flex: 1 },
+        { field: 'RelatedOperation', headerName: 'Operation', flex: 1 },
+    ];
+
+    const jobOpDtlColumns = [
+        { field: 'OpDtlSeq', headerName: 'Op Detail Seq', flex: 0.5 },
+        { field: 'OpDtlDesc', headerName: 'Operation Detail', flex: 2 },
+        { field: 'SetupTime', headerName: 'Setup Time (min)', flex: 1 },
+        { field: 'ProdTime', headerName: 'Production Time (min)', flex: 1 },
+    ];
+
+    const defaultColumns = [
+        { field: 'id', headerName: 'ID', flex: 1 },
+        { field: 'name', headerName: 'Name', flex: 2 },
+    ]; // Default column set
+
+
 
     const displayScreenContent = () => {
         return (
@@ -339,7 +369,6 @@ export default function Content({ machineID, ibdData }) {
                     )}
                 </Grid>
 
-
                 <ThemeProvider theme={sistemaTheme}>
                     <Dialog open={openDialog} onClose={handleCloseDialog} >
                         <DialogTitle>Job Traveller {datasets.currentJob?.jn}</DialogTitle>
@@ -353,34 +382,36 @@ export default function Content({ machineID, ibdData }) {
                                         onItemClick={(event, item) => handleTreeItemClick(item)}
                                     />
                                 </Grid>
-                                <Grid item xs={7}>
+                                <Grid container item xs={7}>
                                     {displayJobMtl.length > 0 ? (
-                                        <Paper elevation={3} style={{ padding: "10px" }}>
+                                        <div style={{ width: '100%', height: 400 }}>
                                             <Typography variant="h6">Raw Materials</Typography>
-                                            <Grid container spacing={1}>
-                                                {displayJobMtl.map((mtl, index) => (
-                                                    //<Grid item xs={12} key={index}>
-                                                    //    <Paper elevation={2} style={{ padding: "8px" }}>
-                                                    //        {index} {mtl.PartNum} - {mtl.PartDescription}
-                                                    //    </Paper>
-                                                    //</Grid>
-                                                    <Grid container spacing={1}>
-                                                        <Grid item xs={1}>{index + 1}.</Grid>
-                                                        <Grid item xs={2}>{mtl.PartNum || "No Part Number"}</Grid>
-                                                        <Grid item xs={9}>{mtl.Description || "No Description"}
-                                                        </Grid>
-                                                    </Grid>
-                                                ))}
-                                            </Grid>
-                                        </Paper>
-                                    ) : ""}
+                                            <br />
+                                            <DataGrid
+                                                rows={displayJobMtl.map((mtl, index) => ({
+                                                    id: index,
+                                                    MtlSeq: mtl[0].MtlSeq || "",// Unique id for each row
+                                                    PartNum: mtl[0].PartNum || "",
+                                                    Description: mtl[0].Description || "",
+                                                    RequiredQty: mtl[0].RequiredQty || "",
+                                                    IUM: mtl[0].IUM?.toUpperCase() || "",
+                                                    WarehouseCode: mtl[0].WarehouseCode || "",
+                                                    RelatedOperation: mtl[0].RelatedOperation || "",
+                                                }))}
+                                                columns={selectedColumns}
+                                                pageSize={50}
+                                                checkboxSelection
+                                            />
+                                        </div>
+                                    ) : (
+                                        "")}
                                 </Grid>
                             </Grid>
                         </DialogContent>
                         <DialogActions><Button onClick={() => setOpenDialog(false)}>Close</Button></DialogActions>
                     </Dialog>
-                </ThemeProvider>
-            </React.Fragment>
+                </ThemeProvider >
+            </React.Fragment >
 
         );
     }
