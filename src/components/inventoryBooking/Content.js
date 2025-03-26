@@ -16,6 +16,9 @@ export default function Content({ machineID, ibdData }) {
     const [hasJobAssigned, sethasJobAssigned] = useState(false);
     const [displayContent, setDisplayContent] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
+    const [displayJobAsmbl, setDisplayJobAsmbl] = useState([]);
+    const [displayJobOper, setDisplayJobOper] = useState([]);
+    const [displayJobOpDtl, setDisplayJobOpDtl] = useState([]);
     const [displayJobMtl, setDisplayJobMtl] = useState([]);
     const [selectedColumns, setSelectedColumns] = useState([]);
 
@@ -210,26 +213,42 @@ export default function Content({ machineID, ibdData }) {
     };
 
     const handleTreeItemClick = (itemId) => {
+        setDisplayJobAsmbl([]);  // Clear the JobAsmbl data before setting it again
+        setDisplayJobOper([]);  // Clear the JobOper data before setting it again
+        setDisplayJobOpDtl([]);  // Clear the JobOpDtl data before setting it again
         setDisplayJobMtl([]);  // Clear the JobMtl data before setting it again
         setSelectedColumns([]);  // Clear the columns before setting it again
 
-        console.log("Clicked item:", itemId);
+        console.warn("Clicked item:", itemId);
+        if (!itemId) { return; }  // If the itemId is null, return
 
-        if (itemId) {
-            const [, jobAsmblIndex, jobOperIndex] = itemId.split('-').map(Number);
+        const itemParts = itemId.split('-').map(Number);
 
-            if (itemId.includes('RawMtl')) {
+        console.warn("Item parts:", itemParts.length);
+        console.warn("ItemID:", itemId.startsWith('AssemblySeq'));
 
-                const jobOper = datasets.currentJob?.jobTraveller?.JobAsmbl[jobAsmblIndex]?.JobOper[jobOperIndex];
+        if (itemId.startsWith('AssemblySeq') && itemParts.length === 2) {
+            const [, jobAsmblIndex] = itemParts;
+            const jobAsmbl = datasets.currentJob?.jobTraveller?.JobAsmbl[jobAsmblIndex];
+            console.warn("displayJobAsmbl.length ", jobAsmbl.length)
+            const jobOper = jobAsmbl?.JobOper || [];
+            const jobOpDtl = jobOper[0]?.JobOpDtl || [];
+            const jobMtl = jobOper[0]?.JobMtl || [];
 
-                if (jobOper) {
-                    const jobMtl = jobOper.JobMtl || [];
-                    if (jobMtl) {
-                        console.log("jobMtl:", jobMtl);
-                        setDisplayJobMtl(jobMtl);  // Ensure the JobMtl data is set correctly
-                        setSelectedColumns(jobMtlColumns);
-                    }
-                }
+            console.warn("jobAsmbl:", jobAsmbl);
+            if (jobAsmbl) {
+                setDisplayJobAsmbl([jobAsmbl]);  // Ensure the JobAsmbl data is set correctly
+                setSelectedColumns(jobAsmblColumns);
+            }
+
+            if (jobOper && jobOper.length > 0) {
+                setDisplayJobOper(jobOper);  // Ensure the JobOper data is set correctly
+            }
+            if (jobOpDtl && jobOpDtl.length > 0) {
+                setDisplayJobOpDtl(jobOpDtl);  // Ensure the JobOpDtl data is set correctly
+            }
+            if (jobMtl && jobMtl.length > 0) {
+                setDisplayJobMtl(jobMtl);  // Ensure the JobMtl data is set correctly
             }
         }
     };
@@ -280,6 +299,28 @@ export default function Content({ machineID, ibdData }) {
         ? buildTreeData(datasets.currentJob.jobTraveller)
         : [];
 
+    const jobAsmblColumns = [
+        { field: 'AssemblySeq', headerName: 'ASM', flex: 0.5 },
+        { field: 'PartNum', headerName: 'Part Number', flex: 1 },
+        { field: 'Description', headerName: 'Part Description', flex: 2 },
+        { field: 'RevisionNum', headerName: 'Revision', flex: 1 },
+        { field: 'RequiredQty', headerName: 'Required Qty', flex: 1, align: 'right' },
+        { field: 'IUM', headerName: 'UOM', flex: 0.5 },
+    ];
+
+    const jobOperColumns = [
+        { field: 'OprSeq', headerName: 'Seq', flex: 0.5 },
+        { field: 'OpCode', headerName: 'Code', flex: 1 },
+        { field: 'OpDesc', headerName: 'Description', flex: 3 },
+        { field: 'RunQty', headerName: 'Required Qty', align: 'right', flex: 1 },
+        { field: 'IUM', headerName: 'UOM', flex: 0.5 },
+        { field: 'EstSetHours', headerName: 'Est. Setup Hours', align: 'right', flex: 1.5 },
+        { field: 'EstProdHours', headerName: 'Est. Prod Hours', align: 'right', flex: 1.5 },
+        { field: 'ExpCycTm', headerName: 'Cycle Time', align: 'right', flex: 1 },
+        { field: 'ProdStandard', headerName: 'Production Std', align: 'right', flex: 1 },
+        { field: 'StdFormat', headerName: '', flex: 0.5 },
+    ];
+
     const jobMtlColumns = [
         { field: 'MtlSeq', headerName: 'Mtl Seq', flex: 0.5 },
         { field: 'PartNum', headerName: 'Part Number', flex: 1 },
@@ -296,12 +337,6 @@ export default function Content({ machineID, ibdData }) {
         { field: 'SetupTime', headerName: 'Setup Time (min)', flex: 1 },
         { field: 'ProdTime', headerName: 'Production Time (min)', flex: 1 },
     ];
-
-    const defaultColumns = [
-        { field: 'id', headerName: 'ID', flex: 1 },
-        { field: 'name', headerName: 'Name', flex: 2 },
-    ]; // Default column set
-
 
 
     const displayScreenContent = () => {
@@ -373,8 +408,8 @@ export default function Content({ machineID, ibdData }) {
                     <Dialog open={openDialog} onClose={handleCloseDialog} >
                         <DialogTitle>Job Traveller {datasets.currentJob?.jn}</DialogTitle>
                         <DialogContent>
-                            <Grid container spacing={2} >
-                                <Grid item xs={5}>
+                            <Grid container spacing={3} >
+                                <Grid item xs={3}>
                                     <RichTreeView
                                         defaultExpandedItems={['grid']}
                                         items={jobTravellerTreeData}
@@ -382,29 +417,84 @@ export default function Content({ machineID, ibdData }) {
                                         onItemClick={(event, item) => handleTreeItemClick(item)}
                                     />
                                 </Grid>
-                                <Grid container item xs={7}>
-                                    {displayJobMtl.length > 0 ? (
-                                        <div style={{ width: '100%', height: 400 }}>
-                                            <Typography variant="h6">Raw Materials</Typography>
+                                <Grid container item xs={8}>
+                                    {displayJobAsmbl.length > 0 ? (
+                                        <Grid item xs={12}>
+                                            <Typography variant="h6">Assembly Sequence</Typography>
                                             <br />
+                                            <DataGrid
+                                                rows={displayJobAsmbl.map((asmbl, index) => ({
+                                                    id: index,
+                                                    AssemblySeq: asmbl.AssemblySeq,
+                                                    PartNum: asmbl.PartNum,
+                                                    Description: asmbl.Description,
+                                                    RevisionNum: asmbl.RevisionNum,
+                                                    RequiredQty: asmbl.RequiredQty,
+                                                    IUM: asmbl.IUM,
+                                                }))}
+                                                columns={jobAsmblColumns}
+                                                pageSize={5}
+                                            />
+                                        </Grid>
+                                    ) : ""}
+
+                                    {displayJobOper.length > 0 ? (
+                                        <div style={{ width: '100%', height: 400 }}>
+                                            <Typography variant="h6">Job Operations</Typography>
+                                            <br />
+                                            <DataGrid
+                                                rows={displayJobOper.map((oper, index) => ({
+                                                    id: index,
+                                                    OprSeq: oper.OprSeq,
+                                                    OpCode: oper.OpCode,
+                                                    OpDesc: oper.OpDesc,
+                                                    RunQty: oper.RunQty,
+                                                    IUM: oper.IUM,
+                                                    EstSetHours: oper.EstSetHours,
+                                                    EstProdHours: oper.EstProdHours,
+                                                    ExpCycTm: oper.ExpCycTm,
+                                                    ProdStandard: oper.ProdStandard,
+                                                    StdFormat: oper.StdFormat,
+                                                }))}
+                                                columns={jobOperColumns}
+                                                pageSize={5}
+                                            />
+                                        </div>
+                                    ) : ""}
+                                    {displayJobOpDtl.length > 0 && (
+                                        <div style={{ width: '100%', height: 400 }}>
+                                            <Typography variant="h6">Job Operation Details</Typography>
+                                            <DataGrid
+                                                rows={displayJobOpDtl.map((opDtl, index) => ({
+                                                    id: index,
+                                                    OpDtlSeq: opDtl.OpDtlSeq,
+                                                    OpDtlDesc: opDtl.OpDtlDesc,
+                                                    SetupTime: opDtl.SetupTime,
+                                                    ProdTime: opDtl.ProdTime,
+                                                }))}
+                                                columns={jobOpDtlColumns}
+                                                pageSize={5}
+                                            />
+                                        </div>
+                                    )}
+                                    {displayJobMtl.length > 0 && (
+                                        <div style={{ width: '100%', height: 400 }}>
+                                            <Typography variant="h6">Job Materials</Typography>
                                             <DataGrid
                                                 rows={displayJobMtl.map((mtl, index) => ({
                                                     id: index,
-                                                    MtlSeq: mtl[0].MtlSeq || "",// Unique id for each row
-                                                    PartNum: mtl[0].PartNum || "",
-                                                    Description: mtl[0].Description || "",
-                                                    RequiredQty: mtl[0].RequiredQty || "",
-                                                    IUM: mtl[0].IUM?.toUpperCase() || "",
-                                                    WarehouseCode: mtl[0].WarehouseCode || "",
-                                                    RelatedOperation: mtl[0].RelatedOperation || "",
+                                                    MtlSeq: mtl.MtlSeq,
+                                                    PartNum: mtl.PartNum,
+                                                    Description: mtl.Description,
+                                                    RequiredQty: mtl.RequiredQty,
+                                                    IUM: mtl.IUM,
+                                                    WarehouseCode: mtl.WarehouseCode,
                                                 }))}
-                                                columns={selectedColumns}
-                                                pageSize={50}
-                                                checkboxSelection
+                                                columns={jobMtlColumns}
+                                                pageSize={5}
                                             />
                                         </div>
-                                    ) : (
-                                        "")}
+                                    )}
                                 </Grid>
                             </Grid>
                         </DialogContent>

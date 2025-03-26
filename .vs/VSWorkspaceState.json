@@ -5,8 +5,9 @@
     "\\src\\assets",
     "\\src\\assets\\components",
     "\\src\\assets\\styling",
-    "\\src\\components"
+    "\\src\\components",
+    "\\src\\components\\inventoryBooking"
   ],
-  "SelectedNode": "\\src\\assets\\styling\\muiThemes.js",
+  "SelectedNode": "\\package.json",
   "PreviewInSolutionExplorer": false
 }

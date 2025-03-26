@@ -119,7 +119,7 @@ const LastPallet = ({ machineID, datasets }) => {
 
 	return (
 		<React.Fragment>
-			{console.log("LastPallet Render")}
+			{/*{console.log("LastPallet Render")}*/}
 			<Grid container>
 				<Grid
 					item

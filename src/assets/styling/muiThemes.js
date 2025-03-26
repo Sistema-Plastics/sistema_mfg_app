@@ -496,11 +496,19 @@ export const sistemaTheme = createTheme(defaultTheme, {
 
         MuiDataGrid: {
             styleOverrides: {
+                root: {
+                    width: '100%',
+                    color: '#44505b',
+                },
+                columnHeader: {
+                    //vertical-align: 'middle',
+                    align: 'center',
+                },
                 columnHeaderTitle: {
-                    alignItems: 'center',  
+                    alignItems: 'center',
                     fontWeight: 'bold',
-                    fontSize: '16px',
                     textTransform: 'uppercase',
+
                 },
             },
         },
