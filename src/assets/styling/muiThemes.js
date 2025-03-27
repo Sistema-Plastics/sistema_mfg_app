@@ -493,29 +493,31 @@ export const sistemaTheme = createTheme(defaultTheme, {
                 },
             },
         },
-
         MuiDataGrid: {
             styleOverrides: {
                 root: {
                     width: '100%',
                     color: '#44505b',
+                    marginBottom: 0, // Added this line to override margin-bottom
+                },
+                columnHeaderTitleContainer: {
+                    alignItems: 'center',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'break-spaces',
                 },
                 columnHeader: {
                     //vertical-align: 'middle',
                     align: 'center',
                 },
                 columnHeaderTitle: {
-                    alignItems: 'center',
                     fontWeight: 'bold',
-                    textTransform: 'uppercase',
-
                 },
                 topContainer: {
-                    height:'auto',
+                    height: 'auto',
                 },
             },
         },
-
+        
         MuiDialog: {
             styleOverrides: {
                 root: {
