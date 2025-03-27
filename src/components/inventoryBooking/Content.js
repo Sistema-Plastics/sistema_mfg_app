@@ -223,17 +223,19 @@ export default function Content({ machineID, ibdData }) {
         if (!itemId) { return; }  // If the itemId is null, return
 
         const itemParts = itemId.split('-').map(Number);
+        const [, jobAsmblIndex] = itemParts;
+        const jobAsmbl = datasets.currentJob?.jobTraveller?.JobAsmbl[jobAsmblIndex];
+        //const jobOper = jobAsmbl?.JobOper || [];
+        const jobOper = jobAsmbl?.JobOper.length > 0 ? jobAsmbl?.JobOper.map((jobOper) => ({
+            AssemblySeq: jobAsmbl.AssemblySeq, ...jobOper
+        })) : [];
+        const jobOpDtl = jobOper?.reduce((acc, jobOper) => {
+            return acc.concat(jobOper.JobOpDtl?.map(opDtl => ({ OprSeq: jobOper.OprSeq, ...opDtl })) || []);
+        }, []);
+        console.warn("jobOpDtl:", jobOpDtl);
+        const jobMtl = jobOper?.JobMtl || [];
 
         if (itemId.startsWith('AssemblySeq') && itemParts.length === 2) {
-            const [, jobAsmblIndex] = itemParts;
-            const jobAsmbl = datasets.currentJob?.jobTraveller?.JobAsmbl[jobAsmblIndex];
-            const jobOper = jobAsmbl?.JobOper || [];
-            const jobOpDtl = jobOper?.reduce((acc, jobOper) => {
-                return acc.concat(jobOper.JobOpDtl || []);
-            }, []);
-            const jobMtl = jobOper?.JobMtl || [];
-
-
             console.warn("jobAsmbl:", jobAsmbl);
             console.warn("jobOper:", jobOper);
             console.warn("jobOpDtl:", jobOpDtl);
@@ -306,21 +308,21 @@ export default function Content({ machineID, ibdData }) {
         { field: 'PartNum', headerName: 'Part Number', flex: 1 },
         { field: 'Description', headerName: 'Part Description', flex: 2 },
         { field: 'RevisionNum', headerName: 'Revision', align: 'center', headerAlign: 'center', flex: 1 },
-        { field: 'RequiredQty', headerName: 'Required Qty', flex: 1, align: 'right' },
-        { field: 'IUM', headerName: 'UOM', flex: 0.5 },
+        { field: 'RequiredQty', headerName: 'Required Qty', flex: 1, align: 'right', headerAlign: 'right' },
+        { field: 'IUM', headerName: 'UOM', align: 'center', headerAlign: 'center', flex: 0.5 },
     ];
 
     const jobOperColumns = [
-        { field: 'OprSeq', headerName: 'Seq', align: 'center', headerAlign: 'center', flex: 0.5 },
+        { field: 'OprSeq', headerName: 'Opr', align: 'center', headerAlign: 'center', flex: 0.5 },
         { field: 'OpCode', headerName: 'Code', flex: 0.7 },
         { field: 'OpDesc', headerName: 'Description', flex: 2.5 },
         { field: 'RunQty', headerName: 'Required Qty', align: 'right', flex: 1 },
-        { field: 'IUM', headerName: 'UOM', flex: 0.5 },
+        { field: 'IUM', headerName: 'UOM', align: 'center', headerAlign: 'center', flex: 0.5 },
         { field: 'EstSetHours', headerName: 'Est. Setup Hours', align: 'center', headerAlign: 'center', flex: 1.5 },
         { field: 'EstProdHours', headerName: 'Est. Prod Hours', align: 'center', headerAlign: 'center', flex: 1.5 },
         { field: 'ExpCycTm', headerName: 'Cycle Time', align: 'center', headerAlign: 'center', flex: 1 },
         { field: 'ProdStandard', headerName: 'Prod Std', align: 'right', flex: 1 },
-        { field: 'StdFormat', headerName: '', flex: 0.5 },
+        { field: 'StdFormat', headerName: '', align: 'center', headerAlign: 'center', flex: 0.5 },
         { field: 'QtyPerCycle', headerName: 'Pcs/ Cycle', align: 'center', headerAlign: 'center', flex: 1 },
     ];
 
@@ -335,7 +337,9 @@ export default function Content({ machineID, ibdData }) {
     ];
 
     const jobOpDtlColumns = [
-        { field: 'OpDtlSeq', headerName: 'Op Seq', align: 'center', headerAlign: 'center', flex: 0.5 },
+        /*{ field: 'AssemblySeq', headerName: 'ASM', align: 'center', headerAlign: 'center', flex: 0.5, },*/
+        { field: 'OprSeq', headerName: 'Opr', align: 'center', headerAlign: 'center', flex: 0.5 },
+        { field: 'OpDtlSeq', headerName: 'Op Dtl', align: 'center', headerAlign: 'center', flex: 0.7 },
         { field: 'ResourceID', headerName: 'Resource ID', flex: 1 },
         { field: 'ResourceDescription', headerName: 'Res Description', flex: 2 },
         { field: 'SetupOrProd', headerName: 'Setup/ Prod', align: 'center', headerAlign: 'center', flex: 1 },
@@ -425,111 +429,131 @@ export default function Content({ machineID, ibdData }) {
                                         onItemClick={(event, item) => handleTreeItemClick(item)}
                                     />
                                 </Grid>
-                                <Grid container item xs={8}>
-                                    {displayJobAsmbl.length > 0 ? (
-                                        <Grid item xs={12}>
-                                            <Typography variant="h6">Assembly Sequence</Typography>
-                                            <br />
-                                            <DataGrid
-                                                rows={displayJobAsmbl.map((asmbl, index) => ({
-                                                    id: index,
-                                                    AssemblySeq: asmbl.AssemblySeq,
-                                                    PartNum: asmbl.PartNum,
-                                                    Description: asmbl.Description,
-                                                    RevisionNum: asmbl.RevisionNum,
-                                                    RequiredQty: asmbl.RequiredQty,
-                                                    IUM: asmbl.IUM,
-                                                }))}
-                                                columns={jobAsmblColumns}
-                                                pageSize={5}
-                                            />
-                                            <br />
-                                        </Grid>
-                                    ) : ""}
-                                    {displayJobOper.length > 0 ? (
-                                        <Grid item xs={12}>
-                                            <Typography variant="h6">Job Operations</Typography>
-                                            <br />
-                                            <DataGrid
-                                                rows={displayJobOper.map((oper, index) => ({
-                                                    id: index,
-                                                    OprSeq: oper.OprSeq,
-                                                    OpCode: oper.OpCode,
-                                                    OpDesc: oper.OpDesc,
-                                                    RunQty: oper.RunQty,
-                                                    IUM: oper.IUM,
-                                                    EstSetHours: oper.EstSetHours,
-                                                    EstProdHours: oper.EstProdHours,
-                                                    ExpCycTm: oper.ExpCycTm,
-                                                    ProdStandard: oper.ProdStandard,
-                                                    StdFormat: oper.StdFormat,
-                                                    QtyPerCycle: oper.QtyPerCycle,
-                                                }))}
-                                                columns={jobOperColumns}
-                                            //pageSize={5}
-                                            />
-                                            <br />
-                                        </Grid>
-                                    ) : ""}
+                                <Grid container item xs={8} sx={{ marginBottom: 0 }} >
+                                    <Box sx={{ width: '100%' }}>
+                                        {displayJobAsmbl.length > 0 ? (
+                                            <Grid item xs={12} >
+                                                <Typography variant="h6">Assembly Sequence</Typography>
+                                                <br />
+                                                <DataGrid
+                                                    rows={displayJobAsmbl.map((asmbl, index) => ({
+                                                        id: index,
+                                                        AssemblySeq: asmbl.AssemblySeq,
+                                                        PartNum: asmbl.PartNum,
+                                                        Description: asmbl.Description,
+                                                        RevisionNum: asmbl.RevisionNum,
+                                                        RequiredQty: asmbl.RequiredQty,
+                                                        IUM: asmbl.IUM,
+                                                    }))}
+                                                    columns={jobAsmblColumns}
+                                                    pageSize={5}
+                                                    sx={{ marginBottom: 0 }}
+                                                />
+                                                <Grid item xs={12} >
+                                                    <Typography variant="h6">Assembly Sequence</Typography>
+                                                    <br />
+                                                    <DataGrid
+                                                        rows={displayJobAsmbl.map((asmbl, index) => ({
+                                                            id: index,
+                                                            AssemblySeq: asmbl.AssemblySeq,
+                                                            PartNum: asmbl.PartNum,
+                                                            Description: asmbl.Description,
+                                                            RevisionNum: asmbl.RevisionNum,
+                                                            RequiredQty: asmbl.RequiredQty,
+                                                            IUM: asmbl.IUM,
+                                                        }))}
+                                                        columns={jobAsmblColumns}
+                                                        pageSize={5}
+                                                        sx={{ marginBottom: 0, }}
+                                                    />
+                                                </Grid>
+                                            </Grid>
+                                        ) : ""}
+                                        {displayJobOper.length > 0 ? (
+                                            <Grid item xs={12}>
+                                                <Typography variant="h6">Job Operations</Typography>
+                                                <br />
+                                                <DataGrid
+                                                    rows={displayJobOper.map((oper, index) => ({
+                                                        id: index,
+                                                        OprSeq: oper.OprSeq,
+                                                        OpCode: oper.OpCode,
+                                                        OpDesc: oper.OpDesc,
+                                                        RunQty: oper.RunQty,
+                                                        IUM: oper.IUM,
+                                                        EstSetHours: oper.EstSetHours,
+                                                        EstProdHours: oper.EstProdHours,
+                                                        ExpCycTm: oper.ExpCycTm,
+                                                        ProdStandard: oper.ProdStandard,
+                                                        StdFormat: oper.StdFormat,
+                                                        QtyPerCycle: oper.QtyPerCycle,
+                                                    }))}
+                                                    columns={jobOperColumns}
+                                                //pageSize={5}
+                                                />
+                                                <br />
+                                            </Grid>
+                                        ) : ""}
 
-                                    {displayJobOpDtl.length > 0 ? (
-                                        <Grid item xs={12}>
-                                            <Typography variant="h6">Job Operation Details</Typography>
-                                            <br />
-                                            <DataGrid
-                                                rows={displayJobOpDtl.map((opDtl, index) => ({
-                                                    id: index,
-                                                    OpDtlSeq: opDtl.OpDtlSeq,
-                                                    OpDtlDesc: opDtl.OpDtlDesc,
-                                                    SetupOrProd: opDtl.SetupOrProd,
-                                                    ProdCrewSize: opDtl.ProdCrewSize,
-                                                    DailyProdRate: opDtl.DailyProdRate,
-                                                    ResourceID: opDtl.ResourceID,
-                                                    ResourceDescription: opDtl.ResourceDescription,
-                                                    NumCavs: opDtl.NumCavs,
-                                                    RunnerWt: opDtl.RunnerWt,
-                                                }))}
-                                                columns={jobOpDtlColumns}
-                                                pageSize={5}
-                                            />
-                                            <br />
-                                        </Grid>
-                                    ) : ""}
-                                    {/*{console.warn("xdisplayJobMtl", displayJobMtl)}*/}
-                                    {/*//displayJobMtl.map((mtl, index) => ({*/}
-                                    {/*    id: index,*/}
-                                    {/*    MtlSeq: mtl[index].MtlSeq,*/}
-                                    {/*    PartNum: mtl[index].PartNum,*/}
-                                    {/*    Description: mtl[index].Description,*/}
-                                    {/*    RequiredQty: mtl[index].RequiredQty,*/}
-                                    {/*    IUM: mtl[index].IUM.toUpperCase(),*/}
-                                    {/*    WarehouseCode: mtl[index].WarehouseCode,*/}
-                                    {/*    RelatedOperation: mtl[index].RelatedOperation,*/}
-                                    {/*})))}*/}
+                                        {displayJobOpDtl.length > 0 ? (
+                                            <Grid item xs={12}>
+                                                <Typography variant="h6">Job Operation Details</Typography>
+                                                <br />
+                                                <DataGrid
+                                                    rows={displayJobOpDtl.map((opDtl, index) => ({
+                                                        id: index,
+                                                        OprSeq: opDtl.OprSeq,
+                                                        OpDtlSeq: opDtl.OpDtlSeq,
+                                                        OpDtlDesc: opDtl.OpDtlDesc,
+                                                        SetupOrProd: opDtl.SetupOrProd,
+                                                        ProdCrewSize: opDtl.ProdCrewSize,
+                                                        DailyProdRate: opDtl.DailyProdRate,
+                                                        ResourceID: opDtl.ResourceID,
+                                                        ResourceDescription: opDtl.ResourceDescription,
+                                                        NumCavs: opDtl.NumCavs,
+                                                        RunnerWt: opDtl.RunnerWt,
+                                                    }))}
+                                                    columns={jobOpDtlColumns}
+                                                    pageSize={5}
+                                                />
+                                                <br />
+                                            </Grid>
+                                        ) : ""}
+                                        {/*{console.warn("xdisplayJobMtl", displayJobMtl)}*/}
+                                        {/*//displayJobMtl.map((mtl, index) => ({*/}
+                                        {/*    id: index,*/}
+                                        {/*    MtlSeq: mtl[index].MtlSeq,*/}
+                                        {/*    PartNum: mtl[index].PartNum,*/}
+                                        {/*    Description: mtl[index].Description,*/}
+                                        {/*    RequiredQty: mtl[index].RequiredQty,*/}
+                                        {/*    IUM: mtl[index].IUM.toUpperCase(),*/}
+                                        {/*    WarehouseCode: mtl[index].WarehouseCode,*/}
+                                        {/*    RelatedOperation: mtl[index].RelatedOperation,*/}
+                                        {/*})))}*/}
 
-                                    {displayJobMtl.length > 0 ? (
-                                        <Grid item xs={12}>
-                                            <Typography variant="h6">Job Materials</Typography>
-                                            <br />
-                                            <DataGrid
-                                                rows={displayJobMtl.map((mtl, index) => ({
-                                                    id: index,
-                                                    MtlSeq: mtl.MtlSeq,
-                                                    PartNum: mtl.PartNum,
-                                                    Description: mtl.Description,
-                                                    RequiredQty: mtl.RequiredQty,
-                                                    IUM: mtl.IUM?.toUpperCase(),
-                                                    WarehouseCode: mtl.WarehouseCode,
-                                                    RelatedOperation: mtl.RelatedOperation,
-                                                }))}
+                                        {displayJobMtl.length > 0 ? (
+                                            <Grid item xs={12}>
+                                                <Typography variant="h6">Job Materials</Typography>
+                                                <br />
+                                                <DataGrid
+                                                    rows={displayJobMtl.map((mtl, index) => ({
+                                                        id: index,
+                                                        MtlSeq: mtl.MtlSeq,
+                                                        PartNum: mtl.PartNum,
+                                                        Description: mtl.Description,
+                                                        RequiredQty: mtl.RequiredQty,
+                                                        IUM: mtl.IUM?.toUpperCase(),
+                                                        WarehouseCode: mtl.WarehouseCode,
+                                                        RelatedOperation: mtl.RelatedOperation,
+                                                    }))}
 
-                                                columns={jobMtlColumns}
-                                                pageSize={5}
-                                            />
-                                            <br />
-                                        </Grid>
-                                    ) : ""}
-
+                                                    columns={jobMtlColumns}
+                                                    pageSize={5}
+                                                />
+                                                <br />
+                                            </Grid>
+                                        ) : ""}
+                                    </Box>
                                 </Grid>
                             </Grid>
                         </DialogContent>

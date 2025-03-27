@@ -500,18 +500,20 @@ export const sistemaTheme = createTheme(defaultTheme, {
                     width: '100%',
                     color: '#44505b',
                 },
+                columnHeaderTitleContainer: {
+                    alignItems: 'center',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'break-spaces',
+                },
                 columnHeader: {
                     //vertical-align: 'middle',
                     align: 'center',
                 },
                 columnHeaderTitle: {
-                    alignItems: 'center',
                     fontWeight: 'bold',
-                    textTransform: 'uppercase',
-
                 },
                 topContainer: {
-                    height:'auto',
+                    height: 'auto',
                 },
             },
         },
