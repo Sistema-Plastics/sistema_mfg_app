@@ -505,20 +505,18 @@ export const sistemaTheme = createTheme(defaultTheme, {
                     textTransform: 'uppercase',
                     whiteSpace: 'break-spaces',
                 },
-                columnHeaderTitleContainer: {
-                    alignItems: 'center',
-                    textTransform: 'uppercase',
-                    whiteSpace: 'break-spaces',
-                },
                 columnHeader: {
                     //vertical-align: 'middle',
                     align: 'center',
                 },
                 columnHeaderTitle: {
+                    alignItems: 'center',
                     fontWeight: 'bold',
+                    textTransform: 'uppercase',
+
                 },
                 topContainer: {
-                    height: 'auto',
+                    height:'auto',
                 },
             },
         },

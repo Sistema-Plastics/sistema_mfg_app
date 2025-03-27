@@ -238,24 +238,23 @@ export default function Content({ machineID, ibdData }) {
         }, []);
 
 
-            console.warn("jobAsmbl:", jobAsmbl);
-            console.warn("jobOper:", jobOper);
-            console.warn("jobOpDtl:", jobOpDtl);
-            console.warn("jobMtl:", jobMtl);
-            if (jobAsmbl) {
-                setDisplayJobAsmbl([jobAsmbl]);  // Ensure the JobAsmbl data is set correctly
-                setSelectedColumns(jobAsmblColumns);
-            }
+        console.warn("jobAsmbl:", jobAsmbl);
+        console.warn("jobOper:", jobOper);
+        console.warn("jobOpDtl:", jobOpDtl);
+        console.warn("jobMtl:", jobMtl);
+        if (jobAsmbl) {
+            setDisplayJobAsmbl([jobAsmbl]);  // Ensure the JobAsmbl data is set correctly
+            setSelectedColumns(jobAsmblColumns);
+        }
 
-            if (jobOper && jobOper.length > 0) {
-                setDisplayJobOper(jobOper);  // Ensure the JobOper data is set correctly
-            }
-            if (jobOpDtl && jobOpDtl.length > 0) {
-                setDisplayJobOpDtl(jobOpDtl);  // Ensure the JobOpDtl data is set correctly
-            }
-            if (jobMtl && jobMtl.length > 0) {
-                setDisplayJobMtl(jobMtl);  // Ensure the JobMtl data is set correctly
-            }
+        if (jobOper && jobOper.length > 0) {
+            setDisplayJobOper(jobOper);  // Ensure the JobOper data is set correctly
+        }
+        if (jobOpDtl && jobOpDtl.length > 0) {
+            setDisplayJobOpDtl(jobOpDtl);  // Ensure the JobOpDtl data is set correctly
+        }
+        if (jobMtl && jobMtl.length > 0) {
+            setDisplayJobMtl(jobMtl);  // Ensure the JobMtl data is set correctly
         }
     };
 
@@ -295,10 +294,7 @@ export default function Content({ machineID, ibdData }) {
                 children: jobOperations,
             };
         }) || [];
-
-        //console.log("Generated tree data:", treeData);  // Add this to debug the tree structure
-
-        return treeData;
+  return treeData;
     };
 
     const jobTravellerTreeData = (datasets.currentJob?.jobTraveller && Array.isArray(datasets.currentJob.jobTraveller.JobAsmbl))
@@ -333,8 +329,8 @@ export default function Content({ machineID, ibdData }) {
         { field: 'MtlSeq', headerName: 'Mtl Seq', align: 'center', headerAlign: 'center', flex: 0.5 },
         { field: 'PartNum', headerName: 'Part Number', flex: 1 },
         { field: 'Description', headerName: 'Part Description', flex: 2 },
-        { field: 'RequiredQty', headerName: 'Required Qty', align: 'right', flex: 1 },
-        { field: 'IUM', headerName: 'UOM', flex: 0.5 },
+        { field: 'RequiredQty', headerName: 'Required Qty', align: 'right', headerAlign: 'right',flex: 1 },
+        { field: 'IUM', headerName: 'UOM', align: 'center', headerAlign: 'center',flex: 0.5 },
         { field: 'WarehouseCode', headerName: 'Warehouse', align: 'center', headerAlign: 'center', flex: 1 },
         { field: 'RelatedOperation', headerName: 'Rel. Opr', align: 'center', headerAlign: 'center', flex: 1 },
     ];
@@ -435,6 +431,7 @@ export default function Content({ machineID, ibdData }) {
                                 <Grid container item xs={8}>
                                     {displayJobAsmbl.length > 0 ? (
                                         <Grid item xs={12}>
+                                        <br />
                                             <Typography variant="h6">Assembly Sequence</Typography>
                                             <br />
                                             <DataGrid
@@ -445,7 +442,7 @@ export default function Content({ machineID, ibdData }) {
                                                     Description: asmbl.Description,
                                                     RevisionNum: asmbl.RevisionNum,
                                                     RequiredQty: asmbl.RequiredQty,
-                                                    IUM: asmbl.IUM,
+                                                    IUM: asmbl.IUM?.toUpperCase(),
                                                 }))}
                                                 columns={jobAsmblColumns}
                                                 pageSize={5}
@@ -464,12 +461,12 @@ export default function Content({ machineID, ibdData }) {
                                                     OpCode: oper.OpCode,
                                                     OpDesc: oper.OpDesc,
                                                     RunQty: oper.RunQty,
-                                                    IUM: oper.IUM,
+                                                    IUM: oper.IUM?.toUpperCase(),
                                                     EstSetHours: oper.EstSetHours,
                                                     EstProdHours: oper.EstProdHours,
                                                     ExpCycTm: oper.ExpCycTm,
                                                     ProdStandard: oper.ProdStandard,
-                                                    StdFormat: oper.StdFormat,
+                                                    StdFormat: oper.StdFormat?.toUpperCase(),
                                                     QtyPerCycle: oper.QtyPerCycle,
                                                 }))}
                                                 columns={jobOperColumns}
@@ -486,6 +483,7 @@ export default function Content({ machineID, ibdData }) {
                                             <DataGrid
                                                 rows={displayJobOpDtl.map((opDtl, index) => ({
                                                     id: index,
+                                                    OprSeq: opDtl.OprSeq,
                                                     OpDtlSeq: opDtl.OpDtlSeq,
                                                     OpDtlDesc: opDtl.OpDtlDesc,
                                                     SetupOrProd: opDtl.SetupOrProd,
@@ -502,18 +500,6 @@ export default function Content({ machineID, ibdData }) {
                                             <br />
                                         </Grid>
                                     ) : ""}
-                                    {/*{console.warn("xdisplayJobMtl", displayJobMtl)}*/}
-                                    {/*//displayJobMtl.map((mtl, index) => ({*/}
-                                    {/*    id: index,*/}
-                                    {/*    MtlSeq: mtl[index].MtlSeq,*/}
-                                    {/*    PartNum: mtl[index].PartNum,*/}
-                                    {/*    Description: mtl[index].Description,*/}
-                                    {/*    RequiredQty: mtl[index].RequiredQty,*/}
-                                    {/*    IUM: mtl[index].IUM.toUpperCase(),*/}
-                                    {/*    WarehouseCode: mtl[index].WarehouseCode,*/}
-                                    {/*    RelatedOperation: mtl[index].RelatedOperation,*/}
-                                    {/*})))}*/}
-
                                     {displayJobMtl.length > 0 ? (
                                         <Grid item xs={12}>
                                             <Typography variant="h6">Job Materials</Typography>
@@ -521,6 +507,7 @@ export default function Content({ machineID, ibdData }) {
                                             <DataGrid
                                                 rows={displayJobMtl.map((mtl, index) => ({
                                                     id: index,
+                                                    OprSeq: mtl.OprSeq,
                                                     MtlSeq: mtl.MtlSeq,
                                                     PartNum: mtl.PartNum,
                                                     Description: mtl.Description,
@@ -545,8 +532,9 @@ export default function Content({ machineID, ibdData }) {
                 </ThemeProvider >
             </React.Fragment >
 
-        );
-    }
+        )
+    };
+
 
     if (!machineID) {
         return displayError('Resource is not specified in the URL. Please contact IT for assistance.');
@@ -564,5 +552,3 @@ export default function Content({ machineID, ibdData }) {
 
     return displayError("Cannot display job details. Please contact IT for assistance.");
 }
-
-

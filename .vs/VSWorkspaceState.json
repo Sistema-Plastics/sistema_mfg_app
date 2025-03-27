@@ -5,9 +5,7 @@
     "\\src\\assets",
     "\\src\\assets\\components",
     "\\src\\assets\\styling",
-    "\\src\\components",
-    "\\src\\components\\inventoryBooking"
+    "\\src\\components"
   ],
-  "SelectedNode": "\\package.json",
   "PreviewInSolutionExplorer": false
 }
