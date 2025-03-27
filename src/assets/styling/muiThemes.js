@@ -505,6 +505,11 @@ export const sistemaTheme = createTheme(defaultTheme, {
                     textTransform: 'uppercase',
                     whiteSpace: 'break-spaces',
                 },
+                columnHeaderTitleContainer: {
+                    alignItems: 'center',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'break-spaces',
+                },
                 columnHeader: {
                     //vertical-align: 'middle',
                     align: 'center',
