@@ -10,13 +10,7 @@ import {
     cyan,
 } from "@mui/material/colors";
 import { styled } from "@mui/material/styles";
-//import TableCell from "@mui/material/TableCell";
-//import { typographyClasses } from "@mui/material/Typography";
-import { RichTreeView, TreeItem, treeItemClasses } from '@mui/x-tree-view';
-import { /*tableCellClasses*/ } from "@mui/material/TableCell";
-import { Box, Dialog, TableCell, tableCellClasses, Typography, typographyClasses } from "@mui/material";
-//import { DataGrid } from '@mui/x-data-grid';
-//import Grid from '@mui/material/Grid2';
+import { CssBaseline, TableCell, tableCellClasses, Typography, typographyClasses } from "@mui/material";
 
 const sistColours = {
     "klipit-Main": "#0032A0",
@@ -466,6 +460,15 @@ export const sistemaTheme = createTheme(defaultTheme, {
     zIndex: {},
     transitions: {},
     components: {
+        MuiCssBaseline: {
+            styleOverrides: {
+                body: {
+                    div: {
+                        marginBottom: 0,
+                    },
+                },
+            },
+        },
         MuiButton: {
             styleOverrides: {
                 root: {
@@ -487,9 +490,7 @@ export const sistemaTheme = createTheme(defaultTheme, {
         MuiRichTreeView: {
             styleOverrides: {
                 root: {
-                    //height: '100%',
-                    //display: 'block',
-                    //overflow: "auto",
+                    marginBottom: '10px',
                 },
             },
         },
@@ -498,31 +499,27 @@ export const sistemaTheme = createTheme(defaultTheme, {
                 root: {
                     width: '100%',
                     color: '#44505b',
-                    marginBottom: 0, // Added this line to override margin-bottom
                 },
                 columnHeaderTitleContainer: {
                     alignItems: 'center',
                     textTransform: 'uppercase',
-                    whiteSpace: 'break-spaces',
-                },
-                columnHeaderTitleContainer: {
-                    alignItems: 'center',
-                    textTransform: 'uppercase',
-                    whiteSpace: 'break-spaces',
                 },
                 columnHeader: {
                     //vertical-align: 'middle',
                     align: 'center',
                 },
                 columnHeaderTitle: {
+                    alignItems: 'center',
                     fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'break-spaces',
                 },
                 topContainer: {
                     height: 'auto',
                 },
             },
         },
-        
+
         MuiDialog: {
             styleOverrides: {
                 root: {
@@ -551,6 +548,7 @@ export const sistemaTheme = createTheme(defaultTheme, {
                 root: {
                     color: sistColours["klipit-Light"],
                     display: "contents",
+                    marginBottom: '10px',
                     "&.hover": {
                         backgroundColor: "#e3f2fd", // Light blue on hover
                         color: sistColours["klipit-Light"],
@@ -566,6 +564,7 @@ export const sistemaTheme = createTheme(defaultTheme, {
                 label: {
                     fontWeight: "bold",
                     width: 'auto',
+                    marginBottom: '10px',
                 },
                 content: {
                     display: "flex",

@@ -115,11 +115,6 @@ export default function Index() {
                                     <BlankLink to="/BarcodeLabelPrinting">Barcode Label Printing</BlankLink>
                                 </LinkTypography>
                             </GridItem>
-                            <GridItem>
-                                <LinkTypography variant='h6'>
-                                    <BlankLink to="/AppRS">APP RS</BlankLink>
-                                </LinkTypography>
-                            </GridItem>
                         </MyPaper>
                     </GridContainer>
 
