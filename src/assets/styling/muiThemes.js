@@ -510,6 +510,9 @@ export const sistemaTheme = createTheme(defaultTheme, {
                     textTransform: 'uppercase',
 
                 },
+                topContainer: {
+                    height:'auto',
+                },
             },
         },
 

@@ -193,14 +193,14 @@ export default function Content({ machineID, ibdData }) {
 
     const displayError = (msg) => {
         return (
-            <themeProvider theme={sistemaTheme}>
+            <ThemeProvider theme={sistemaTheme}>
                 <Typography
                     variant='h5'
                     gutterBottom
                 >
                     {msg}
                 </Typography>
-            </themeProvider>
+            </ThemeProvider>
         );
     }
 
@@ -224,18 +224,20 @@ export default function Content({ machineID, ibdData }) {
 
         const itemParts = itemId.split('-').map(Number);
 
-        console.warn("Item parts:", itemParts.length);
-        console.warn("ItemID:", itemId.startsWith('AssemblySeq'));
-
         if (itemId.startsWith('AssemblySeq') && itemParts.length === 2) {
             const [, jobAsmblIndex] = itemParts;
             const jobAsmbl = datasets.currentJob?.jobTraveller?.JobAsmbl[jobAsmblIndex];
-            console.warn("displayJobAsmbl.length ", jobAsmbl.length)
             const jobOper = jobAsmbl?.JobOper || [];
-            const jobOpDtl = jobOper[0]?.JobOpDtl || [];
-            const jobMtl = jobOper[0]?.JobMtl || [];
+            const jobOpDtl = jobOper?.reduce((acc, jobOper) => {
+                return acc.concat(jobOper.JobOpDtl || []);
+            }, []);
+            const jobMtl = jobOper?.JobMtl || [];
+
 
             console.warn("jobAsmbl:", jobAsmbl);
+            console.warn("jobOper:", jobOper);
+            console.warn("jobOpDtl:", jobOpDtl);
+            console.warn("jobMtl:", jobMtl);
             if (jobAsmbl) {
                 setDisplayJobAsmbl([jobAsmbl]);  // Ensure the JobAsmbl data is set correctly
                 setSelectedColumns(jobAsmblColumns);
@@ -277,7 +279,7 @@ export default function Content({ machineID, ibdData }) {
 
                 const children = [...rawMaterials, ...jobOpDetails];
                 return {
-                    id: `JobOper-${AssemblySeq}-${OprSeq}`,
+                    id: `JobOper-${jobAsmblIndex}-${jobOperIndex}`,
                     label: `Opr ${OprSeq}: ${OpCode.toUpperCase()}- ${OpDesc}`,
                     children: children,
                 };
@@ -290,7 +292,7 @@ export default function Content({ machineID, ibdData }) {
             };
         }) || [];
 
-        console.log("Generated tree data:", treeData);  // Add this to debug the tree structure
+        //console.log("Generated tree data:", treeData);  // Add this to debug the tree structure
 
         return treeData;
     };
@@ -300,42 +302,48 @@ export default function Content({ machineID, ibdData }) {
         : [];
 
     const jobAsmblColumns = [
-        { field: 'AssemblySeq', headerName: 'ASM', flex: 0.5 },
+        { field: 'AssemblySeq', headerName: 'ASM', align: 'center', headerAlign: 'center', flex: 0.5 },
         { field: 'PartNum', headerName: 'Part Number', flex: 1 },
         { field: 'Description', headerName: 'Part Description', flex: 2 },
-        { field: 'RevisionNum', headerName: 'Revision', flex: 1 },
+        { field: 'RevisionNum', headerName: 'Revision', align: 'center', headerAlign: 'center', flex: 1 },
         { field: 'RequiredQty', headerName: 'Required Qty', flex: 1, align: 'right' },
         { field: 'IUM', headerName: 'UOM', flex: 0.5 },
     ];
 
     const jobOperColumns = [
-        { field: 'OprSeq', headerName: 'Seq', flex: 0.5 },
-        { field: 'OpCode', headerName: 'Code', flex: 1 },
-        { field: 'OpDesc', headerName: 'Description', flex: 3 },
+        { field: 'OprSeq', headerName: 'Seq', align: 'center', headerAlign: 'center', flex: 0.5 },
+        { field: 'OpCode', headerName: 'Code', flex: 0.7 },
+        { field: 'OpDesc', headerName: 'Description', flex: 2.5 },
         { field: 'RunQty', headerName: 'Required Qty', align: 'right', flex: 1 },
         { field: 'IUM', headerName: 'UOM', flex: 0.5 },
-        { field: 'EstSetHours', headerName: 'Est. Setup Hours', align: 'right', flex: 1.5 },
-        { field: 'EstProdHours', headerName: 'Est. Prod Hours', align: 'right', flex: 1.5 },
-        { field: 'ExpCycTm', headerName: 'Cycle Time', align: 'right', flex: 1 },
-        { field: 'ProdStandard', headerName: 'Production Std', align: 'right', flex: 1 },
+        { field: 'EstSetHours', headerName: 'Est. Setup Hours', align: 'center', headerAlign: 'center', flex: 1.5 },
+        { field: 'EstProdHours', headerName: 'Est. Prod Hours', align: 'center', headerAlign: 'center', flex: 1.5 },
+        { field: 'ExpCycTm', headerName: 'Cycle Time', align: 'center', headerAlign: 'center', flex: 1 },
+        { field: 'ProdStandard', headerName: 'Prod Std', align: 'right', flex: 1 },
         { field: 'StdFormat', headerName: '', flex: 0.5 },
+        { field: 'QtyPerCycle', headerName: 'Pcs/ Cycle', align: 'center', headerAlign: 'center', flex: 1 },
     ];
 
     const jobMtlColumns = [
-        { field: 'MtlSeq', headerName: 'Mtl Seq', flex: 0.5 },
+        { field: 'MtlSeq', headerName: 'Mtl Seq', align: 'center', headerAlign: 'center', flex: 0.5 },
         { field: 'PartNum', headerName: 'Part Number', flex: 1 },
         { field: 'Description', headerName: 'Part Description', flex: 2 },
-        { field: 'RequiredQty', headerName: 'Required Qty', flex: 1 },
+        { field: 'RequiredQty', headerName: 'Required Qty', align: 'right', flex: 1 },
         { field: 'IUM', headerName: 'UOM', flex: 0.5 },
-        { field: 'WarehouseCode', headerName: 'Warehouse', flex: 1 },
-        { field: 'RelatedOperation', headerName: 'Operation', flex: 1 },
+        { field: 'WarehouseCode', headerName: 'Warehouse', align: 'center', headerAlign: 'center', flex: 1 },
+        { field: 'RelatedOperation', headerName: 'Rel. Opr', align: 'center', headerAlign: 'center', flex: 1 },
     ];
 
     const jobOpDtlColumns = [
-        { field: 'OpDtlSeq', headerName: 'Op Detail Seq', flex: 0.5 },
-        { field: 'OpDtlDesc', headerName: 'Operation Detail', flex: 2 },
-        { field: 'SetupTime', headerName: 'Setup Time (min)', flex: 1 },
-        { field: 'ProdTime', headerName: 'Production Time (min)', flex: 1 },
+        { field: 'OpDtlSeq', headerName: 'Op Seq', align: 'center', headerAlign: 'center', flex: 0.5 },
+        { field: 'ResourceID', headerName: 'Resource ID', flex: 1 },
+        { field: 'ResourceDescription', headerName: 'Res Description', flex: 2 },
+        { field: 'SetupOrProd', headerName: 'Setup/ Prod', align: 'center', headerAlign: 'center', flex: 1 },
+        { field: 'ProdCrewSize', headerName: 'Crew', align: 'center', headerAlign: 'center', flex: 1 },
+        { field: 'NumCavs', headerName: 'Cavities', align: 'center', headerAlign: 'center', flex: 1 },
+        { field: 'RunnerWt', headerName: 'Runner Weight (g)', align: 'center', headerAlign: 'center', flex: 1 },
+        { field: 'DailyProdRate', headerName: 'Daily Prod Rate', align: 'center', headerAlign: 'center', flex: 1 },
+
     ];
 
 
@@ -435,11 +443,11 @@ export default function Content({ machineID, ibdData }) {
                                                 columns={jobAsmblColumns}
                                                 pageSize={5}
                                             />
+                                            <br />
                                         </Grid>
                                     ) : ""}
-
                                     {displayJobOper.length > 0 ? (
-                                        <div style={{ width: '100%', height: 400 }}>
+                                        <Grid item xs={12}>
                                             <Typography variant="h6">Job Operations</Typography>
                                             <br />
                                             <DataGrid
@@ -455,31 +463,54 @@ export default function Content({ machineID, ibdData }) {
                                                     ExpCycTm: oper.ExpCycTm,
                                                     ProdStandard: oper.ProdStandard,
                                                     StdFormat: oper.StdFormat,
+                                                    QtyPerCycle: oper.QtyPerCycle,
                                                 }))}
                                                 columns={jobOperColumns}
-                                                pageSize={5}
+                                            //pageSize={5}
                                             />
-                                        </div>
+                                            <br />
+                                        </Grid>
                                     ) : ""}
-                                    {displayJobOpDtl.length > 0 && (
-                                        <div style={{ width: '100%', height: 400 }}>
+
+                                    {displayJobOpDtl.length > 0 ? (
+                                        <Grid item xs={12}>
                                             <Typography variant="h6">Job Operation Details</Typography>
+                                            <br />
                                             <DataGrid
                                                 rows={displayJobOpDtl.map((opDtl, index) => ({
                                                     id: index,
                                                     OpDtlSeq: opDtl.OpDtlSeq,
                                                     OpDtlDesc: opDtl.OpDtlDesc,
-                                                    SetupTime: opDtl.SetupTime,
-                                                    ProdTime: opDtl.ProdTime,
+                                                    SetupOrProd: opDtl.SetupOrProd,
+                                                    ProdCrewSize: opDtl.ProdCrewSize,
+                                                    DailyProdRate: opDtl.DailyProdRate,
+                                                    ResourceID: opDtl.ResourceID,
+                                                    ResourceDescription: opDtl.ResourceDescription,
+                                                    NumCavs: opDtl.NumCavs,
+                                                    RunnerWt: opDtl.RunnerWt,
                                                 }))}
                                                 columns={jobOpDtlColumns}
                                                 pageSize={5}
                                             />
-                                        </div>
-                                    )}
-                                    {displayJobMtl.length > 0 && (
-                                        <div style={{ width: '100%', height: 400 }}>
+                                            <br />
+                                        </Grid>
+                                    ) : ""}
+                                    {/*{console.warn("xdisplayJobMtl", displayJobMtl)}*/}
+                                    {/*//displayJobMtl.map((mtl, index) => ({*/}
+                                    {/*    id: index,*/}
+                                    {/*    MtlSeq: mtl[index].MtlSeq,*/}
+                                    {/*    PartNum: mtl[index].PartNum,*/}
+                                    {/*    Description: mtl[index].Description,*/}
+                                    {/*    RequiredQty: mtl[index].RequiredQty,*/}
+                                    {/*    IUM: mtl[index].IUM.toUpperCase(),*/}
+                                    {/*    WarehouseCode: mtl[index].WarehouseCode,*/}
+                                    {/*    RelatedOperation: mtl[index].RelatedOperation,*/}
+                                    {/*})))}*/}
+
+                                    {displayJobMtl.length > 0 ? (
+                                        <Grid item xs={12}>
                                             <Typography variant="h6">Job Materials</Typography>
+                                            <br />
                                             <DataGrid
                                                 rows={displayJobMtl.map((mtl, index) => ({
                                                     id: index,
@@ -487,14 +518,18 @@ export default function Content({ machineID, ibdData }) {
                                                     PartNum: mtl.PartNum,
                                                     Description: mtl.Description,
                                                     RequiredQty: mtl.RequiredQty,
-                                                    IUM: mtl.IUM,
+                                                    IUM: mtl.IUM?.toUpperCase(),
                                                     WarehouseCode: mtl.WarehouseCode,
+                                                    RelatedOperation: mtl.RelatedOperation,
                                                 }))}
+
                                                 columns={jobMtlColumns}
                                                 pageSize={5}
                                             />
-                                        </div>
-                                    )}
+                                            <br />
+                                        </Grid>
+                                    ) : ""}
+
                                 </Grid>
                             </Grid>
                         </DialogContent>
