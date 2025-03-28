@@ -305,41 +305,41 @@ export default function Content({ machineID, ibdData }) {
         : [];
 
     const jobAsmblColumns = [
-        { field: 'AssemblySeq', headerName: 'ASM', align: 'center', headerAlign: 'center', flex: 0.5 },
+        { field: 'AssemblySeq', headerName: 'ASM', align: 'center', headerAlign: 'center', flex: 0.7 },
         { field: 'PartNum', headerName: 'Part Number', flex: 1 },
         { field: 'Description', headerName: 'Part Description', flex: 2 },
         { field: 'RevisionNum', headerName: 'Revision', align: 'center', headerAlign: 'center', flex: 1 },
         { field: 'RequiredQty', headerName: 'Required Qty', flex: 1, align: 'right', headerAlign: 'right', },
-        { field: 'IUM', headerName: 'UOM', align: 'center', headerAlign: 'center', flex: 0.5 },
+        { field: 'IUM', headerName: 'UOM', align: 'center', headerAlign: 'center', flex: 0.7 },
     ];
 
     const jobOperColumns = [
-        { field: 'OprSeq', headerName: 'Opr', align: 'center', headerAlign: 'center', flex: 0.5 },
+        { field: 'OprSeq', headerName: 'Opr', align: 'center', headerAlign: 'center', flex: 0.7 },
         { field: 'OpCode', headerName: 'Code', flex: 0.7 },
         { field: 'OpDesc', headerName: 'Description', flex: 2.5 },
         { field: 'RunQty', headerName: 'Required Qty', align: 'right', flex: 1, },
-        { field: 'IUM', headerName: 'UOM', align: 'center', headerAlign: 'center', flex: 0.5 },
-        { field: 'EstSetHours', headerName: 'Setup Hours (Est)', align: 'center', headerAlign: 'center', flex: 1.5 },
-        { field: 'EstProdHours', headerName: 'Prod Hours (Est)', align: 'center', headerAlign: 'center', flex: 1.5 },
+        { field: 'IUM', headerName: 'UOM', align: 'center', headerAlign: 'center', flex: 0.7 },
+        { field: 'EstSetHours', headerName: 'Setup Hours (Est)', align: 'center', headerAlign: 'center', flex: 1 },
+        { field: 'EstProdHours', headerName: 'Prod Hours (Est)', align: 'center', headerAlign: 'center', flex: 1 },
         { field: 'ExpCycTm', headerName: 'Cycle Time', align: 'center', headerAlign: 'center', flex: 1 },
         { field: 'ProdStandard', headerName: 'Prod Std', align: 'right', flex: 1 },
-        { field: 'StdFormat', headerName: '', align: 'center', headerAlign: 'center', flex: 0.5 },
+        { field: 'StdFormat', headerName: '', align: 'center', headerAlign: 'center', flex: 0.7 },
         { field: 'QtyPerCycle', headerName: 'Pcs/ Cycle', align: 'center', headerAlign: 'center', flex: 1 },
     ];
 
     const jobMtlColumns = [
-        { field: 'OprSeq', headerName: 'Opr', align: 'center', headerAlign: 'center', flex: 0.5 },
-        { field: 'MtlSeq', headerName: 'Mtl Seq', align: 'center', headerAlign: 'center', flex: 0.5 },
+        { field: 'OprSeq', headerName: 'Opr', align: 'center', headerAlign: 'center', flex: 0.7 },
+        { field: 'MtlSeq', headerName: 'Mtl Seq', align: 'center', headerAlign: 'center', flex: 0.7 },
         { field: 'PartNum', headerName: 'Part Number', flex: 1 },
         { field: 'Description', headerName: 'Part Description', flex: 2 },
         { field: 'RequiredQty', headerName: 'Required Qty', align: 'right', headerAlign: 'right', flex: 1, },
-        { field: 'IUM', headerName: 'UOM', align: 'center', headerAlign: 'center', flex: 0.5 },
+        { field: 'IUM', headerName: 'UOM', align: 'center', headerAlign: 'center', flex: 0.7 },
         { field: 'WarehouseCode', headerName: 'Warehouse', align: 'center', headerAlign: 'center', flex: 1 },
         { field: 'RelatedOperation', headerName: 'Rel. Opr', align: 'center', headerAlign: 'center', flex: 1 },
     ];
 
     const jobOpDtlColumns = [
-        { field: 'OprSeq', headerName: 'Opr', align: 'center', headerAlign: 'center', flex: 0.5 },
+        { field: 'OprSeq', headerName: 'Opr', align: 'center', headerAlign: 'center', flex: 0.7 },
         { field: 'OpDtlSeq', headerName: 'Op Dtl', align: 'center', headerAlign: 'center', flex: 0.7 },
         { field: 'ResourceID', headerName: 'Resource ID', flex: 1 },
         { field: 'ResourceDescription', headerName: 'Res Description', flex: 2 },
@@ -448,7 +448,7 @@ export default function Content({ machineID, ibdData }) {
                                                     IUM: asmbl.IUM?.toUpperCase(),
                                                 }))}
                                                 columns={jobAsmblColumns}
-                                                autoSizeOptions={{ includeOutliers: true }}
+                                                hideFooter
                                             />
                                             <br />
                                         </Grid>
@@ -473,6 +473,7 @@ export default function Content({ machineID, ibdData }) {
                                                     QtyPerCycle: oper.QtyPerCycle,
                                                 }))}
                                                 columns={jobOperColumns}
+                                                hideFooter
                                             />
                                             <br />
                                         </Grid>
@@ -497,6 +498,7 @@ export default function Content({ machineID, ibdData }) {
                                                     RunnerWt: opDtl.RunnerWt,
                                                 }))}
                                                 columns={jobOpDtlColumns}
+                                                hideFooter
                                             />
                                             <br />
                                         </Grid>
@@ -518,6 +520,7 @@ export default function Content({ machineID, ibdData }) {
                                                     RelatedOperation: mtl.RelatedOperation,
                                                 }))}
                                                 columns={jobMtlColumns}
+                                                hideFooter
                                             />
                                             <br />
                                         </Grid>
