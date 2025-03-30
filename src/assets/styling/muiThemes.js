@@ -10,18 +10,19 @@ import {
     cyan,
 } from "@mui/material/colors";
 import { styled } from "@mui/material/styles";
-import { CssBaseline, TableCell, tableCellClasses, Typography, typographyClasses } from "@mui/material";
+import { CssBaseline, Menu, MenuItem, TableCell, tableCellClasses, Typography, typographyClasses } from "@mui/material";
 
-const sistColours = {
+export const sistColours = {
     "klipit-Main": "#0032A0",
     "klipit-Light": "#1976d2",
     "klipit-Dark": "",
     "klipit-Text": "#fafafa", //grey50
     "microwave-Main": "#C8102E",
-    "microwave-Light": "",
+    "microwave-Light": "#d8576c",
     "klmicrowavepit-Dark": "",
     "microwave-Text": "#fafafa",
     "paper-Background": "#fff", //"#fcf6e4",
+    "purple": "#90278e",
 };
 
 //#region  Help Links
@@ -514,6 +515,8 @@ export const sistemaTheme = createTheme(defaultTheme, {
                     textTransform: 'uppercase',
                     whiteSpace: 'break-spaces',
                 },
+                filler: {
+                },
                 topContainer: {
                     height: 'auto',
                 },
@@ -541,6 +544,9 @@ export const sistemaTheme = createTheme(defaultTheme, {
                     color: 'white',
                 },
             },
+        },
+        MuiGrid: {
+
         },
 
         MuiTreeItem: {
