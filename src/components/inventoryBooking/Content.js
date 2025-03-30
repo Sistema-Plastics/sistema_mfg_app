@@ -7,7 +7,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import { Grid, Paper, Typography, Button, Dialog, DialogContent, DialogTitle, DialogActions } from "@mui/material";
 import { RichTreeView } from '@mui/x-tree-view';
 import { DataGrid } from '@mui/x-data-grid';
-import { sistemaTheme } from "../../assets/styling/muiThemes";
+import { sistColours, sistemaTheme } from "../../assets/styling/muiThemes";
 import CssBaseline from '@mui/material/CssBaseline';
 import { mfgDashboardFunctions } from "../../helpers/HelperScripts";
 
@@ -355,53 +355,52 @@ export default function Content({ machineID, ibdData }) {
         return (
             <React.Fragment>
                 <Grid container spacing={1} marginTop={0}>
-                    {datasets.currentJob !== null &&
-                        typeof datasets.currentJob !== "undefined" ? (
-                        <>
-                            <Grid item xs={5} padding={0}>
-                                <Paper elevation={10}>
-                                    <JobDetails
-                                        mcID={machineID}
-                                        datasets={datasets}
-                                        feedback={handleJobDetailsReceipt}
-                                    />
-                                </Paper>
+                    {datasets.currentJob !== null && typeof datasets.currentJob !== "undefined" ? (
+                        <React.Fragment>
+                            {datasets.currentJob?.jobTraveller && (
+                                <Grid item xs={12} sx={{ textAlign: 'center' }}>
+                                    <ThemeProvider theme={sistemaTheme}>
+                                        <Button
+                                            id="btnJobTraveller"
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={openJobTraveller}
+                                            sx={{ backgroundColor: sistColours['purple'], border: sistColours['microwave-Main'] }}
+                                        >
+                                            Job Traveller
+                                        </Button>
+                                    </ThemeProvider>
+                                </Grid>
+                            )}
+                            <Grid item xs={12}>
+                                <Grid container>
+                                    <Grid item xs={5} padding={1}>
+                                        <Paper elevation={10}>
+                                            <JobDetails
+                                                mcID={machineID}
+                                                datasets={datasets}
+                                                feedback={handleJobDetailsReceipt}
+                                            />
+                                        </Paper>
+                                    </Grid>
+                                    <Grid item xs={5} padding={1}>
+                                        <Paper elevation={10}>
+                                            <JobStatus machineID={machineID} datasets={datasets} />
+                                            <LastPallet machineID={machineID} datasets={datasets} />
+                                        </Paper>
+                                    </Grid>
+                                    <Grid item xs={2} padding={1}>
+                                        <Paper elevation={10}>
+                                            <Actions datasets={datasets} />
+                                        </Paper>
+                                    </Grid>
+                                </Grid>
                             </Grid>
-                            <Grid item xs={5} padding={0}>
-                                <Paper elevation={10}>
-                                    <JobStatus
-                                        machineID={machineID}
-                                        datasets={datasets}
-                                    />
-                                    <LastPallet
-                                        machineID={machineID}
-                                        datasets={datasets}
-                                    />
-                                </Paper>
-                            </Grid>
-                            <Grid item xs={2} padding={0}>
-                                <Paper elevation={10}>
-                                    <Actions
-                                        datasets={datasets}
-                                    />
-                                </Paper>
-                            </Grid>
-                            <Grid item xs={12} padding={0}>
-                                <ThemeProvider theme={sistemaTheme}>
-                                    <Button id="btnJobTraveller"
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={openJobTraveller}
-                                    >
-                                        Job Traveller
-                                    </Button>
-                                </ThemeProvider>
-                            </Grid>
-                        </>
+                        </React.Fragment>
                     ) : (
                         <div>
                             <Typography
-                                variant='h5'
+                                variant="h5"
                                 gutterBottom
                                 padding={sistTheme.spacing(1)}
                             >
@@ -418,21 +417,20 @@ export default function Content({ machineID, ibdData }) {
 
                 <ThemeProvider theme={sistemaTheme}>
                     <CssBaseline />
-                    <Dialog open={openDialog} onClose={handleCloseDialog} >
+                    <Dialog open={openDialog} onClose={handleCloseDialog} sx={{ minHeight: '80%' }}>
                         <DialogTitle>Job Traveller {datasets.currentJob?.jn}</DialogTitle>
                         <DialogContent>
-                            <Grid container spacing={3} >
+                            <Grid container spacing={3}>
                                 <Grid item xs={3}>
                                     <br />
                                     <RichTreeView
-                                        defaultExpandedItems={['grid']}
+                                        defaultExpandedItems={["grid"]}
                                         items={jobTravellerTreeData}
-                                        //onItemClick={handleTreeItemClick}
                                         onItemClick={(event, item) => handleTreeItemClick(item)}
                                     />
                                 </Grid>
                                 <Grid container item xs={8}>
-                                    {displayJobAsmbl.length > 0 ? (
+                                    {displayJobAsmbl.length > 0 && (
                                         <Grid item xs={12}>
                                             <br />
                                             <Typography variant="h6">Assembly Sequence</Typography>
@@ -452,8 +450,8 @@ export default function Content({ machineID, ibdData }) {
                                             />
                                             <br />
                                         </Grid>
-                                    ) : ""}
-                                    {displayJobOper.length > 0 ? (
+                                    )}
+                                    {displayJobOper.length > 0 && (
                                         <Grid item xs={12}>
                                             <Typography variant="h6">Job Operations</Typography>
                                             <br />
@@ -477,9 +475,8 @@ export default function Content({ machineID, ibdData }) {
                                             />
                                             <br />
                                         </Grid>
-                                    ) : ""}
-
-                                    {displayJobOpDtl.length > 0 ? (
+                                    )}
+                                    {displayJobOpDtl.length > 0 && (
                                         <Grid item xs={12}>
                                             <Typography variant="h6">Job Operation Details</Typography>
                                             <br />
@@ -502,8 +499,8 @@ export default function Content({ machineID, ibdData }) {
                                             />
                                             <br />
                                         </Grid>
-                                    ) : ""}
-                                    {displayJobMtl.length > 0 ? (
+                                    )}
+                                    {displayJobMtl.length > 0 && (
                                         <Grid item xs={12}>
                                             <Typography variant="h6">Job Materials</Typography>
                                             <br />
@@ -524,17 +521,17 @@ export default function Content({ machineID, ibdData }) {
                                             />
                                             <br />
                                         </Grid>
-                                    ) : ""}
-
+                                    )}
                                 </Grid>
                             </Grid>
                         </DialogContent>
-                        <DialogActions><Button onClick={() => setOpenDialog(false)}>Close</Button></DialogActions>
+                        <DialogActions>
+                            <Button onClick={() => setOpenDialog(false)}>Close</Button>
+                        </DialogActions>
                     </Dialog>
-                </ThemeProvider >
-            </React.Fragment >
-
-        )
+                </ThemeProvider>
+            </React.Fragment>
+        );
     };
 
 
