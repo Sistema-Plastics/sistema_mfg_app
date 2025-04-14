@@ -169,7 +169,6 @@ export default function Content({ machineID, ibdData }) {
                                 jobTraveller: jobTraveller[0]
                             }
                         };
-
                     });
                     console.log('Datasets: ', datasets);
                 }
@@ -220,15 +219,15 @@ export default function Content({ machineID, ibdData }) {
         setDisplayJobMtl([]);  // Clear the JobMtl data before setting it again
         setSelectedColumns([]);  // Clear the columns before setting it again
 
-        console.warn("Clicked item:", itemId);
+        console.log("Clicked item:", itemId);
         if (!itemId) { return; }  // If the itemId is null, return
 
         const itemParts = itemId.split('-').map(Number);
         const [, jobAsmblIndex, jobOperIndex] = itemParts;
 
         const jobAsmbl = datasets.currentJob?.jobTraveller?.JobAsmbl[jobAsmblIndex];
-        console.warn("jobAsmblIndex:", itemParts[1]);
-        console.warn("jobOperIndex:", jobOperIndex);
+        console.log("jobAsmblIndex:", itemParts[1]);
+        console.log("jobOperIndex:", jobOperIndex);
 
         let jobOper;
 
@@ -242,7 +241,7 @@ export default function Content({ machineID, ibdData }) {
             } else if (selectedJobOper && typeof selectedJobOper === 'object') {
                 jobOper = [{ AssemblySeq: jobAsmbl.AssemblySeq, ...selectedJobOper }];
             } else {
-                console.warn("No valid JobOper data at index:", jobOperIndex);
+                console.log("No valid JobOper data at index:", jobOperIndex);
             }
         }
         else {
@@ -259,10 +258,10 @@ export default function Content({ machineID, ibdData }) {
             return acc.concat(jobOper.JobMtl?.map(mtl => ({ AssemblySeq: jobAsmbl.AssemblySeq, OprSeq: jobOper.OprSeq, ...mtl })) || []);
         }, []);
 
-        console.warn("jobAsmbl:", jobAsmbl);
-        console.warn("jobOper:", jobOper);
-        console.warn("jobOpDtl:", jobOpDtl);
-        console.warn("jobMtl:", jobMtl);
+        console.log("jobAsmbl:", jobAsmbl);
+        console.log("jobOper:", jobOper);
+        console.log("jobOpDtl:", jobOpDtl);
+        console.log("jobMtl:", jobMtl);
         if (jobAsmbl) {
             setDisplayJobAsmbl([jobAsmbl]);  // Ensure the JobAsmbl data is set correctly
             setSelectedColumns(jobAsmblColumns);
@@ -427,6 +426,7 @@ export default function Content({ machineID, ibdData }) {
                                         defaultExpandedItems={["grid"]}
                                         items={jobTravellerTreeData}
                                         onItemClick={(event, item) => handleTreeItemClick(item)}
+                                        sx={{ position: 'sticky', top: 0 }}
                                     />
                                 </Grid>
                                 <Grid container item xs={8}>
@@ -446,6 +446,29 @@ export default function Content({ machineID, ibdData }) {
                                                     IUM: asmbl.IUM?.toUpperCase(),
                                                 }))}
                                                 columns={jobAsmblColumns}
+                                                hideFooter
+                                            />
+                                            <br />
+                                        </Grid>
+                                    )}
+
+                                    {displayJobMtl.length > 0 && (
+                                        <Grid item xs={12}>
+                                            <Typography variant="h6">Raw Materials</Typography>
+                                            <br />
+                                            <DataGrid
+                                                rows={displayJobMtl.map((mtl, index) => ({
+                                                    id: index,
+                                                    OprSeq: mtl.OprSeq,
+                                                    MtlSeq: mtl.MtlSeq,
+                                                    PartNum: mtl.PartNum,
+                                                    Description: mtl.Description,
+                                                    RequiredQty: mtl.RequiredQty,
+                                                    IUM: mtl.IUM?.toUpperCase(),
+                                                    WarehouseCode: mtl.WarehouseCode,
+                                                    RelatedOperation: mtl.RelatedOperation,
+                                                }))}
+                                                columns={jobMtlColumns}
                                                 hideFooter
                                             />
                                             <br />
@@ -495,28 +518,6 @@ export default function Content({ machineID, ibdData }) {
                                                     RunnerWt: opDtl.RunnerWt,
                                                 }))}
                                                 columns={jobOpDtlColumns}
-                                                hideFooter
-                                            />
-                                            <br />
-                                        </Grid>
-                                    )}
-                                    {displayJobMtl.length > 0 && (
-                                        <Grid item xs={12}>
-                                            <Typography variant="h6">Job Materials</Typography>
-                                            <br />
-                                            <DataGrid
-                                                rows={displayJobMtl.map((mtl, index) => ({
-                                                    id: index,
-                                                    OprSeq: mtl.OprSeq,
-                                                    MtlSeq: mtl.MtlSeq,
-                                                    PartNum: mtl.PartNum,
-                                                    Description: mtl.Description,
-                                                    RequiredQty: mtl.RequiredQty,
-                                                    IUM: mtl.IUM?.toUpperCase(),
-                                                    WarehouseCode: mtl.WarehouseCode,
-                                                    RelatedOperation: mtl.RelatedOperation,
-                                                }))}
-                                                columns={jobMtlColumns}
                                                 hideFooter
                                             />
                                             <br />

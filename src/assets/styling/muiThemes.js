@@ -13,15 +13,15 @@ import { styled } from "@mui/material/styles";
 import { CssBaseline, Menu, MenuItem, TableCell, tableCellClasses, Typography, typographyClasses } from "@mui/material";
 
 export const sistColours = {
-    "klipit-Main": "#0032A0",
-    "klipit-Light": "#1976d2",
+    "klipit-Main": "#0032A0", //Dark blue
+    "klipit-Light": "#1976d2", //Light Blue
     "klipit-Dark": "",
-    "klipit-Text": "#fafafa", //grey50
-    "microwave-Main": "#C8102E",
-    "microwave-Light": "#d8576c",
+    "klipit-Text": "#fafafa", //Gray98
+    "microwave-Main": "#C8102E", //Red
+    "microwave-Light": "#d8576c", //Pinkish
     "klmicrowavepit-Dark": "",
-    "microwave-Text": "#fafafa",
-    "paper-Background": "#fff", //"#fcf6e4",
+    "microwave-Text": "#fafafa", //Gray98
+    "paper-Background": "#fff", //White,
     "purple": "#90278e",
 };
 
@@ -443,7 +443,24 @@ export const sistemaTheme = createTheme(defaultTheme, {
         body: {
             color: sistColours["klipit-Light"],
         },
-
+        h1: {
+            color: sistColours["klipit-Light"],
+        },
+        h2: {
+            color: sistColours["klipit-Light"],
+        },
+        h3: {
+            color: sistColours["klipit-Light"],
+        },
+        h4: {
+            color: sistColours["klipit-Light"],
+        },
+        h5: {
+            color: sistColours["klipit-Light"],
+        },
+        h6: {
+            marginLeft: '8px',
+        },
         tableCellHeading: {
             fontSize: "1rem",
             fontWeight: 400,
@@ -451,9 +468,6 @@ export const sistemaTheme = createTheme(defaultTheme, {
         tableCellData: {
             fontSize: "1rem",
             fontWeight: 800,
-        },
-        allVariants: {
-            color: sistColours["klipit-Light"],
         },
     },
     //spacing: 8,
