@@ -25,6 +25,7 @@ const InventoryBooking = () => {
         palletdataconf: null,
         labourdtl: null,
         jobtraveller: null,
+        activeJob: null,
     });
 
     //TODO: refresh pallet subscription
@@ -34,6 +35,7 @@ const InventoryBooking = () => {
 
     const pltTopic = `+/${machineID.toLowerCase()}/inventorymove/receivemfgparttoinventory`;
     const pltTopicConf = `+/${machineID.toLowerCase()}/inventorymove/receivemfgparttoinventory/confirmation`;
+    const activeJob = `+/${machineID.toLowerCase()}/currentjob`;
     // const pltTopic = '+/f04/inventorymove/receivemfgparttoinventory'
     //setup topics
     let topics = [
@@ -45,6 +47,7 @@ const InventoryBooking = () => {
         "systemdata/dashboards/epicor/jobtraveller",
         pltTopic,
         pltTopicConf,
+        activeJob,
     ];
 
     //now add bse topic as prefx
@@ -134,9 +137,13 @@ const InventoryBooking = () => {
                         return { ...prevState, jobtraveller: msg };
                     });
                     break;
+                case topic.includes("activeJob"):
+                    setDatasets((prevState) => {
+                        return { ...prevState, activejob: msg };
+                    });
+                    break;
                 default:
             }
-            // console.log("Received  '" + topic + "'");
         });
     }, [client]);
 
