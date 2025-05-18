@@ -461,6 +461,7 @@ export const sistemaTheme = createTheme(defaultTheme, {
         h6: {
             marginLeft: '8px',
         },
+
         tableCellHeading: {
             fontSize: "1rem",
             fontWeight: 400,
