@@ -32,7 +32,10 @@ import { styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
 
 import { connections } from "../../../config/ConnectionBroker";
-import { mqttFunctions } from "../../../helpers/HelperScripts";
+import {
+  mqttFunctions,
+  operationsFunctions,
+} from "../../../helpers/HelperScripts";
 import { helperfunctions } from "../../../assets/scripts/helperfunctions";
 import assyEmployees from "../assyData/EmpList";
 import assyShifts from "../assyData/Shifts";
@@ -205,25 +208,25 @@ export default function ProductionBooking() {
   const [dataComplete, setDataComplete] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // const [empID, setEmpID] = useState(null);
-  const [employeeErr, setEmployeeErr] = useState(false);
   const [jobCrew, setJobCrew] = useState(null);
   const [lineErr, setLineErr] = useState(true);
 
   const [jobs, setJobs] = useState(null);
-
+ 
+  const [employeeColumns, setEmployeeColumns] = useState({
+    available: { title: "Available Employees", items: [] },
+    clockedin: { title: "Clocked In Employees", items: [] },
+    onbreak: { title: "Employees On Break", items: [] },
+  });
   const empHelperText = useRef("Employee Number");
-  // const [displayUnRequired, setDisplayUnRequired] = useState(true);
-  // const [displayOnlyClockedIn, setDisplayOnlyClockedIn] = useState(false);
-
-  // const [isUpdateComplete, setIsUpdateComplete] = useState(true);
-
+ 
   //only define onbreak as empty array, rendering will happen before this can be filled and this will rpevent errors
 
   const [datasets, setDatasets] = useState({
     // employees: null,
     // cells: null,
     // jobs: null,
+
     onbreak: [],
   });
 
@@ -234,7 +237,7 @@ export default function ProductionBooking() {
     "systemdata/dashboards/epicor/cells",
     // "systemdata/dashboards/epicor/shifts",
     "systemdata/dashboards/epicor/assycrewsize",
-    "systemdata/dashboards/epicor/jobs",
+    "systemdata/dashboards/epicor/jobsallops",
     // "+/+/employees/onbreak", //cannot log these at startup as no line is yet known
   ];
 
@@ -243,6 +246,10 @@ export default function ProductionBooking() {
   // //now add bse topic as prefx
   const baseTopic = connections.getBaseMQTTTopicFromPort();
   topics = topics.map((m) => baseTopic + m);
+
+  useEffect(() => {
+    console.log("useEffect every");
+  });
 
   useEffect(() => {
     setClient(
@@ -280,12 +287,15 @@ export default function ProductionBooking() {
         switch (true) {
           case topic.includes("employeeslist"):
             //set teh comparioson list. this will be used when passing back to erp to filter out changes
+            // setDatasets((prevState) => {
+            //   return { ...prevState, origemployees: assyEmployees(null, msg) };
+            // });
+            // //set the list that will change
+            // setDatasets((prevState) => {
+            //   return { ...prevState, employees: assyEmployees(null, msg) };
+            // });
             setDatasets((prevState) => {
-              return { ...prevState, origemployees: assyEmployees(null, msg) };
-            });
-            //set the list that will change
-            setDatasets((prevState) => {
-              return { ...prevState, employees: assyEmployees(null, msg) };
+              return { ...prevState, employees: msg };
             });
             break;
 
@@ -310,7 +320,7 @@ export default function ProductionBooking() {
               return { ...prevState, assycrewsizes: msg };
             });
             break;
-          case topic.includes("jobs"):
+          case topic.includes("jobsallops"):
             setDatasets((prevState) => {
               return { ...prevState, jobs: msg };
             });
@@ -387,7 +397,51 @@ export default function ProductionBooking() {
       setDataComplete(true);
       if (searchParams.get("line") !== null) {
         const l = searchParams.get("line");
-        setJobCrew(datasets.assycrewsizes.filter((a) => a.ResourceID === l)[0]);
+
+        let jc = datasets.assycrewsizes.filter((a) => a.ResourceID === l)[0];
+
+        let el = datasets.employees.filter(
+          (e) => e.ResourceGrpID === jc.ResourceGrpID
+        );
+
+        let act = datasets.activelabour.filter(
+          (e) => e.ResourceID === jc.ResourceID
+        );
+
+        //Filter out of available the already assigned. Has to be on full
+        //active labour dataset to make sure we dont see other machine assignments
+        el = el.filter(
+          (e) =>
+            datasets.assycrewsizes.filter((ac) => ac.EmployeeNum === e.EmpID)
+              .length == 0
+        );
+
+        setEmployeeColumns({
+          ...employeeColumns,
+          ["available"]: {
+            ...employeeColumns.available,
+            items: el,
+          },
+          ["clockedin"]: {
+            ...employeeColumns.clockedin,
+            items: act,
+          },
+        });
+
+        const jb = datasets.jobs.filter(
+          (jb) =>
+            jb.JobNum == jc.JobNum &&
+            jb.OprSeq == jc.OprSeq &&
+            jb.AssemblySeq == jc.AssemblySeq
+        )[0];
+        jc.OpCode = jb.OpCode;
+        jc.OpDesc = jb.OpDesc;
+        jc.JCDeptDescription = jb.JCDeptDesc;
+        jc.OpCodeOpDesc = jb.OpCodeOpDesc;
+        jc.Company = jb.Company;
+
+        setJobCrew(jc);
+
         handleLogIn(l);
       } else {
         //  setIsLoggedIn(false);
@@ -413,6 +467,7 @@ export default function ProductionBooking() {
     //get each lines max crewsize for jobs where startdate
     //is less than or equalk to today
     // if (dataComplete) setMaxLineCrewSize(null);
+    console.log("useEffect dataComplete");
   }, [dataComplete]);
 
   const handleLogIn = (loginLine) => {
@@ -516,20 +571,6 @@ export default function ProductionBooking() {
     console.log("");
   };
 
-  // const handleEmployeeChange = (event) => {
-  //   const val = event.target.value.toUpperCase();
-
-  //   const empIDs = new Set(datasets.employees.map((e) => e.id.toUpperCase()));
-
-  //   if (empIDs.has(val)) {
-  //     setEmpID(val);
-  //     setEmployeeErr(false);
-  //   } else {
-  //     empHelperText.current = "Please enter valid Employee ID";
-  //     setEmployeeErr(true);
-  //   }
-  // };
-
   const handleLineChange = (event) => {
     const val = event.target.value.toUpperCase();
 
@@ -594,37 +635,121 @@ export default function ProductionBooking() {
   };
 
   const handleOnDragEnd = (result) => {
-    console.log("moved");
-    const from = result.source.droppableId;
-    const to = result.destination.droppableId;
-    let currONB = [];
-
-    if (from === "clockedin" && to === "onbreak") {
-      //map to avoid byref copy
-      const emp = datasets.activelabour.filter(
-        (a) => a.EmployeeNum === result.draggableId
-      )[0];
-
-      currONB = [
-        ...datasets.onbreak,
-        {
-          id: result.draggableId,
-          name: emp.Name,
-          timestamp: new Date().getTime(),
-        },
-      ];
-      
-    } else if (from === "onbreak" && to === "clockedin") {
-      currONB = datasets.onbreak.filter( ob => ob.id !== result.draggableId)
+    console.log("moving ");
+    //    Use this to exit if drag n drop is outside of droppable areas
+    try {
+      const t1 = result.source.droppableId;
+      const t2 = result.destination.droppableId;
+    } catch (error) {
+      return;
     }
-    const topic = (
-      baseTopic + `${jobCrew.Cell_c}/${jobCrew.ResourceID}/employees/onbreak`
-    ).toLowerCase();
-    const payload = JSON.stringify(currONB);
-    publishMQTT(topic, payload);
 
+    const { source, destination } = result;
+
+    const from = source.droppableId;
+    const to = destination.droppableId;
+
+    let currONB = [];
+    if (source.droppableId == destination.droppableId) {
+      const column = employeeColumns[source.droppableId];
+      const copiedItems = [...column.items];
+      const [removed] = copiedItems.splice(source.index, 1);
+      copiedItems.splice(destination.index, 0, removed);
+      setEmployeeColumns({
+        ...employeeColumns,
+        [source.droppableId]: {
+          ...column,
+          items: copiedItems,
+        },
+      });
+    } else {
+      let pyld = {}; //`{"JobNum":"${jobCrew.JobNum}", "AssemblySeq":"${jobCrew.AssemblySeq}", "OprSeq":"${jobCrew.OprSeq}"}`
+
+      pyld.EmpID = result.draggableId;
+      pyld.JobNum = jobCrew.JobNum;
+      pyld.Company = jobCrew.Company;
+      pyld.AssemblySeq = jobCrew.AssemblySeq;
+      pyld.OprSeq = jobCrew.OprSeq;
+      pyld.JCDept = jobCrew.JCDept;
+      pyld.ResourceID = jobCrew.ResourceID;
+      pyld.ResourceGrpID = jobCrew.ResourceGrpID;
+      pyld.OpCode = jobCrew.OpCode;
+      pyld.JCDeptDescription = jobCrew.JCDeptDescription;
+      pyld.OpCodeOpDesc = jobCrew.OpCodeOpDesc;
+
+      let topic =
+        baseTopic + `${jobCrew.ResourceGrpID}/${jobCrew.ResourceID}/employees`;
+
+      const sourceColumn = employeeColumns[source.droppableId];
+      const destColumn = employeeColumns[destination.droppableId];
+      const sourceItems = [...sourceColumn.items];
+      const destItems = [...destColumn.items];
+      const [removed] = sourceItems.splice(source.index, 1);
+      destItems.splice(destination.index, 0, removed);
+      setEmployeeColumns({
+        ...employeeColumns,
+        [source.droppableId]: {
+          ...sourceColumn,
+          items: sourceItems,
+        },
+        [destination.droppableId]: {
+          ...destColumn,
+          items: destItems,
+        },
+      });
+
+      if (from === "available") {
+        if (to === "clockedin") {
+          //map to avoid byref copy
+          // const emp = datasets.employees.filter(
+          //   (a) => a.EmpID === result.draggableId
+          // )
+          console.log("clocking in");
+          topic += "/clockin";
+        } else {
+          console.log("cant move avail to break or back to itsel");
+        }
+      } else if (from === "onbreak") {
+      } else {
+        //only option left is from clocked in
+      }
+
+      // if (from === "clockedin" && to === "onbreak") {
+      //   //map to avoid byref copy
+      //   const emp = datasets.activelabour.filter(
+      //     (a) => a.EmployeeNum === result.draggableId
+      //   )[0];
+
+      //   currONB = [
+      //     ...datasets.onbreak,
+      //     {
+      //       id: result.draggableId,
+      //       name: emp.Name,
+      //       timestamp: new Date().getTime(),
+      //     },
+      //   ];
+      // } else if (from === "onbreak" && to === "clockedin") {
+      //   currONB = datasets.onbreak.filter((ob) => ob.id !== result.draggableId);
+      // }
+      //  else if (from === "cell" && to === "clockedin") {}
+      // const topic = (
+      //   baseTopic +
+      //   `${jobCrew.ResourceGrpID}/${jobCrew.ResourceID}/employees/onbreak`
+      // ).toLowerCase();
+      // const payload = JSON.stringify(currONB);
+
+      const payload = JSON.stringify(pyld);
+      publishMQTT(topic.toLowerCase(), payload);
+    }
     console.log("moved");
   };
+  
+  const onDragEnd = (result, employeeColumns, setEmployeeColumns) => {
+  
+  }
+
+
+
 
   const publishMQTT = (topic, payload) => {
     const qos = 0;
@@ -637,14 +762,16 @@ export default function ProductionBooking() {
     });
   };
 
-  return (
+  return !dataComplete ? (
+    <React.Fragment>Waiting for Data</React.Fragment>
+  ) : (
     <React.Fragment>
       <Box>
         <Grid container>
           <Grid item>
             {jobs !== null ? (
               <Typography variant="h5">
-                Production Processing for {jobs.firstJob.JobNum} on
+                Production Processing for {jobs.firstJob.JobNum} on :{" "}
                 {jobCrew.ResourceID}
               </Typography>
             ) : (
@@ -916,6 +1043,7 @@ export default function ProductionBooking() {
                 <PostAddIcon sx={{ ...iconSX }}></PostAddIcon>
               </Grid>
             </Grid>
+
             {/**employees and currest pallet status */}
             <Grid container>
               {/**employee grid */}
@@ -924,6 +1052,7 @@ export default function ProductionBooking() {
                   Employees
                 </Typography>
 
+         
                 <Grid container>
                   {" "}
                   <DragDropContext onDragEnd={handleOnDragEnd}>
@@ -950,7 +1079,7 @@ export default function ProductionBooking() {
                             </Typography>
                             {/** //TODO  filter by cell && active labour */}
 
-                            <Droppable droppableId={"cell"}>
+                            <Droppable droppableId={"available"}>
                               {(provided, snapshot) => (
                                 <List
                                   ref={provided.innerRef}
@@ -966,18 +1095,19 @@ export default function ProductionBooking() {
                                     overflow: "auto",
                                   }}
                                 >
-                                  {datasets.employees
-                                    .filter(
-                                      (e) =>
-                                        e.cell === jobCrew.Cell_c &&
-                                        datasets.activelabour.filter(
-                                          (ee) => e.id === ee.EmployeeNum
-                                        ).length === 0
-                                    )
-                                    .map((e, index) => (
+                                  {
+                                  // datasets.employees
+                                  //   .filter(
+                                  //     (e) =>
+                                  //       e.cell === jobCrew.Cell_c &&
+                                  //       datasets.activelabour.filter(
+                                  //         (ee) => e.id === ee.EmployeeNum
+                                  //       ).length === 0
+                                  //   )
+                                   employeeColumns.available.items.map((e, index) => (
                                       <Draggable
-                                        key={e.id}
-                                        draggableId={e.id}
+                                        key={e.EmpID}
+                                        draggableId={e.EmpID}
                                         index={index}
                                       >
                                         {(provided, snapshot) => (
@@ -1012,7 +1142,7 @@ export default function ProductionBooking() {
                                               </Avatar>
                                             </ListItemAvatar>
                                             <ListItemText
-                                              primary={e.firstname}
+                                              primary={e.FirstName}
                                               secondary={
                                                 <React.Fragment>
                                                   <Typography
@@ -1021,7 +1151,7 @@ export default function ProductionBooking() {
                                                     variant="body2"
                                                     color="lightblue"
                                                   >
-                                                    {e.id}
+                                                    {e.EmpID}
                                                   </Typography>
                                                 </React.Fragment>
                                               }
@@ -1099,15 +1229,16 @@ export default function ProductionBooking() {
                                   overflow: "auto",
                                 }}
                               >
-                                {datasets.activelabour
-                                  .filter(
-                                    (l) =>
-                                      l.ResourceID === jobCrew.ResourceID &&
-                                      datasets.onbreak.filter(
-                                        (ob) => l.EmployeeNum === ob.id
-                                      ).length < 1
-                                  )
-                                  .map((e, index) => (
+                                {
+                                // datasets.activelabour
+                                //   .filter(
+                                //     (l) =>
+                                //       l.ResourceID === jobCrew.ResourceID &&
+                                //       datasets.onbreak.filter(
+                                //         (ob) => l.EmployeeNum === ob.id
+                                //       ).length < 1
+                                //   )
+                                 employeeColumns.clockedin.items.map((e, index) => (
                                     <Draggable
                                       key={e.EmployeeNum}
                                       draggableId={e.EmployeeNum}
@@ -1302,6 +1433,12 @@ export default function ProductionBooking() {
                     </Grid>
                   </DragDropContext>{" "}
                 </Grid>
+
+
+
+
+
+
               </Grid>
               {/** pallet grid */}
               <Grid item xs={4}>
@@ -1326,28 +1463,6 @@ export default function ProductionBooking() {
           <Grid item xs={12}>
             <DialogTitle>Please log in</DialogTitle>
           </Grid>
-          {/* <Grid item xs={6} sx={{ paddingTop: 2 }}>
-            <FormControl>
-              <FormControlLabel
-                sx={{
-                  backgroundColor: "transparent",
-                  "& .MuiFilledInput-input": {
-                    color: sistTheme.palette.sistema.klipit.main,
-                  },
-                }}
-                control={
-                  <TextField
-                    error={employeeErr}
-                    id="outlined-error"
-                    defaultValue=""
-                    variant="filled"
-                    helperText={empHelperText.current}
-                    onChange={handleEmployeeChange}
-                  ></TextField>
-                }
-              />
-            </FormControl>
-          </Grid> */}
           <Grid item xs={6} sx={{ paddingTop: 2 }}>
             <FormControl>
               <FormControlLabel
@@ -1385,244 +1500,3 @@ export default function ProductionBooking() {
     </React.Fragment>
   );
 }
-
-/* 
-{
-    {
-    "Cell_c": "011",
-    "JobNum": "A0322966",
-    "PartNum": "1010391",
-    "PartDescription": "Ultra Square 7 Pack (4)",
-    "IUM": "CT",
-    "RevisionNum": "A-NON MATTEC",
-    "ProdQty": 306,
-    "QtyCompleted": 216,
-    "WIPQty": 90,
-    "ResourceID": "O01",
-    "OprSeq": 10,
-    "MattecStartDate_c": null,
-    "MattecStartDate": "2024-05-15T00:00:00",
-    "MattecStartHour_c": "0.00",
-    "MattecStartHour": "0.07",
-    "MattecEndDate_c": null,
-    "MattecEndDate": "2024-05-15T00:00:00",
-    "MattecEndHour_c": "0.00",
-    "MattecEndHour": "7.58",
-    "ProdStd": "1.07142857",
-    "TimeLeft": "1.400000001866666",
-    "Description": "O01 Multi Pack Line 1",
-    "ResourceGrpID": "OMPK",
-    "JCDept": "ASPK",
-    "OutputBinNum": "RB10",
-    "OutputWhse": "7",
-    "SetUpCrewSize": "5.00",
-    "ProdCrewSize": "5.00",
-    "OpCode": "OAO01",
-    "OpDesc": "O01 Non MATTEC",
-    "SetupLabRate": "44.940000",
-    "JCDept_Description": "Assembly & Packing Department",
-    "LaborEntryMethod": "T",
-    "AssemblySeq": 0,
-    "QtyPerPallet_c": 72,
-    "QtyPerCarton_c": 4,
-    "EstSetHours": "1.75",
-    "ReceivedQty": "216.00000000",
-    "QtyPerPallet": "18",
-    "InputBinNum": "SB31",
-    "LastChangedBy": "",
-    "LastChangedOn": null,
-    "RowIdent": "6ce54290-4b37-4f0c-b0ee-eb853b4ac6f8"
-}
-}*/
-
-//   const getParams = new URLSearchParams(useLocation().search);
-//   const title = "Current Employee Cell Assignment";
-//   const shiftParam = useRef(parseInt(getParams.get("shift")));
-//   // const shiftDateParam = useRef(moment().format("DD/MM/YY"));
-//   const shiftDateParam = useRef(new Date());
-//   // const shiftDateParam = useRef(new Date());
-//   const endResult = useRef([]);
-//   const toPost = useRef([]);
-//   const cellCrewSizeArray = useRef([]);
-//   const laneData = useRef();
-//   const [isProcessing, setIsProcessing] = useState(true);
-//   const [isLoaded, setIsLoaded] = useState(false);
-//   const [success, setSuccess] = useState(false);
-//   const [error, setError] = useState(false);
-//   const [errorMsg, setErrorMsg] = useState("");
-//   const [data, setData] = useState({});
-//   const cells = useRef([]);
-//   const employees = useRef([]);
-//   const myComponents = {
-//     LaneHeader: MyLaneHeader,
-//     ScrollableLane: MyScrollableLane,
-//   };
-
-//   useEffect(() => {
-//     setIsProcessing(true);
-//     Promise.all([
-//       assyCells(),
-//       assyEmployees(shiftDateParam.current),
-//       cellCrewSize(shiftDateParam.current),
-//     ])
-//       .then((res) => {
-//         let getCells = res[0];
-//         let getAssyEmployees = res[1];
-//         let tempCrewSizeArray = res[2];
-//         let tempCells = getCells;
-
-//         cells.current = tempCells;
-//         employees.current = getAssyEmployees;
-//         cellCrewSizeArray.current = tempCrewSizeArray;
-//         toPost.current = [];
-
-//         let availLane = dragDropFunctions.createSourceLane(
-//           employees.current,
-//           shiftParam.current,
-//           "avail"
-//         );
-//         let tempLanes = dragDropFunctions.createAssignedLane(
-//           cells.current,
-//           cellCrewSizeArray.current,
-//           employees.current,
-//           shiftParam.current,
-//           "cell"
-//         );
-//         // let mfgLane = dragDropFunctions.createMfgLane(
-//         //   employees.current,
-//         //   shiftParam.current,
-//         //   "cell"
-//         // );
-
-//         tempLanes.unshift(availLane);
-//         // tempLanes.push(mfgLane);
-//         let tempData = { lanes: tempLanes };
-//         setData(tempData);
-//         setIsProcessing(false);
-//       })
-//       .catch((err) => {
-//         setError(true);
-//         setErrorMsg(err.Error);
-//       });
-//   }, [isLoaded]);
-
-//   function onDataChange(newData) {
-//     let i = 0;
-//     let count = 0;
-//     for (i = 0; i < newData.lanes.length; i++) {
-//       try {
-//         count = newData.lanes[i].cards.length;
-//         newData.lanes[i].label = count.toString();
-//       } catch (error) {
-//         console.log(error);
-//       } finally {
-//         laneData.current = newData;
-//       }
-//     }
-//   }
-
-//   function handleDragEnd(
-//     cardId,
-//     sourceLaneId,
-//     targetLaneId,
-//     position,
-//     cardDetails
-//   ) {
-//     let tempToPost = dragDropFunctions.handleDragEnd(
-//       cardId,
-//       sourceLaneId,
-//       targetLaneId,
-//       position,
-//       cardDetails
-//     );
-//     let filter = toPost.current.filter((c) => c.id === tempToPost.id);
-//     for (let i = 0; i < filter.length; i++) {
-//       let e = toPost.current.indexOf(filter[i]);
-//       toPost.current.splice(e, 1);
-//     }
-//     toPost.current.push(tempToPost);
-//   }
-
-//   async function savePlan() {
-//     setIsProcessing(true);
-
-//     let tempResult = dragDropFunctions.savePlan(toPost.current, "Cell_c");
-//     tempResult.then((res) => {
-//       endResult.current = res;
-//       if (endResult.current.some((r) => r.status !== 201)) {
-//         setError(true);
-//         setErrorMsg(
-//           "An error occurred when assigning some employees to cells. Refresh the page and try again"
-//         );
-//         setIsLoaded(!isLoaded);
-//       } else {
-//         setSuccess(true);
-//         setIsLoaded(!isLoaded);
-//       }
-//     });
-//   }
-
-//   return (
-//     <>
-//       <Title title={title} />
-//       {error ? (
-//         <PageAlert
-//           header="Something went wrong!"
-//           body={errorMsg}
-//           variant="danger"
-//         />
-//       ) : null}
-//       {isProcessing ? (
-//         <div>
-//           <Spinner animation="border" variant="primary" style={loaderStyle} />
-//         </div>
-//       ) : (
-//         <>
-//           {success ? (
-//             <PageAlert
-//               header="Roster saved!"
-//               body="Current cell assignments updated."
-//               variant="success"
-//             />
-//           ) : null}
-//           <Container fluid>
-//             <Row>
-//               <Col xs={1}>
-//                 <Link to={`/Assembly/AssemblyNav?shift=${shiftParam.current}`}>
-//                   <BiArrowBack className="iconHeader" title="Back" />
-//                 </Link>
-//               </Col>
-//               <Col>
-//                 <h2>{title}</h2>
-//               </Col>
-//               <Col xs={1}>
-//                 <BiSave
-//                   onClick={() => savePlan()}
-//                   title="Save"
-//                   className="iconHeader"
-//                 />
-//               </Col>
-//             </Row>
-//           </Container>
-//           <Container fluid>
-//             <Board
-//               style={{
-//                 backgroundColor: "transparent",
-//                 maxHeight: "80vh",
-//                 // justifyContent: "center",
-//               }}
-//               data={data}
-//               hideCardDeleteIcon={true}
-//               handleDragEnd={handleDragEnd}
-//               onDataChange={onDataChange}
-//               draggable={true}
-//               laneSortFunction={dragDropFunctions.laneSortFunction}
-//               components={myComponents}
-//             />
-//           </Container>
-//           {/* <button onClick={() => clearTempJobs()}>Clear TempJob</button> */}
-//         </>
-//       )}
-//     </>
-//   );
-// }
