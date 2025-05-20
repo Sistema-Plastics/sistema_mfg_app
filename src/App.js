@@ -177,6 +177,7 @@ function App() {
                                         <Route path="/PendingPOs/:poNum" element={<POApproval />} />
                                         <Route path="/Assembly/JobsCellDB" element={<JobsCellDB />} />
                                         <Route path="/Assembly/EmployeeCellPlanDnd" element={<EmployeeCellPlanDnd />} />
+                                        <Route path="/Assembly/ProductionBooking" element={<ProductionBooking />}/>
                                     </Routes>
                                 </SistemaHeader>
                             </QueryClientProvider>

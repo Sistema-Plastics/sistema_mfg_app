@@ -2,9 +2,12 @@
   "ExpandedNodes": [
     "",
     "\\src",
+    "\\src\\assets",
     "\\src\\components",
+    "\\src\\components\\assembly",
+    "\\src\\components\\assembly\\assyPages",
     "\\src\\components\\inventoryBooking"
   ],
-  "SelectedNode": "\\package.json",
+  "SelectedNode": "\\src\\components\\assembly\\assyPages\\ProductionBooking.js",
   "PreviewInSolutionExplorer": false
 }
