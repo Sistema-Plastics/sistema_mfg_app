@@ -22,6 +22,7 @@ import ArrowCircleRightOutlinedIcon from "@mui/icons-material/ArrowCircleRightOu
 import ArrowCircleLeftOutlinedIcon from "@mui/icons-material/ArrowCircleLeftOutlined";
 import KeyboardReturnOutlinedIcon from "@mui/icons-material/KeyboardReturnOutlined";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
+import { DataGrid } from '@mui/x-data-grid';
 
 //import Typography from '@mui/material/Typography';
 
@@ -267,6 +268,7 @@ export default function ProductionBooking() {
                 switch (true) {
                     case topic.includes("employeeslist"):
                         setDatasets((prevState) => {
+                            if (JSON.stringify(prevState.employees) === JSON.stringify(msg)) return prevState;
                             return {
                                 ...prevState,
                                 employees: msg
@@ -275,6 +277,7 @@ export default function ProductionBooking() {
                         break;
                     case topic.includes("activelabour"):
                         setDatasets((prevState) => {
+                            if (JSON.stringify(prevState.activelabour) === JSON.stringify(msg)) return prevState;
                             return {
                                 ...prevState,
                                 activelabour: msg
@@ -283,6 +286,7 @@ export default function ProductionBooking() {
                         break;
                     case topic.includes("assycrewsize"):
                         setDatasets((prevState) => {
+                            if (JSON.stringify(prevState.assycrewsizes) === JSON.stringify(msg)) return prevState;
                             return {
                                 ...prevState,
                                 assycrewsizes: msg
@@ -291,6 +295,7 @@ export default function ProductionBooking() {
                         break;
                     case topic.includes("jobsallops"):
                         setDatasets((prevState) => {
+                            if (JSON.stringify(prevState.jobs) === JSON.stringify(msg)) return prevState;
                             return {
                                 ...prevState,
                                 jobs: msg
@@ -298,7 +303,7 @@ export default function ProductionBooking() {
                         });
                         break;
                     case topic.includes("cells"):
-                        //add unassigned reference
+                        // Add unassigned reference
                         msg.unshift({
                             CodeID: "0",
                             CodeDesc: "Unassigned Employees",
@@ -306,15 +311,17 @@ export default function ProductionBooking() {
                         });
 
                         setDatasets((prevState) => {
+                            if (JSON.stringify(prevState.cells) === JSON.stringify(msg)) return prevState;
                             return {
                                 ...prevState,
                                 cells: msg
                             };
                         });
                         break;
-
                     default:
+                        break;
                 }
+
                 //now unsubscibe from topic to prevent unwanted updates
                 client.unsubscribe(topic, function(resp) {
                     resp === null ?
@@ -539,7 +546,14 @@ export default function ProductionBooking() {
                 };
                 tmpJobs.nextJob = tmpJ2;
             }
+            console.log("tmpJobs", tmpJobs);
             setJobs(tmpJobs);
+            //TODO
+            setDatasets((prevState) => ({
+                ...prevState,
+                jobs1: tmpJobs,
+                }));
+                console.log("datasets",datasets);
         }
     };
 
@@ -762,6 +776,14 @@ export default function ProductionBooking() {
             }
         });
     };
+        const jobSummaryColumns = [
+        { field: 'AssemblySeq', headerName: 'ASM', align: 'center', headerAlign: 'center', flex: 0.7 },
+        { field: 'PartNum', headerName: 'Part Number', flex: 1 },
+        { field: 'Description', headerName: 'Part Description', flex: 2 },
+        { field: 'RevisionNum', headerName: 'Revision', align: 'center', headerAlign: 'center', flex: 1 },
+        { field: 'RequiredQty', headerName: 'Required Qty', flex: 1, align: 'right', headerAlign: 'right', },
+        { field: 'IUM', headerName: 'UOM', align: 'center', headerAlign: 'center', flex: 0.7 },
+    ];
     /*
     const displayJobSummary = () => {
         return (
@@ -772,22 +794,17 @@ export default function ProductionBooking() {
                     <Typography variant="h6">Assembly Sequence</Typography>
                     <br />
                     <DataGrid
-                        rows= {jobs.firstJob.map((asmbl, index) => ({
+                        rows= {jobs.map((job, index) => ({
                             id: index,
-
+                            Job: job.JobNum.toUpperCase(),
+                            AssemblySeq: job.AssemblySeq,
+                            Part: job.PartNum.toUpperCase(),
+                            Description: job.PartDescription.toUpperCase(),
+                            RequiredQty: job.ProdQty,
+                            Remaining: job.ProdQty - job.QtyCompleted,
                         }
-                    />
-                    <DataGrid
-                        rows={displayJobAsmbl.map((asmbl, index) => ({
-                            id: index,
-                            AssemblySeq: asmbl.AssemblySeq,
-                            PartNum: asmbl.PartNum,
-                            Description: asmbl.Description,
-                            RevisionNum: asmbl.RevisionNum,
-                            RequiredQty: asmbl.RequiredQty,
-                            IUM: asmbl.IUM?.toUpperCase(),
-                        }))}
-                        columns={jobAsmblColumns}
+                        ))}                        
+                        columns={jobSummaryColumns}
                         hideFooter
                     />
                     <br />
@@ -796,13 +813,13 @@ export default function ProductionBooking() {
         </React.Fragment>
         );
     };
+    
     */
-
     if (!resourceID) {
         return displayError('Resource is not specified in the URL. Please contact IT for assistance.');
     }
 
-   // return displayJobSummary();  
+  // return displayJobSummary();  
 
 
     return !dataComplete ? (
@@ -830,7 +847,7 @@ export default function ProductionBooking() {
           <React.Fragment>
             {/** fold out section for Job Info */}
             <Accordion>
-              <AccordionSummary disableGutters={true}>
+               <AccordionSummary >
                 <Box sx={{ display: "flex", width: "100%", margin: 0 }}>
                   <Typography variant="h6">
                     <Grid container>
