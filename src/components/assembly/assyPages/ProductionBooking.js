@@ -212,7 +212,9 @@ export default function ProductionBooking() {
 	//only define onbreak as empty array, rendering will happen before this can be filled and this will rpevent errors
 
 	const [datasets, setDatasets] = useState({
-		onbreak: [],
+		crewavailable: [],
+		crewclockedin: [],
+		crewonbreak: [],
 	});
 
 	// //now add bse topic as prefx
@@ -223,7 +225,9 @@ export default function ProductionBooking() {
 		"systemdata/dashboards/epicor/cells",
 		"systemdata/dashboards/epicor/assycrewsize",
 		"systemdata/dashboards/epicor/jobsallops",
-		// "+/+/employees/onbreak", //cannot log these at startup as no line is yet known
+		`+/${resourceID.toLowerCase()}/crew/available`,
+		`+/${resourceID.toLowerCase()}/crew/clockedin`,
+		`+/${resourceID.toLowerCase()}/crew/onbreak`,
 	];
 
 	topics = topics.map((m) => baseTopic + m);
@@ -262,10 +266,7 @@ export default function ProductionBooking() {
 				switch (true) {
 					case topic.includes("employeeslist"):
 						setDatasets((prevState) => {
-							if (
-								JSON.stringify(prevState.employees) ===
-								JSON.stringify(msg)
-							)
+							if (!hasUpdates(prevState.employees, msg))
 								return prevState;
 							return {
 								...prevState,
@@ -275,11 +276,9 @@ export default function ProductionBooking() {
 						break;
 					case topic.includes("activelabour"):
 						setDatasets((prevState) => {
-							if (
-								JSON.stringify(prevState.activelabour) ===
-								JSON.stringify(msg)
-							)
+							if (!hasUpdates(prevState.activelabour, msg))
 								return prevState;
+
 							return {
 								...prevState,
 								activelabour: msg,
@@ -288,10 +287,7 @@ export default function ProductionBooking() {
 						break;
 					case topic.includes("assycrewsize"):
 						setDatasets((prevState) => {
-							if (
-								JSON.stringify(prevState.assycrewsizes) ===
-								JSON.stringify(msg)
-							)
+							if (!hasUpdates(prevState.assycrewsizes, msg))
 								return prevState;
 							return {
 								...prevState,
@@ -301,11 +297,9 @@ export default function ProductionBooking() {
 						break;
 					case topic.includes("jobsallops"):
 						setDatasets((prevState) => {
-							if (
-								JSON.stringify(prevState.jobs) ===
-								JSON.stringify(msg)
-							)
+							if (!hasUpdates(prevState.jobs, msg))
 								return prevState;
+
 							return {
 								...prevState,
 								jobs: msg,
@@ -321,11 +315,9 @@ export default function ProductionBooking() {
 						});
 
 						setDatasets((prevState) => {
-							if (
-								JSON.stringify(prevState.cells) ===
-								JSON.stringify(msg)
-							)
+							if (!hasUpdates(prevState.cells, msg))
 								return prevState;
+
 							return {
 								...prevState,
 								cells: msg,
@@ -335,41 +327,67 @@ export default function ProductionBooking() {
 					default:
 						break;
 				}
-
-				//now unsubscibe from topic to prevent unwanted updates
-				client.unsubscribe(topic, function (resp) {
-					resp === null
-						? console.log("unsubscribed: " + topic)
-						: console.log("unsubscribed error: " + resp);
-				});
 			} else {
-				//populate datasets for this resources when known
-				//These should be after the line is set as
-				//theyre subscribed ot in teh reource useEffect
+				const msg = JSON.parse(message.toString());
+				switch (true) {
+					case topic.includes(`crew/available`):
+						// print(topic, message);
+						setDatasets((prevState) => {
+							if (!hasUpdates(prevState.crewavailable, msg))
+								return prevState;
+							return {
+								...prevState,
+								crewavailable: msg,
+							};
+						});
+						break;
+					case topic.includes(`crew/clockedin`):
+						// print(topic, message);
+						setDatasets((prevState) => {
+							if (hasUpdates(prevState.crewclockedin, msg))
+								return prevState;
 
-				if (topic.includes("onbreak")) {
-					setDatasets((prevState) => {
-						return {
-							...prevState,
-							onbreak: JSON.parse(message.toString()),
-						};
-					});
+							return {
+								...prevState,
+								crewclockedin: msg,
+							};
+						});
+						break;
+					case topic.includes(`crew/onbreak`):
+						print(topic, message);
+
+						setDatasets((prevState) => {
+							if (!hasUpdates(prevState.crewonbreak, msg))
+								return prevState;
+							return {
+								...prevState,
+								crewonbreak: msg,
+							};
+						});
+						break;
+					default:
 				}
-				console.log(
-					`topic ${topic} message ${JSON.stringify(
-						JSON.parse(message.toString())
-					)} `
-				);
 			}
 		});
 	}, [client]);
 
 	useEffect(() => {
-		//when connected subscribe to the topics
-		if (isConnected) {
+		if (isConnected && client) {
+			console.log("MQTT is connected. Subscribing to topics...");
+
 			topics.forEach((topic) => {
-				client.subscribe(topic, function () {
-					console.log("subscribed to ", topic);
+				console.log("Subscribing to:", topic); // ✅ Helpful for debugging
+				client.subscribe(topic, (err) => {
+					if (err) {
+						console.error(
+							`❌ Failed to subscribe to topic: ${topic}`,
+							err
+						);
+					} else {
+						console.log(
+							`✅ Successfully subscribed to topic: ${topic}`
+						);
+					}
 				});
 			});
 		}
@@ -466,8 +484,17 @@ export default function ProductionBooking() {
 			const tpc =
 				baseTopic +
 				`+/${jobCrew.ResourceID.toLowerCase()}/employees/onbreak`;
-			client.subscribe(tpc, function () {
-				console.log("subscribed to ", tpc);
+			client.subscribe(tpc, (err) => {
+				if (err)
+					console.error(
+						"isConnected: " + isConnected + "Subscription failed:",
+						err
+					);
+				else
+					console.log(
+						"isConnected: " + isConnected + " Subscribed to ",
+						tpc
+					);
 			});
 		}
 	}, [jobCrew]);
@@ -478,6 +505,14 @@ export default function ProductionBooking() {
 		// if (dataComplete) setMaxLineCrewSize(null);
 		console.log("useEffect dataComplete");
 	}, [dataComplete]);
+
+	const hasUpdates = (a, b) => JSON.stringify(a) !== JSON.stringify(b);
+	const print = (topic, message) =>
+		console.log(
+			`RStopic ${topic} message ${JSON.stringify(
+				JSON.parse(message.toString())
+			)} `
+		);
 
 	const handleLogIn = (resource) => {
 		setIsLoggedIn(true);
@@ -598,15 +633,6 @@ export default function ProductionBooking() {
 			}
 
 			setJobs(tmpJobs);
-
-			/* TODO
-			setDatasets((prevState) => {
-				return {
-					...prevState,
-					resourcejobs: tmpJobs,
-				};
-			});
-			*/
 		}
 	};
 
@@ -834,7 +860,7 @@ export default function ProductionBooking() {
 		);
 	};
 
-	/* TODO
+	/* TODO RS displayJobSummary
 	const jobSummaryColumns = [
 		{ field: "Job", headerName: "Job", align: "center", headerAlign: "center", flex: 0.7},
 		{ field: "AssemblySeq", headerName: "ASM", align: "center", headerAlign: "center", flex: 0.7},
@@ -883,7 +909,7 @@ export default function ProductionBooking() {
 			"Resource is not specified in the URL. Please contact IT for assistance."
 		);
 	}
-	/* TODO
+	/* TODO RS return displayJobSummary()
 	return displayJobSummary();
 	*/
 
@@ -1309,7 +1335,7 @@ export default function ProductionBooking() {
 								<PostAddIcon sx={{ ...iconSX }}></PostAddIcon>
 							</Grid>
 						</Grid>
-
+						{/* RS 20250526 DISABLING OLD LANE CODE */}
 						{/**employees and currest pallet status */}
 						<Grid container>
 							{/**employee grid */}
@@ -1345,7 +1371,7 @@ export default function ProductionBooking() {
 														>
 															Available Employees
 														</Typography>
-														{/** //TODO  filter by cell && active labour */}
+														{/** //  filter by cell && active labour */}
 
 														<Droppable
 															droppableId={
@@ -1757,7 +1783,7 @@ export default function ProductionBooking() {
 																		"auto",
 																}}
 															>
-																{datasets.onbreak.map(
+																{datasets.crewonbreak.map(
 																	(
 																		e,
 																		index
