@@ -212,7 +212,9 @@ export default function ProductionBooking() {
 	//only define onbreak as empty array, rendering will happen before this can be filled and this will rpevent errors
 
 	const [datasets, setDatasets] = useState({
-		onbreak: [],
+		crewavailable: [],
+		crewclockedin: [],
+		crewonbreak: [],
 	});
 
 	// //now add bse topic as prefx
@@ -223,7 +225,9 @@ export default function ProductionBooking() {
 		"systemdata/dashboards/epicor/cells",
 		"systemdata/dashboards/epicor/assycrewsize",
 		"systemdata/dashboards/epicor/jobsallops",
-		// "+/+/employees/onbreak", //cannot log these at startup as no line is yet known
+		`+/${resourceID.toLowerCase()}/crew/available`,
+		`+/${resourceID.toLowerCase()}/crew/clockedin`,
+		`+/${resourceID.toLowerCase()}/crew/onbreak`,
 	];
 
 	topics = topics.map((m) => baseTopic + m);
@@ -262,10 +266,7 @@ export default function ProductionBooking() {
 				switch (true) {
 					case topic.includes("employeeslist"):
 						setDatasets((prevState) => {
-							if (
-								JSON.stringify(prevState.employees) ===
-								JSON.stringify(msg)
-							)
+							if (!hasUpdates(prevState.employees, msg))
 								return prevState;
 							return {
 								...prevState,
@@ -275,11 +276,9 @@ export default function ProductionBooking() {
 						break;
 					case topic.includes("activelabour"):
 						setDatasets((prevState) => {
-							if (
-								JSON.stringify(prevState.activelabour) ===
-								JSON.stringify(msg)
-							)
+							if (!hasUpdates(prevState.activelabour, msg))
 								return prevState;
+
 							return {
 								...prevState,
 								activelabour: msg,
@@ -288,10 +287,7 @@ export default function ProductionBooking() {
 						break;
 					case topic.includes("assycrewsize"):
 						setDatasets((prevState) => {
-							if (
-								JSON.stringify(prevState.assycrewsizes) ===
-								JSON.stringify(msg)
-							)
+							if (!hasUpdates(prevState.assycrewsizes, msg))
 								return prevState;
 							return {
 								...prevState,
@@ -301,11 +297,9 @@ export default function ProductionBooking() {
 						break;
 					case topic.includes("jobsallops"):
 						setDatasets((prevState) => {
-							if (
-								JSON.stringify(prevState.jobs) ===
-								JSON.stringify(msg)
-							)
+							if (!hasUpdates(prevState.jobs, msg))
 								return prevState;
+
 							return {
 								...prevState,
 								jobs: msg,
@@ -321,11 +315,9 @@ export default function ProductionBooking() {
 						});
 
 						setDatasets((prevState) => {
-							if (
-								JSON.stringify(prevState.cells) ===
-								JSON.stringify(msg)
-							)
+							if (!hasUpdates(prevState.cells, msg))
 								return prevState;
+
 							return {
 								...prevState,
 								cells: msg,
@@ -335,41 +327,67 @@ export default function ProductionBooking() {
 					default:
 						break;
 				}
-
-				//now unsubscibe from topic to prevent unwanted updates
-				client.unsubscribe(topic, function (resp) {
-					resp === null
-						? console.log("unsubscribed: " + topic)
-						: console.log("unsubscribed error: " + resp);
-				});
 			} else {
-				//populate datasets for this resources when known
-				//These should be after the line is set as
-				//theyre subscribed ot in teh reource useEffect
+				const msg = JSON.parse(message.toString());
+				switch (true) {
+					case topic.includes(`crew/available`):
+						// print(topic, message);
+						setDatasets((prevState) => {
+							if (!hasUpdates(prevState.crewavailable, msg))
+								return prevState;
+							return {
+								...prevState,
+								crewavailable: msg,
+							};
+						});
+						break;
+					case topic.includes(`crew/clockedin`):
+						// print(topic, message);
+						setDatasets((prevState) => {
+							if (hasUpdates(prevState.crewclockedin, msg))
+								return prevState;
 
-				if (topic.includes("onbreak")) {
-					setDatasets((prevState) => {
-						return {
-							...prevState,
-							onbreak: JSON.parse(message.toString()),
-						};
-					});
+							return {
+								...prevState,
+								crewclockedin: msg,
+							};
+						});
+						break;
+					case topic.includes(`crew/onbreak`):
+						print(topic, message);
+
+						setDatasets((prevState) => {
+							if (!hasUpdates(prevState.crewonbreak, msg))
+								return prevState;
+							return {
+								...prevState,
+								crewonbreak: msg,
+							};
+						});
+						break;
+					default:
 				}
-				console.log(
-					`topic ${topic} message ${JSON.stringify(
-						JSON.parse(message.toString())
-					)} `
-				);
 			}
 		});
 	}, [client]);
 
 	useEffect(() => {
-		//when connected subscribe to the topics
-		if (isConnected) {
+		if (isConnected && client) {
+			console.log("MQTT is connected. Subscribing to topics...");
+
 			topics.forEach((topic) => {
-				client.subscribe(topic, function () {
-					console.log("subscribed to ", topic);
+				console.log("Subscribing to:", topic); // ✅ Helpful for debugging
+				client.subscribe(topic, (err) => {
+					if (err) {
+						console.error(
+							`❌ Failed to subscribe to topic: ${topic}`,
+							err
+						);
+					} else {
+						console.log(
+							`✅ Successfully subscribed to topic: ${topic}`
+						);
+					}
 				});
 			});
 		}
@@ -466,8 +484,17 @@ export default function ProductionBooking() {
 			const tpc =
 				baseTopic +
 				`+/${jobCrew.ResourceID.toLowerCase()}/employees/onbreak`;
-			client.subscribe(tpc, function () {
-				console.log("subscribed to ", tpc);
+			client.subscribe(tpc, (err) => {
+				if (err)
+					console.error(
+						"isConnected: " + isConnected + "Subscription failed:",
+						err
+					);
+				else
+					console.log(
+						"isConnected: " + isConnected + " Subscribed to ",
+						tpc
+					);
 			});
 		}
 	}, [jobCrew]);
@@ -478,6 +505,14 @@ export default function ProductionBooking() {
 		// if (dataComplete) setMaxLineCrewSize(null);
 		console.log("useEffect dataComplete");
 	}, [dataComplete]);
+
+	const hasUpdates = (a, b) => JSON.stringify(a) !== JSON.stringify(b);
+	const print = (topic, message) =>
+		console.log(
+			`RStopic ${topic} message ${JSON.stringify(
+				JSON.parse(message.toString())
+			)} `
+		);
 
 	const handleLogIn = (resource) => {
 		setIsLoggedIn(true);
@@ -598,15 +633,6 @@ export default function ProductionBooking() {
 			}
 
 			setJobs(tmpJobs);
-
-			/* TODO
-			setDatasets((prevState) => {
-				return {
-					...prevState,
-					resourcejobs: tmpJobs,
-				};
-			});
-			*/
 		}
 	};
 
@@ -834,7 +860,7 @@ export default function ProductionBooking() {
 		);
 	};
 
-	/* TODO
+	/* TODO RS displayJobSummary
 	const jobSummaryColumns = [
 		{ field: "Job", headerName: "Job", align: "center", headerAlign: "center", flex: 0.7},
 		{ field: "AssemblySeq", headerName: "ASM", align: "center", headerAlign: "center", flex: 0.7},
@@ -883,7 +909,7 @@ export default function ProductionBooking() {
 			"Resource is not specified in the URL. Please contact IT for assistance."
 		);
 	}
-	/* TODO
+	/* TODO RS return displayJobSummary()
 	return displayJobSummary();
 	*/
 
@@ -1309,561 +1335,11 @@ export default function ProductionBooking() {
 								<PostAddIcon sx={{ ...iconSX }}></PostAddIcon>
 							</Grid>
 						</Grid>
-
+						{/* RS 20250526 DISABLING OLD LANE CODE */}
 						{/**employees and currest pallet status */}
 						<Grid container>
 							{/**employee grid */}
-							<Grid item xs={8}>
-								<Typography variant='h6' textAlign={"center"}>
-									Employees
-								</Typography>
-
-								<Grid container>
-									{" "}
-									<DragDropContext
-										onDragEnd={handleOnDragEnd}
-									>
-										{/** assigned employees */}
-										<Grid item xs={3}>
-											<Grid container>
-												<Box
-													display={"flex"}
-													flexDirection={"row"}
-													maxHeight={"80vh"}
-												>
-													<Lane>
-														<Typography
-															variant='body1'
-															sx={{
-																color: grey[900],
-																minHeight: 60,
-																paddingLeft: 2,
-																paddingRight: 2,
-																backgroundColor:
-																	"darkgrey",
-															}}
-														>
-															Available Employees
-														</Typography>
-														{/** //TODO  filter by cell && active labour */}
-
-														<Droppable
-															droppableId={
-																"available"
-															}
-														>
-															{(
-																provided,
-																snapshot
-															) => (
-																<List
-																	ref={
-																		provided.innerRef
-																	}
-																	{...provided.droppableProps}
-																	style={{
-																		...provided
-																			.droppableProps
-																			.style,
-																		backgroundColor:
-																			snapshot.isDraggingOver
-																				? "lightblue"
-																				: "lightgrey",
-																		//height: "100%",
-																		minHeight:
-																			"70vh",
-																		maxHeight:
-																			"70vh",
-																		overflow:
-																			"auto",
-																	}}
-																>
-																	{
-																		// datasets.employees
-																		//   .filter(
-																		//     (e) =>
-																		//       e.cell === jobCrew.Cell_c &&
-																		//       datasets.activelabour.filter(
-																		//         (ee) => e.id === ee.EmployeeNum
-																		//       ).length === 0
-																		//   )
-																		employeeColumns.available.items.map(
-																			(
-																				e,
-																				index
-																			) => (
-																				<Draggable
-																					key={
-																						e.EmpID
-																					}
-																					draggableId={
-																						e.EmpID
-																					}
-																					index={
-																						index
-																					}
-																				>
-																					{(
-																						provided,
-																						snapshot
-																					) => (
-																						<ListItem
-																							{...provided.dragHandleProps}
-																							{...provided.draggableProps}
-																							ref={
-																								provided.innerRef
-																							}
-																							style={{
-																								...provided
-																									.draggableProps
-																									.style,
-																								backgroundColor:
-																									snapshot.isDragging
-																										? "darkgrey"
-																										: sistTheme
-																												.palette
-																												.sistema
-																												.freshworks
-																												.main,
-																								// : isclockedin(e)
-																								// ? sistTheme.palette.sistema
-																								//     .freshworks.main
-																								// : sistTheme.palette.sistema
-																								//     .microwave.main,
-																								padding: 0,
-																								// paddingLeft: 5,
-																							}}
-																						>
-																							<ListItemAvatar>
-																								<Avatar
-																									sx={{
-																										margin: 0,
-																										marginTop: 1,
-																									}}
-																								>
-																									<PersonAddAlt1Icon />
-																								</Avatar>
-																							</ListItemAvatar>
-																							<ListItemText
-																								primary={
-																									e.FirstName
-																								}
-																								secondary={
-																									<React.Fragment>
-																										<Typography
-																											sx={{
-																												display:
-																													"inline",
-																											}}
-																											component='span'
-																											variant='body2'
-																											color='lightblue'
-																										>
-																											{
-																												e.EmpID
-																											}
-																										</Typography>
-																									</React.Fragment>
-																								}
-																							/>
-																						</ListItem>
-																					)}
-																				</Draggable>
-																			)
-																		)
-																	}
-																	{
-																		provided.placeholder
-																	}
-																</List>
-															)}
-														</Droppable>
-													</Lane>
-												</Box>
-											</Grid>
-										</Grid>
-										<Grid
-											item
-											xs={1}
-											sx={{
-												display: "flex",
-												flexDirection: "column",
-												justifyContent: "center",
-											}}
-										>
-											<Box
-												sx={{
-													height: "40%",
-													display: "flex",
-													flexDirection: "column",
-													justifyContent:
-														"space-evenly",
-												}}
-											>
-												<Tooltip
-													title='Clockout All Employees'
-													arrow
-												>
-													<ArrowCircleLeftOutlinedIcon
-														sx={{ ...iconSX }}
-													></ArrowCircleLeftOutlinedIcon>
-												</Tooltip>
-											</Box>
-										</Grid>
-										{/**clocked in employees */}
-										<Grid item xs={3}>
-											<Box
-												display={"flex"}
-												flexDirection={"row"}
-												maxHeight={"80vh"}
-											>
-												<Lane>
-													<Typography
-														variant='body1'
-														sx={{
-															color: grey[900],
-															minHeight: 60,
-															paddingLeft: 2,
-															paddingRight: 2,
-															backgroundColor:
-																"darkgrey",
-														}}
-													>
-														Clocked In Employees
-													</Typography>
-
-													<Droppable droppableId='clockedin'>
-														{(
-															provided,
-															snapshot
-														) => (
-															<List
-																ref={
-																	provided.innerRef
-																}
-																{...provided.droppableProps}
-																style={{
-																	...provided
-																		.droppableProps
-																		.style,
-																	backgroundColor:
-																		snapshot.isDraggingOver
-																			? "lightblue"
-																			: "lightgrey",
-																	//height: "100%",
-																	minHeight:
-																		"70vh",
-																	maxHeight:
-																		"70vh",
-																	overflow:
-																		"auto",
-																}}
-															>
-																{
-																	// datasets.activelabour
-																	//   .filter(
-																	//     (l) =>
-																	//       l.ResourceID === jobCrew.ResourceID &&
-																	//       datasets.onbreak.filter(
-																	//         (ob) => l.EmployeeNum === ob.id
-																	//       ).length < 1
-																	//   )
-																	employeeColumns.clockedin.items.map(
-																		(
-																			e,
-																			index
-																		) => (
-																			<Draggable
-																				key={
-																					e.EmployeeNum
-																				}
-																				draggableId={
-																					e.EmployeeNum
-																				}
-																				index={
-																					index
-																				}
-																			>
-																				{(
-																					provided,
-																					snapshot
-																				) => (
-																					<ListItem
-																						{...provided.dragHandleProps}
-																						{...provided.draggableProps}
-																						ref={
-																							provided.innerRef
-																						}
-																						style={{
-																							...provided
-																								.draggableProps
-																								.style,
-																							backgroundColor:
-																								snapshot.isDragging
-																									? "darkgrey"
-																									: sistTheme
-																											.palette
-																											.sistema
-																											.freshworks
-																											.main,
-																							// : isclockedin(e)
-																							// ? sistTheme.palette.sistema
-																							//     .freshworks.main
-																							// : sistTheme.palette.sistema
-																							//     .microwave.main,
-																							padding: 0,
-																							// paddingLeft: 5,
-																						}}
-																					>
-																						<ListItemAvatar>
-																							<Avatar
-																								sx={{
-																									margin: 0,
-																									marginTop: 1,
-																								}}
-																							>
-																								<PersonAddAlt1Icon />
-																							</Avatar>
-																						</ListItemAvatar>
-																						<ListItemText
-																							primary={
-																								e.Name
-																							}
-																							secondary={
-																								<React.Fragment>
-																									<Typography
-																										sx={{
-																											display:
-																												"inline",
-																										}}
-																										component='span'
-																										variant='body2'
-																										color='lightblue'
-																									>
-																										{
-																											e.EmployeeNum
-																										}
-																									</Typography>
-																								</React.Fragment>
-																							}
-																						/>
-																					</ListItem>
-																				)}
-																			</Draggable>
-																		)
-																	)
-																}
-																{
-																	provided.placeholder
-																}
-															</List>
-														)}
-													</Droppable>
-												</Lane>
-											</Box>
-
-											{/**ResourceID */}
-										</Grid>
-										<Grid
-											item
-											xs={1}
-											sx={{
-												display: "flex",
-												flexDirection: "column",
-												justifyContent: "center",
-											}}
-										>
-											<Box
-												sx={{
-													height: "40%",
-													display: "flex",
-													flexDirection: "column",
-													justifyContent:
-														"space-evenly",
-												}}
-											>
-												<Tooltip
-													title='Move Employees to Break'
-													arrow
-												>
-													<ArrowCircleRightOutlinedIcon
-														sx={{ ...iconSX }}
-														onClick={() =>
-															handleMoveToBreakEnMasse()
-														}
-													></ArrowCircleRightOutlinedIcon>
-												</Tooltip>
-												<Tooltip
-													title='return Employees From Break'
-													arrow
-												>
-													<ArrowCircleLeftOutlinedIcon
-														sx={{ ...iconSX }}
-														onClick={() =>
-															handleReturnFromBreakEnMasse()
-														}
-													></ArrowCircleLeftOutlinedIcon>
-												</Tooltip>
-											</Box>
-										</Grid>
-										{/**On Break employees */}
-										<Grid item xs={3}>
-											<Box
-												display={"flex"}
-												flexDirection={"row"}
-												maxHeight={"80vh"}
-											>
-												<Lane>
-													<Typography
-														variant='body1'
-														sx={{
-															color: grey[900],
-															minHeight: 60,
-															paddingLeft: 2,
-															paddingRight: 2,
-															backgroundColor:
-																"darkgrey",
-														}}
-													>
-														Employees On Break
-													</Typography>
-
-													<Droppable
-														droppableId={"onbreak"}
-													>
-														{(
-															provided,
-															snapshot
-														) => (
-															<List
-																ref={
-																	provided.innerRef
-																}
-																{...provided.droppableProps}
-																style={{
-																	...provided
-																		.droppableProps
-																		.style,
-																	backgroundColor:
-																		snapshot.isDraggingOver
-																			? "lightblue"
-																			: "lightgrey",
-																	//height: "100%",
-																	minHeight:
-																		"70vh",
-																	maxHeight:
-																		"70vh",
-																	overflow:
-																		"auto",
-																}}
-															>
-																{datasets.onbreak.map(
-																	(
-																		e,
-																		index
-																	) => (
-																		<Draggable
-																			key={
-																				e.id
-																			}
-																			draggableId={
-																				e.id
-																			}
-																			index={
-																				index
-																			}
-																		>
-																			{(
-																				provided,
-																				snapshot
-																			) => (
-																				<ListItem
-																					{...provided.dragHandleProps}
-																					{...provided.draggableProps}
-																					ref={
-																						provided.innerRef
-																					}
-																					style={{
-																						...provided
-																							.draggableProps
-																							.style,
-																						backgroundColor:
-																							snapshot.isDragging
-																								? "darkgrey"
-																								: amber[600],
-																						// : isclockedin(e)
-																						// ? sistTheme.palette.sistema
-																						//     .freshworks.main
-																						// : sistTheme.palette.sistema
-																						//     .microwave.main,
-																						padding: 0,
-																						// paddingLeft: 5,
-																					}}
-																				>
-																					<ListItemAvatar>
-																						<Avatar
-																							sx={{
-																								margin: 0,
-																								marginTop: 1,
-																							}}
-																						>
-																							<PersonAddAlt1Icon />
-																						</Avatar>
-																					</ListItemAvatar>
-																					<ListItemText
-																						primary={
-																							e.name
-																						}
-																						secondary={
-																							<React.Fragment>
-																								<Typography
-																									sx={{
-																										display:
-																											"inline",
-																									}}
-																									component='span'
-																									variant='body2'
-																									color='lightblue'
-																								>
-																									{
-																										e.id
-																									}
-																								</Typography>
-																							</React.Fragment>
-																						}
-																					/>
-																				</ListItem>
-																			)}
-																		</Draggable>
-																	)
-																)}
-																{
-																	provided.placeholder
-																}
-															</List>
-														)}
-													</Droppable>
-												</Lane>
-											</Box>
-										</Grid>
-									</DragDropContext>{" "}
-								</Grid>
-							</Grid>
-							{/** pallet grid */}
-							<Grid item xs={4}>
-								<Typography variant='h6'>
-									Pallet status
-								</Typography>
-
-								<Table>
-									<TableBody>
-										<TableRow>
-											<TableCell>Time Started</TableCell>
-											<TableCell>01</TableCell>
-										</TableRow>
-									</TableBody>
-								</Table>
-							</Grid>
+							<Grid item xs={8}></Grid>
 						</Grid>
 					</React.Fragment>
 				)}
