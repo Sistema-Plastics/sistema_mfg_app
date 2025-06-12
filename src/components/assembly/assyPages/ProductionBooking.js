@@ -1,5 +1,5 @@
 //This is the page where Drag and drop of employees are saved to Cell_c
-import React, { useEffect, useRef, useContext, useState } from "react";
+import React, { useEffect, useMemo, useRef, useContext, useState } from "react";
 import { SistemaContext } from "../../../assets/components/SistemaHeader";
 import { useSearchParams } from "react-router-dom";
 //import { Typography, } from "@mui/material";
@@ -34,7 +34,7 @@ import ArrowForwardIosSharpIcon from "@mui/icons-material/ArrowForwardIosSharp";
 import PostAddIcon from "@mui/icons-material/PostAdd";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import { HomeRepairServiceSharp } from "@mui/icons-material";
+import { HomeRepairServiceSharp, Publish } from "@mui/icons-material";
 import ArrowCircleRightOutlinedIcon from "@mui/icons-material/ArrowCircleRightOutlined";
 import ArrowCircleLeftOutlinedIcon from "@mui/icons-material/ArrowCircleLeftOutlined";
 import KeyboardReturnOutlinedIcon from "@mui/icons-material/KeyboardReturnOutlined";
@@ -45,7 +45,7 @@ import { DataGrid } from "@mui/x-data-grid";
 
 import { styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
-import { connections } from "../../../config/ConnectionBroker";
+import { baseURL, connections } from "../../../config/ConnectionBroker";
 import {
 	mqttFunctions,
 	operationsFunctions,
@@ -185,9 +185,10 @@ export default function ProductionBooking() {
 	const [dataComplete, setDataComplete] = useState(false);
 	const [searchParams, setSearchParams] = useSearchParams();
 
-	const [jobCrew, setJobCrew] = useState(null);
+	const [jobSummary, setJobSummary] = useState(null);
 	const [lineErr, setLineErr] = useState(true);
 	const [jobs, setJobs] = useState(null);
+	const [selectedEmployeeIds, setSelectedEmployeeIds] = useState([]);
 
 	const [employeeColumns, setEmployeeColumns] = useState({
 		available: {
@@ -217,6 +218,14 @@ export default function ProductionBooking() {
 		crewonbreak: [],
 	});
 
+	const [readyState, setReadyState] = useState({
+		crewavailable: false,
+		crewclockedin: false,
+		crewonbreak: false,
+		employees: false,
+		assycrewsize: false,
+	});
+
 	// //now add bse topic as prefx
 	const baseTopic = connections.getBaseMQTTTopicFromPort();
 	let topics = [
@@ -225,9 +234,9 @@ export default function ProductionBooking() {
 		"systemdata/dashboards/epicor/cells",
 		"systemdata/dashboards/epicor/assycrewsize",
 		"systemdata/dashboards/epicor/jobsallops",
-		`+/${resourceID.toLowerCase()}/crew/available`,
 		`+/${resourceID.toLowerCase()}/crew/clockedin`,
 		`+/${resourceID.toLowerCase()}/crew/onbreak`,
+		`+/${resourceID.toLowerCase()}/crew/available`,
 	];
 
 	topics = topics.map((m) => baseTopic + m);
@@ -261,18 +270,24 @@ export default function ProductionBooking() {
 
 		client.on("message", function (topic, message) {
 			//handle systems data messages
+			let hasChanged = false;
 			if (topic.includes("systemdata")) {
 				const msg = JSON.parse(message.toString()).value;
 				switch (true) {
 					case topic.includes("employeeslist"):
-						setDatasets((prevState) => {
-							if (!hasUpdates(prevState.employees, msg))
-								return prevState;
-							return {
-								...prevState,
-								employees: msg,
-							};
-						});
+						hasChanged = hasUpdates(datasets.employees, msg);
+						setReadyState((prevState) => ({
+							...prevState,
+							employees: true,
+						}));
+						if (hasChanged) {
+							setDatasets((prevState) => {
+								return {
+									...prevState,
+									employees: msg,
+								};
+							});
+						}
 						break;
 					case topic.includes("activelabour"):
 						setDatasets((prevState) => {
@@ -286,12 +301,18 @@ export default function ProductionBooking() {
 						});
 						break;
 					case topic.includes("assycrewsize"):
+						hasChanged = hasUpdates(datasets.assycrewsize, msg);
+						setReadyState((prevState) => ({
+							...prevState,
+							assycrewsize: true,
+						}));
 						setDatasets((prevState) => {
-							if (!hasUpdates(prevState.assycrewsizes, msg))
+							if (!hasUpdates(prevState.assycrewsize, msg))
 								return prevState;
+
 							return {
 								...prevState,
-								assycrewsizes: msg,
+								assycrewsize: msg,
 							};
 						});
 						break;
@@ -313,16 +334,15 @@ export default function ProductionBooking() {
 							CodeDesc: "Unassigned Employees",
 							LongDesc: "ASPK",
 						});
-
-						setDatasets((prevState) => {
-							if (!hasUpdates(prevState.cells, msg))
-								return prevState;
-
-							return {
-								...prevState,
-								cells: msg,
-							};
-						});
+						hasChanged = hasUpdates(datasets.cells, msg);
+						if (hasChanged) {
+							setDatasets((prevState) => {
+								return {
+									...prevState,
+									cells: msg,
+								};
+							});
+						}
 						break;
 					default:
 						break;
@@ -332,44 +352,62 @@ export default function ProductionBooking() {
 				switch (true) {
 					case topic.includes(`crew/available`):
 						// print(topic, message);
-						setDatasets((prevState) => {
-							if (!hasUpdates(prevState.crewavailable, msg))
-								return prevState;
-							return {
+						hasChanged = hasUpdates(datasets.crewavailable, msg);
+
+						setReadyState((prevState) => ({
+							...prevState,
+							crewavailable: true,
+						}));
+
+						if (hasChanged) {
+							setDatasets((prevState) => ({
 								...prevState,
 								crewavailable: msg,
-							};
-						});
+							}));
+						}
 						break;
 					case topic.includes(`crew/clockedin`):
 						// print(topic, message);
-						setDatasets((prevState) => {
-							if (hasUpdates(prevState.crewclockedin, msg))
-								return prevState;
+						hasChanged = hasUpdates(datasets.crewclockedin, msg);
 
-							return {
+						setReadyState((prevState) => ({
+							...prevState,
+							crewclockedin: true,
+						}));
+
+						if (hasChanged) {
+							setDatasets((prevState) => ({
 								...prevState,
 								crewclockedin: msg,
-							};
-						});
+							}));
+						}
 						break;
 					case topic.includes(`crew/onbreak`):
 						print(topic, message);
+						hasChanged = hasUpdates(datasets.crewonbreak, msg);
 
-						setDatasets((prevState) => {
-							if (!hasUpdates(prevState.crewonbreak, msg))
-								return prevState;
-							return {
+						setReadyState((prevState) => ({
+							...prevState,
+							crewonbreak: true,
+						}));
+
+						if (hasChanged) {
+							setDatasets((prevState) => ({
 								...prevState,
 								crewonbreak: msg,
-							};
-						});
+							}));
+						}
 						break;
 					default:
 				}
 			}
 		});
 	}, [client]);
+
+	const allReady = useMemo(
+		() => Object.values(readyState).every(Boolean),
+		[readyState]
+	);
 
 	useEffect(() => {
 		if (isConnected && client) {
@@ -394,136 +432,179 @@ export default function ProductionBooking() {
 	}, [isConnected]);
 
 	useEffect(() => {
-		//when datsets are filled we can now get real
-		if (
-			typeof datasets.employees !== "undefined" &&
-			typeof datasets.cells !== "undefined" &&
-			typeof datasets.activelabour !== "undefined" &&
-			// typeof datasets.onbreak !== "undefined" &&
-			typeof datasets.assycrewsizes !== "undefined" &&
-			typeof datasets.jobs !== "undefined" &&
-			resourceID !== ""
-		) {
-			// setMaxLineCrewSize();
-			setDataComplete(true);
+		if (!isConnected) return;
 
-			let jc = datasets.assycrewsizes.filter(
-				(a) => a.ResourceID.toUpperCase() === resourceID
-			)[0];
+		const timeouts = [];
 
-			if (!jc) {
-				console.warn(`Resource ${resourceID} not in assycrewsizes`);
-				return;
+		const topicKeys = ["crewclockedin", "crewonbreak", "crewavailable"];
+
+		topicKeys.forEach((key) => {
+			if (!readyState[key]) {
+				const timeout = setTimeout(() => {
+					console.warn(
+						`⚠️ No MQTT message received for ${key}. Setting as empty.`
+					);
+					setReadyState((prev) => ({ ...prev, [key]: true }));
+					setDatasets((prev) => ({ ...prev, [key]: [] }));
+				}, 2000);
+				timeouts.push(timeout);
 			}
+		});
 
-			if (jc.ResourceGrpID === "") {
-				console.warn(
-					`Resource ${resourceID} is not assigned to a Resource Group`
-				);
-				return;
-			}
+		return () => {
+			timeouts.forEach(clearTimeout);
+		};
+	}, [
+		isConnected,
+		readyState.crewclockedin,
+		readyState.crewonbreak,
+		readyState.crewavailable,
+	]);
 
-			let el = datasets.employees.filter(
-				(e) => e.ResourceGrpID === jc.ResourceGrpID
+	useEffect(() => {
+		const { assycrewsize, jobs } = datasets;
+		//console.log("[datasets.assycrewsize, resourceID]");
+		if (!assycrewsize || !jobs || !resourceID) return;
+
+		let jobSum = assycrewsize.find(
+			(a) => a.ResourceID.toUpperCase() === resourceID
+		);
+
+		if (!jobSum) {
+			console.warn(`Resource ${resourceID} not in assycrewsize`);
+			return;
+		}
+
+		if (jobSum.ResourceGrpID === "") {
+			console.warn(
+				`Resource ${resourceID} does not have a Resource Group`
 			);
-			let act = datasets.activelabour.filter(
-				(e) => e.ResourceID === jc.ResourceID
-			);
-
-			//Filter out of available the already assigned. Has to be on full
-			//active labour dataset to make sure we dont see other machine assignments
-			el = el.filter(
-				(e) =>
-					datasets.assycrewsizes.filter(
-						(ac) => ac.EmployeeNum === e.EmpID
-					).length === 0
-			);
-
-			setEmployeeColumns({
-				...employeeColumns,
-				["available"]: {
-					...employeeColumns.available,
-					items: el,
-				},
-				["clockedin"]: {
-					...employeeColumns.clockedin,
-					items: act,
-				},
-			});
-
-			const jb = datasets.jobs.filter(
-				(jb) =>
-					jb.JobNum === jc.JobNum &&
-					jb.OprSeq === jc.OprSeq &&
-					jb.AssemblySeq === jc.AssemblySeq
-			)[0];
-
-			if (!jb) {
-				console.warn(
-					`Job details for ${jc.JobNum}-${jc.AssemblySeq}-${jc.OprSeq} not in jobsallops`
-				);
-				return;
-			}
-
-			jc.OpCode = jb.OpCode;
-			jc.OpDesc = jb.OpDesc;
-			jc.JCDeptDescription = jb.JCDeptDesc;
-			jc.OpCodeOpDesc = jb.OpCodeOpDesc;
-			jc.Company = jb.Company;
-
-			setJobCrew(jc);
+			return;
+		}
+		const jb = jobs?.find(
+			(jb) =>
+				jb.JobNum === jobSum.JobNum &&
+				jb.OprSeq === jobSum.OprSeq &&
+				jb.AssemblySeq === jobSum.AssemblySeq
+		);
+		if (jb) {
+			jobSum.OpCode = jb.OpCode ?? "";
+			jobSum.OpDesc = jb.OpDesc ?? "";
+			jobSum.JCDeptDescription = jb.JCDeptDesc ?? "";
+			jobSum.OpCodeOpDesc = jb.OpCodeOpDesc ?? "";
+			jobSum.Company = jb.Company ?? "";
+		}
+		if (hasUpdates(jobSum, jobSummary)) {
+			setJobSummary(jobSum);
 			handleLogIn(resourceID);
 		}
-	}, [datasets]);
+		setDataComplete(true);
+		setIsLoggedIn(true);
+	}, [datasets.assycrewsize, datasets.jobs, resourceID]);
 
-	//subscribe to the OnBreak topic when we know teh resource
+	//TODO DONE useEffect[jobSummary, allReady]
 	useEffect(() => {
-		//when datsets are filled we can now get real
-		if (jobCrew) {
-			//subscribe to topic
-			const tpc =
-				baseTopic +
-				`+/${jobCrew.ResourceID.toLowerCase()}/employees/onbreak`;
-			client.subscribe(tpc, (err) => {
-				if (err)
-					console.error(
-						"isConnected: " + isConnected + "Subscription failed:",
-						err
-					);
-				else
-					console.log(
-						"isConnected: " + isConnected + " Subscribed to ",
-						tpc
-					);
-			});
+		if (!allReady || !jobSummary) return;
+
+		const { activelabour, employees, crewonbreak } = datasets;
+
+		const crewClockedIn = activelabour.filter(
+			(e) =>
+				e.JobNum === jobSummary.JobNum &&
+				e.ResourceID === jobSummary.ResourceID
+		);
+
+		let crewAvailable = employees.filter(
+			(e) =>
+				e.ResourceGrpID === jobSummary.ResourceGrpID &&
+				e.EmpStatus === "A"
+		);
+
+		const assignedCrew = new Set([
+			...(crewClockedIn ?? []).map((e) => e.EmployeeNum),
+			...(crewonbreak ?? []).map((e) => e.EmpID),
+		]);
+
+		crewAvailable = crewAvailable.filter((e) => !assignedCrew.has(e.EmpID));
+
+		if (
+			hasUpdates(
+				stripRowIdent(crewClockedIn),
+				stripRowIdent(datasets.crewclockedin)
+			)
+		) {
+			setDatasets((prev) => ({
+				...prev,
+				crewclockedin: crewClockedIn,
+			}));
+
+			const topic = `${baseTopic}${jobSummary.ResourceGrpID.toLowerCase()}/${jobSummary.ResourceID.toLowerCase()}/crew/clockedin`;
+			publishMQTT(topic, JSON.stringify(crewClockedIn));
 		}
-	}, [jobCrew]);
 
-	useEffect(() => {
-		//get each lines max crewsize for jobs where startdate
-		//is less than or equalk to today
-		// if (dataComplete) setMaxLineCrewSize(null);
-		console.log("useEffect dataComplete");
-	}, [dataComplete]);
+		if (
+			hasUpdates(
+				stripRowIdent(crewAvailable),
+				stripRowIdent(datasets.crewavailable)
+			)
+		) {
+			setDatasets((prev) => ({
+				...prev,
+				crewavailable: crewAvailable,
+			}));
+
+			const topic = `${baseTopic}${jobSummary.ResourceGrpID.toLowerCase()}/${jobSummary.ResourceID.toLowerCase()}/crew/available`;
+			publishMQTT(topic, JSON.stringify(crewAvailable));
+		}
+
+		setEmployeeColumns((prev) => ({
+			...prev,
+			clockedin: {
+				...prev.clockedin,
+				items: crewClockedIn,
+			},
+			onbreak: {
+				...prev.onbreak,
+				items: datasets.crewonbreak,
+			},
+			available: {
+				...prev.available,
+				items: crewAvailable,
+			},
+		}));
+	}, [
+		datasets.activelabour,
+		datasets.employees,
+		datasets.crewonbreak,
+		jobSummary,
+		allReady,
+	]);
+
+	function stripRowIdent(arr) {
+		if (!arr || !Array.isArray(arr)) return [];
+		return arr.map(({ RowIdent, ...rest }) => rest);
+	}
 
 	const hasUpdates = (a, b) => JSON.stringify(a) !== JSON.stringify(b);
 	const print = (topic, message) =>
 		console.log(
-			`RStopic ${topic} message ${JSON.stringify(
-				JSON.parse(message.toString())
-			)} `
+			`${topic} \n ${JSON.stringify(JSON.parse(message.toString()))} `
 		);
 
+	//TODO RS Original Code
 	const handleLogIn = (resource) => {
 		setIsLoggedIn(true);
 		//get current job and filter jobs for current resource
 		//if no login line is passed we get it from the state
 
-		if (resource === null) resource = jobCrew.ResourceID;
-		let v = datasets.jobs.filter((j) => j.ResourceID === resource);
+		if (resource === null) resource = jobSummary.ResourceID;
+
+		let v = datasets?.jobs?.filter(
+			(j) => j.ResourceID.toUpperCase() === resource
+		);
 
 		//if we have jobs returned, get earliest
-		if (v.length > 0) {
+		if (v?.length > 0) {
 			v.sort((a, b) => {
 				let adate = new Date(a.MattecStartDate);
 				let bdate = new Date(b.MattecStartDate);
@@ -541,26 +622,6 @@ export default function ProductionBooking() {
 				);
 				return adate.getTime() - bdate.getTime();
 			});
-			//now the jobs are oin dfate getSectionOrder, if
-			//If we are sent a job in teh querystring, split the list at that point
-			if (searchParams.get("job") !== null) {
-				//check that the job exists
-				try {
-					const tgtJob = v.filter(
-						(j) => j.JobNum === searchParams.get("job")
-					)[0];
-
-					//if so now filter from that date/tim onwards, taget job will then be [0] and next job [1]
-					v = v.filter(
-						(j) =>
-							new Date(j.MattecStartDate) >=
-								new Date(tgtJob.MattecStartDate) &&
-							parseFloat(j.MattecStartHour) >=
-								parseFloat(tgtJob.MattecStartHour)
-					);
-					console.log("xxx");
-				} catch (ex) {}
-			}
 
 			//remap all the objects
 			let tmpJ = v[0];
@@ -643,8 +704,8 @@ export default function ProductionBooking() {
 			datasets.jobs.map((j) => j.ResourceID.toUpperCase())
 		);
 		if (lines.has(val)) {
-			setJobCrew(
-				datasets.assycrewsizes.filter((a) => a.ResourceID === val)[0]
+			setJobSummary(
+				datasets.assycrewsize.filter((a) => a.ResourceID === val)[0]
 			);
 			setLineErr(false);
 		} else {
@@ -652,181 +713,181 @@ export default function ProductionBooking() {
 		}
 	};
 
-	const handleReturnFromBreakEnMasse = () => {
-		let record = {
-			topic: (
-				baseTopic +
-				`${jobCrew.Cell_c}/${jobCrew.ResourceID}/employees/onbreak`
-			).toLowerCase(),
-			qos: 0,
-			retain: true,
-			payload: "[]",
-			status: "",
-		};
+	// const handleReturnFromBreakEnMasse = () => {
+	// 	let record = {
+	// 		topic: (
+	// 			baseTopic +
+	// 			`${jobSummary.Cell_c}/${jobSummary.ResourceID}/employees/onbreak`
+	// 		).toLowerCase(),
+	// 		qos: 0,
+	// 		retain: true,
+	// 		payload: "[]",
+	// 		status: "",
+	// 	};
 
-		record.status = 0;
+	// 	record.status = 0;
 
-		let { topic, qos, retain, payload } = record;
-		// payload = JSON.stringify(payload);
-		client.publish(
-			topic,
-			payload,
-			{
-				qos,
-				retain,
-			},
-			(error) => {
-				if (error) {
-					console.log("Publish error: ", error);
-				}
-			}
-		);
-	};
+	// 	let { topic, qos, retain, payload } = record;
+	// 	// payload = JSON.stringify(payload);
+	// 	client.publish(
+	// 		topic,
+	// 		payload,
+	// 		{
+	// 			qos,
+	// 			retain,
+	// 		},
+	// 		(error) => {
+	// 			if (error) {
+	// 				console.log("Publish error: ", error);
+	// 			}
+	// 		}
+	// 	);
+	// };
 
-	const handleReturnFromBreak = () => {};
+	// const handleReturnFromBreak = () => {};
 
-	const handleMoveToBreakEnMasse = () => {
-		const emps = datasets.activelabour
-			.filter(
-				(l) =>
-					l.ResourceID === jobCrew.ResourceID &&
-					datasets.onbreak.filter((ob) => l.EmployeeNum === ob.id)
-						.length < 1
-			)
-			.map((e) => ({
-				id: e.EmployeeNum,
-				name: e.Name,
-				timestamp: new Date().getTime(),
-			}))
-			.concat(datasets.onbreak);
+	// const handleMoveToBreakEnMasse = () => {
+	// 	const emps = datasets.activelabour
+	// 		.filter(
+	// 			(l) =>
+	// 				l.ResourceID === jobSummary.ResourceID &&
+	// 				datasets.onbreak.filter((ob) => l.EmployeeNum === ob.id)
+	// 					.length < 1
+	// 		)
+	// 		.map((e) => ({
+	// 			id: e.EmployeeNum,
+	// 			name: e.Name,
+	// 			timestamp: new Date().getTime(),
+	// 		}))
+	// 		.concat(datasets.onbreak);
 
-		const topic = (
-			baseTopic +
-			`${jobCrew.Cell_c}/${jobCrew.ResourceID}/employees/onbreak`
-		).toLowerCase();
+	// 	const topic = (
+	// 		baseTopic +
+	// 		`${jobSummary.Cell_c}/${jobSummary.ResourceID}/employees/onbreak`
+	// 	).toLowerCase();
 
-		setDatasets((prevState) => {
-			return {
-				...prevState,
-				onbreak: emps,
-			};
-		});
+	// 	setDatasets((prevState) => {
+	// 		return {
+	// 			...prevState,
+	// 			onbreak: emps,
+	// 		};
+	// 	});
 
-		const payload = JSON.stringify(emps);
+	// 	const payload = JSON.stringify(emps);
 
-		publishMQTT(topic, payload);
-	};
+	// 	publishMQTT(topic, payload);
+	// };
 
-	const handleOnDragEnd = (result) => {
-		console.log("moving ");
-		// Use this to exit if drag n drop is outside of droppable areas
-		try {
-			const t1 = result.source.droppableId;
-			const t2 = result.destination.droppableId;
-		} catch (error) {
-			return;
-		}
+	// const handleOnDragEnd = (result) => {
+	// 	console.log("moving ");
+	// 	// Use this to exit if drag n drop is outside of droppable areas
+	// 	try {
+	// 		const t1 = result.source.droppableId;
+	// 		const t2 = result.destination.droppableId;
+	// 	} catch (error) {
+	// 		return;
+	// 	}
 
-		const { source, destination } = result;
+	// 	const { source, destination } = result;
 
-		const from = source.droppableId;
-		const to = destination.droppableId;
+	// 	const from = source.droppableId;
+	// 	const to = destination.droppableId;
 
-		let currONB = [];
-		if (source.droppableId == destination.droppableId) {
-			const column = employeeColumns[source.droppableId];
-			const copiedItems = [...column.items];
-			const [removed] = copiedItems.splice(source.index, 1);
-			copiedItems.splice(destination.index, 0, removed);
-			setEmployeeColumns({
-				...employeeColumns,
-				[source.droppableId]: {
-					...column,
-					items: copiedItems,
-				},
-			});
-		} else {
-			let pyld = {}; //`{"JobNum":"${jobCrew.JobNum}", "AssemblySeq":"${jobCrew.AssemblySeq}", "OprSeq":"${jobCrew.OprSeq}"}`
+	// 	let currONB = [];
+	// 	if (source.droppableId == destination.droppableId) {
+	// 		const column = employeeColumns[source.droppableId];
+	// 		const copiedItems = [...column.items];
+	// 		const [removed] = copiedItems.splice(source.index, 1);
+	// 		copiedItems.splice(destination.index, 0, removed);
+	// 		setEmployeeColumns({
+	// 			...employeeColumns,
+	// 			[source.droppableId]: {
+	// 				...column,
+	// 				items: copiedItems,
+	// 			},
+	// 		});
+	// 	} else {
+	// 		let pyld = {}; //`{"JobNum":"${jobSummary.JobNum}", "AssemblySeq":"${jobSummary.AssemblySeq}", "OprSeq":"${jobSummary.OprSeq}"}`
 
-			pyld.EmpID = result.draggableId;
-			pyld.JobNum = jobCrew.JobNum;
-			pyld.Company = jobCrew.Company;
-			pyld.AssemblySeq = jobCrew.AssemblySeq;
-			pyld.OprSeq = jobCrew.OprSeq;
-			pyld.JCDept = jobCrew.JCDept;
-			pyld.ResourceID = jobCrew.ResourceID;
-			pyld.ResourceGrpID = jobCrew.ResourceGrpID;
-			pyld.OpCode = jobCrew.OpCode;
-			pyld.JCDeptDescription = jobCrew.JCDeptDescription;
-			pyld.OpCodeOpDesc = jobCrew.OpCodeOpDesc;
+	// 		pyld.EmpID = result.draggableId;
+	// 		pyld.JobNum = jobSummary.JobNum;
+	// 		pyld.Company = jobSummary.Company;
+	// 		pyld.AssemblySeq = jobSummary.AssemblySeq;
+	// 		pyld.OprSeq = jobSummary.OprSeq;
+	// 		pyld.JCDept = jobSummary.JCDept;
+	// 		pyld.ResourceID = jobSummary.ResourceID;
+	// 		pyld.ResourceGrpID = jobSummary.ResourceGrpID;
+	// 		pyld.OpCode = jobSummary.OpCode;
+	// 		pyld.JCDeptDescription = jobSummary.JCDeptDescription;
+	// 		pyld.OpCodeOpDesc = jobSummary.OpCodeOpDesc;
 
-			let topic =
-				baseTopic +
-				`${jobCrew.ResourceGrpID}/${jobCrew.ResourceID}/employees`;
+	// 		let topic =
+	// 			baseTopic +
+	// 			`${jobSummary.ResourceGrpID}/${jobSummary.ResourceID}/employees`;
 
-			const sourceColumn = employeeColumns[source.droppableId];
-			const destColumn = employeeColumns[destination.droppableId];
-			const sourceItems = [...sourceColumn.items];
-			const destItems = [...destColumn.items];
-			const [removed] = sourceItems.splice(source.index, 1);
-			destItems.splice(destination.index, 0, removed);
-			setEmployeeColumns({
-				...employeeColumns,
-				[source.droppableId]: {
-					...sourceColumn,
-					items: sourceItems,
-				},
-				[destination.droppableId]: {
-					...destColumn,
-					items: destItems,
-				},
-			});
+	// 		const sourceColumn = employeeColumns[source.droppableId];
+	// 		const destColumn = employeeColumns[destination.droppableId];
+	// 		const sourceItems = [...sourceColumn.items];
+	// 		const destItems = [...destColumn.items];
+	// 		const [removed] = sourceItems.splice(source.index, 1);
+	// 		destItems.splice(destination.index, 0, removed);
+	// 		setEmployeeColumns({
+	// 			...employeeColumns,
+	// 			[source.droppableId]: {
+	// 				...sourceColumn,
+	// 				items: sourceItems,
+	// 			},
+	// 			[destination.droppableId]: {
+	// 				...destColumn,
+	// 				items: destItems,
+	// 			},
+	// 		});
 
-			if (from === "available") {
-				if (to === "clockedin") {
-					//map to avoid byref copy
-					// const emp = datasets.employees.filter(
-					// (a) => a.EmpID === result.draggableId
-					// )
-					console.log("clocking in");
-					topic += "/clockin";
-				} else {
-					console.log("cant move avail to break or back to itsel");
-				}
-			} else if (from === "onbreak") {
-			} else {
-				//only option left is from clocked in
-			}
+	// 		if (from === "available") {
+	// 			if (to === "clockedin") {
+	// 				//map to avoid byref copy
+	// 				// const emp = datasets.employees.filter(
+	// 				// (a) => a.EmpID === result.draggableId
+	// 				// )
+	// 				console.log("clocking in");
+	// 				topic += "/clockin";
+	// 			} else {
+	// 				console.log("cant move avail to break or back to itsel");
+	// 			}
+	// 		} else if (from === "onbreak") {
+	// 		} else {
+	// 			//only option left is from clocked in
+	// 		}
 
-			// if (from === "clockedin" && to === "onbreak") {
-			// //map to avoid byref copy
-			// const emp = datasets.activelabour.filter(
-			// (a) => a.EmployeeNum === result.draggableId
-			// )[0];
+	// 		// if (from === "clockedin" && to === "onbreak") {
+	// 		// //map to avoid byref copy
+	// 		// const emp = datasets.activelabour.filter(
+	// 		// (a) => a.EmployeeNum === result.draggableId
+	// 		// )[0];
 
-			// currONB = [
-			// ...datasets.onbreak,
-			// {
-			// id: result.draggableId,
-			// name: emp.Name,
-			// timestamp: new Date().getTime(),
-			// },
-			// ];
-			// } else if (from === "onbreak" && to === "clockedin") {
-			// currONB = datasets.onbreak.filter((ob) => ob.id !== result.draggableId);
-			// }
-			// else if (from === "cell" && to === "clockedin") {}
-			// const topic = (
-			// baseTopic +
-			// `${jobCrew.ResourceGrpID}/${jobCrew.ResourceID}/employees/onbreak`
-			// ).toLowerCase();
-			// const payload = JSON.stringify(currONB);
+	// 		// currONB = [
+	// 		// ...datasets.onbreak,
+	// 		// {
+	// 		// id: result.draggableId,
+	// 		// name: emp.Name,
+	// 		// timestamp: new Date().getTime(),
+	// 		// },
+	// 		// ];
+	// 		// } else if (from === "onbreak" && to === "clockedin") {
+	// 		// currONB = datasets.onbreak.filter((ob) => ob.id !== result.draggableId);
+	// 		// }
+	// 		// else if (from === "cell" && to === "clockedin") {}
+	// 		// const topic = (
+	// 		// baseTopic +
+	// 		// `${jobSummary.ResourceGrpID}/${jobSummary.ResourceID}/employees/onbreak`
+	// 		// ).toLowerCase();
+	// 		// const payload = JSON.stringify(currONB);
 
-			const payload = JSON.stringify(pyld);
-			publishMQTT(topic.toLowerCase(), payload);
-		}
-		console.log("moved");
-	};
+	// 		const payload = JSON.stringify(pyld);
+	// 		publishMQTT(topic, payload);
+	// 	}
+	// 	console.log("moved");
+	// };
 
 	const onDragEnd = (result, employeeColumns, setEmployeeColumns) => {};
 
@@ -846,7 +907,7 @@ export default function ProductionBooking() {
 		const retain = true;
 
 		client.publish(
-			topic,
+			topic.toLowerCase(),
 			payload,
 			{
 				qos,
@@ -858,6 +919,70 @@ export default function ProductionBooking() {
 				}
 			}
 		);
+	};
+	const handleOnDragEnd = (result) => {
+		if (!result.destination) return;
+
+		const { source, destination } = result;
+		const from = source.droppableId;
+		const to = destination.droppableId;
+
+		if (from === to) return;
+
+		// Move between columns
+		const sourceColumn = employeeColumns[from];
+		const destColumn = employeeColumns[to];
+		const sourceItems = Array.from(sourceColumn.items);
+		const destItems = Array.from(destColumn.items);
+		const [movedItem] = sourceItems.splice(source.index, 1);
+		destItems.splice(destination.index, 0, movedItem);
+
+		//setDatasets(prevState=> ...prevState);
+		setEmployeeColumns((prev) => ({
+			...prev,
+			[from]: {
+				...prev[from],
+				items: sourceItems,
+			},
+			[to]: {
+				...prev[to],
+				items: destItems,
+			},
+		}));
+
+		// MQTT Payload
+		let topic = `${baseTopic}${jobSummary.ResourceGrpID}/${jobSummary.ResourceID}/crew`;
+		const pyld = {
+			EmpID: result.draggableId,
+			JobNum: jobSummary.JobNum,
+			Company: jobSummary.Company,
+			AssemblySeq: jobSummary.AssemblySeq,
+			OprSeq: jobSummary.OprSeq,
+			JCDept: jobSummary.JCDept,
+			ResourceID: jobSummary.ResourceID,
+			ResourceGrpID: jobSummary.ResourceGrpID,
+			OpCode: jobSummary.OpCode,
+			JCDeptDescription: jobSummary.JCDeptDescription,
+			OpCodeOpDesc: jobSummary.OpCodeOpDesc,
+		};
+
+		if (from === "available" && to === "clockedin") {
+			console.log("🔁 Clocking in employee");
+			topic += "/clockedin";
+			publishMQTT(topic.toLowerCase(), JSON.stringify(pyld));
+		} else if (from === "clockedin" && to === "onbreak") {
+			console.log("⏸️ Sending employee on break");
+			topic += "/onbreak";
+			//publishMQTT(topic.toLowerCase(), JSON.stringify(pyld));
+			//TODO publishMQTT(topic.toLowerCase(), JSON.stringify(pyld));
+		} else if (from === "onbreak" && to === "clockedin") {
+			console.log("🔙 Returning employee from break");
+			topic += "/return";
+			publishMQTT(topic.toLowerCase(), JSON.stringify(pyld));
+		} else {
+			console.warn("🚫 Unsupported move:", from, "→", to);
+			// Rollback move if needed
+		}
 	};
 
 	/* TODO RS displayJobSummary
@@ -923,7 +1048,7 @@ export default function ProductionBooking() {
 						{jobs !== null ? (
 							<Typography variant='h5'>
 								Production Processing for {jobs.firstJob.JobNum}{" "}
-								on : {jobCrew.ResourceID}
+								on : {jobSummary.ResourceID}
 							</Typography>
 						) : (
 							<Typography variant='h2'></Typography>
@@ -961,7 +1086,7 @@ export default function ProductionBooking() {
 												</ColumnHeaderItem>
 												<ColumnDataItem>
 													{" "}
-													{jobCrew.ResourceID}
+													{jobSummary.ResourceID}
 												</ColumnDataItem>
 											</Grid>
 											<Grid
@@ -1220,7 +1345,7 @@ export default function ProductionBooking() {
 																jobs.nextJob
 																	.JobNum +
 																"&line=" +
-																jobCrew.ResourceID
+																jobSummary.ResourceID
 															}
 														>
 															{
@@ -1339,7 +1464,550 @@ export default function ProductionBooking() {
 						{/**employees and currest pallet status */}
 						<Grid container>
 							{/**employee grid */}
-							<Grid item xs={8}></Grid>
+							<Grid item xs={8}>
+								<Typography variant='h6' textAlign={"center"}>
+									Employees
+								</Typography>
+
+								<Grid container>
+									{" "}
+									<DragDropContext
+										onDragEnd={handleOnDragEnd}
+									>
+										{/** assigned employees */}
+										<Grid item xs={3}>
+											<Grid container>
+												<Box
+													display={"flex"}
+													flexDirection={"row"}
+													maxHeight={"80vh"}
+												>
+													<Lane>
+														<Typography
+															variant='body1'
+															sx={{
+																color: grey[900],
+																minHeight: 60,
+																paddingLeft: 2,
+																paddingRight: 2,
+																backgroundColor:
+																	"darkgrey",
+															}}
+														>
+															Assigned Employees
+														</Typography>
+														{/** //TODO  filter by cell && active labour */}
+
+														<Droppable
+															droppableId={
+																"available"
+															}
+														>
+															{(
+																provided,
+																snapshot
+															) => (
+																<List
+																	ref={
+																		provided.innerRef
+																	}
+																	{...provided.droppableProps}
+																	style={{
+																		...provided
+																			.droppableProps
+																			.style,
+																		backgroundColor:
+																			snapshot.isDraggingOver
+																				? "lightblue"
+																				: "lightgrey",
+																		//height: "100%",
+																		minHeight:
+																			"70vh",
+																		maxHeight:
+																			"70vh",
+																		overflow:
+																			"auto",
+																	}}
+																>
+																	{
+																		// datasets.employees
+																		//   .filter(
+																		//     (e) =>
+																		//       e.cell === jobSummary.Cell_c &&
+																		//       datasets.activelabour.filter(
+																		//         (ee) => e.id === ee.EmployeeNum
+																		//       ).length === 0
+																		//   )
+																		employeeColumns.available.items.map(
+																			(
+																				e,
+																				index
+																			) => (
+																				<Draggable
+																					key={
+																						e.EmpID
+																					}
+																					draggableId={
+																						e.EmpID
+																					}
+																					index={
+																						index
+																					}
+																				>
+																					{(
+																						provided,
+																						snapshot
+																					) => (
+																						<ListItem
+																							{...provided.dragHandleProps}
+																							{...provided.draggableProps}
+																							ref={
+																								provided.innerRef
+																							}
+																							style={{
+																								...provided
+																									.draggableProps
+																									.style,
+																								backgroundColor:
+																									snapshot.isDragging
+																										? "darkgrey"
+																										: sistTheme
+																												.palette
+																												.sistema
+																												.freshworks
+																												.main,
+																								// : isclockedin(e)
+																								// ? sistTheme.palette.sistema
+																								//     .freshworks.main
+																								// : sistTheme.palette.sistema
+																								//     .microwave.main,
+																								padding: 0,
+																								// paddingLeft: 5,
+																							}}
+																						>
+																							<ListItemAvatar>
+																								<Avatar
+																									sx={{
+																										margin: 0,
+																										marginTop: 1,
+																									}}
+																								>
+																									<PersonAddAlt1Icon />
+																								</Avatar>
+																							</ListItemAvatar>
+																							<ListItemText
+																								primary={
+																									e.FirstName
+																								}
+																								secondary={
+																									<React.Fragment>
+																										<Typography
+																											sx={{
+																												display:
+																													"inline",
+																											}}
+																											component='span'
+																											variant='body2'
+																											color='lightblue'
+																										>
+																											{
+																												e.EmpID
+																											}
+																										</Typography>
+																									</React.Fragment>
+																								}
+																							/>
+																						</ListItem>
+																					)}
+																				</Draggable>
+																			)
+																		)
+																	}
+																	{
+																		provided.placeholder
+																	}
+																</List>
+															)}
+														</Droppable>
+													</Lane>
+												</Box>
+											</Grid>
+										</Grid>
+										<Grid
+											item
+											xs={1}
+											sx={{
+												display: "flex",
+												flexDirection: "column",
+												justifyContent: "center",
+											}}
+										>
+											<Box
+												sx={{
+													height: "40%",
+													display: "flex",
+													flexDirection: "column",
+													justifyContent:
+														"space-evenly",
+												}}
+											>
+												<Tooltip
+													title='Clockout All Employees'
+													arrow
+												>
+													<ArrowCircleLeftOutlinedIcon
+														sx={{ ...iconSX }}
+													></ArrowCircleLeftOutlinedIcon>
+												</Tooltip>
+											</Box>
+										</Grid>
+										{/**clocked in employees */}
+										<Grid item xs={3}>
+											<Box
+												display={"flex"}
+												flexDirection={"row"}
+												maxHeight={"80vh"}
+											>
+												<Lane>
+													<Typography
+														variant='body1'
+														sx={{
+															color: grey[900],
+															minHeight: 60,
+															paddingLeft: 2,
+															paddingRight: 2,
+															backgroundColor:
+																"darkgrey",
+														}}
+													>
+														Clocked In Employees
+													</Typography>
+
+													<Droppable droppableId='clockedin'>
+														{(
+															provided,
+															snapshot
+														) => (
+															<List
+																ref={
+																	provided.innerRef
+																}
+																{...provided.droppableProps}
+																style={{
+																	...provided
+																		.droppableProps
+																		.style,
+																	backgroundColor:
+																		snapshot.isDraggingOver
+																			? "lightblue"
+																			: "lightgrey",
+																	//height: "100%",
+																	minHeight:
+																		"70vh",
+																	maxHeight:
+																		"70vh",
+																	overflow:
+																		"auto",
+																}}
+															>
+																{
+																	// datasets.activelabour
+																	//   .filter(
+																	//     (l) =>
+																	//       l.ResourceID === jobSummary.ResourceID &&
+																	//       datasets.onbreak.filter(
+																	//         (ob) => l.EmployeeNum === ob.id
+																	//       ).length < 1
+																	//   )
+																	employeeColumns.clockedin.items.map(
+																		(
+																			e,
+																			index
+																		) => (
+																			<Draggable
+																				key={
+																					e.EmployeeNum
+																				}
+																				draggableId={
+																					e.EmployeeNum
+																				}
+																				index={
+																					index
+																				}
+																			>
+																				{(
+																					provided,
+																					snapshot
+																				) => (
+																					<ListItem
+																						{...provided.dragHandleProps}
+																						{...provided.draggableProps}
+																						ref={
+																							provided.innerRef
+																						}
+																						style={{
+																							...provided
+																								.draggableProps
+																								.style,
+																							backgroundColor:
+																								snapshot.isDragging
+																									? "darkgrey"
+																									: sistTheme
+																											.palette
+																											.sistema
+																											.freshworks
+																											.main,
+																							// : isclockedin(e)
+																							// ? sistTheme.palette.sistema
+																							//     .freshworks.main
+																							// : sistTheme.palette.sistema
+																							//     .microwave.main,
+																							padding: 0,
+																							// paddingLeft: 5,
+																						}}
+																					>
+																						<ListItemAvatar>
+																							<Avatar
+																								sx={{
+																									margin: 0,
+																									marginTop: 1,
+																								}}
+																							>
+																								<PersonAddAlt1Icon />
+																							</Avatar>
+																						</ListItemAvatar>
+																						<ListItemText
+																							primary={
+																								e.Name
+																							}
+																							secondary={
+																								<React.Fragment>
+																									<Typography
+																										sx={{
+																											display:
+																												"inline",
+																										}}
+																										component='span'
+																										variant='body2'
+																										color='lightblue'
+																									>
+																										{
+																											e.EmployeeNum
+																										}
+																									</Typography>
+																								</React.Fragment>
+																							}
+																						/>
+																					</ListItem>
+																				)}
+																			</Draggable>
+																		)
+																	)
+																}
+																{
+																	provided.placeholder
+																}
+															</List>
+														)}
+													</Droppable>
+												</Lane>
+											</Box>
+
+											{/**ResourceID */}
+										</Grid>
+										<Grid
+											item
+											xs={1}
+											sx={{
+												display: "flex",
+												flexDirection: "column",
+												justifyContent: "center",
+											}}
+										>
+											{/* <Box
+												sx={{
+													height: "40%",
+													display: "flex",
+													flexDirection: "column",
+													justifyContent:
+														"space-evenly",
+												}}
+											>
+												<Tooltip
+													title='Move Employees to Break'
+													arrow
+												></Tooltip>
+												<Tooltip
+													title='return Employees From Break'
+													arrow
+												>
+													<ArrowCircleLeftOutlinedIcon
+														sx={{ ...iconSX }}
+														onClick={() =>
+															handleReturnFromBreakEnMasse()
+														}
+													></ArrowCircleLeftOutlinedIcon>
+												</Tooltip>
+											</Box> */}
+										</Grid>
+										{/**On Break employees */}
+										<Grid item xs={3}>
+											<Box
+												display={"flex"}
+												flexDirection={"row"}
+												maxHeight={"80vh"}
+											>
+												<Lane>
+													<Typography
+														variant='body1'
+														sx={{
+															color: grey[900],
+															minHeight: 60,
+															paddingLeft: 2,
+															paddingRight: 2,
+															backgroundColor:
+																"darkgrey",
+														}}
+													>
+														Employees On Break
+													</Typography>
+
+													<Droppable
+														droppableId={"onbreak"}
+													>
+														{(
+															provided,
+															snapshot
+														) => (
+															<List
+																ref={
+																	provided.innerRef
+																}
+																{...provided.droppableProps}
+																style={{
+																	...provided
+																		.droppableProps
+																		.style,
+																	backgroundColor:
+																		snapshot.isDraggingOver
+																			? "lightblue"
+																			: "lightgrey",
+																	//height: "100%",
+																	minHeight:
+																		"70vh",
+																	maxHeight:
+																		"70vh",
+																	overflow:
+																		"auto",
+																}}
+															>
+																{datasets?.crewonbreak?.map(
+																	(
+																		e,
+																		index
+																	) => (
+																		<Draggable
+																			key={
+																				e.id
+																			}
+																			draggableId={
+																				e.id
+																			}
+																			index={
+																				index
+																			}
+																		>
+																			{(
+																				provided,
+																				snapshot
+																			) => (
+																				<ListItem
+																					{...provided.dragHandleProps}
+																					{...provided.draggableProps}
+																					ref={
+																						provided.innerRef
+																					}
+																					style={{
+																						...provided
+																							.draggableProps
+																							.style,
+																						backgroundColor:
+																							snapshot.isDragging
+																								? "darkgrey"
+																								: amber[600],
+																						// : isclockedin(e)
+																						// ? sistTheme.palette.sistema
+																						//     .freshworks.main
+																						// : sistTheme.palette.sistema
+																						//     .microwave.main,
+																						padding: 0,
+																						// paddingLeft: 5,
+																					}}
+																				>
+																					<ListItemAvatar>
+																						<Avatar
+																							sx={{
+																								margin: 0,
+																								marginTop: 1,
+																							}}
+																						>
+																							<PersonAddAlt1Icon />
+																						</Avatar>
+																					</ListItemAvatar>
+																					<ListItemText
+																						primary={
+																							e.name
+																						}
+																						secondary={
+																							<React.Fragment>
+																								<Typography
+																									sx={{
+																										display:
+																											"inline",
+																									}}
+																									component='span'
+																									variant='body2'
+																									color='lightblue'
+																								>
+																									{
+																										e.id
+																									}
+																								</Typography>
+																							</React.Fragment>
+																						}
+																					/>
+																				</ListItem>
+																			)}
+																		</Draggable>
+																	)
+																)}
+																{
+																	provided.placeholder
+																}
+															</List>
+														)}
+													</Droppable>
+												</Lane>
+											</Box>
+										</Grid>
+									</DragDropContext>{" "}
+								</Grid>
+							</Grid>
+							{/** pallet grid */}
+							<Grid item xs={4}>
+								<Typography variant='h6'>
+									Pallet status
+								</Typography>
+
+								<Table>
+									<TableBody>
+										<TableRow>
+											<TableCell>Time Started</TableCell>
+											<TableCell>01</TableCell>
+										</TableRow>
+									</TableBody>
+								</Table>
+							</Grid>
 						</Grid>
 					</React.Fragment>
 				)}

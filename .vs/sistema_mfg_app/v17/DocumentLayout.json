@@ -5,14 +5,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\ky97740\\Repositories\\sistema_mfg_app\\src\\components\\assembly\\assyPages\\ProductionBooking.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\components\\assembly\\assyPages\\ProductionBooking.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\ky97740\\Repositories\\sistema_mfg_app\\src\\components\\inventoryBooking\\Content.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\components\\inventoryBooking\\Content.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\ky97740\\Repositories\\sistema_mfg_app\\src\\components\\inventoryBooking\\InventoryBooking.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\components\\inventoryBooking\\InventoryBooking.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     }
   ],
   "DocumentGroupContainers": [
@@ -48,35 +40,9 @@
               "RelativeDocumentMoniker": "src\\components\\assembly\\assyPages\\ProductionBooking.js",
               "ToolTip": "C:\\Users\\ky97740\\Repositories\\sistema_mfg_app\\src\\components\\assembly\\assyPages\\ProductionBooking.js",
               "RelativeToolTip": "src\\components\\assembly\\assyPages\\ProductionBooking.js",
-              "ViewState": "AgIAAN0AAAAAAAAAAAAAAOgAAAAGAAAAAAAAAA==",
+              "ViewState": "AgIAAGMBAAAAAAAAAAAAAH8BAAAUAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-05-19T23:32:42.747Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "InventoryBooking.js",
-              "DocumentMoniker": "C:\\Users\\ky97740\\Repositories\\sistema_mfg_app\\src\\components\\inventoryBooking\\InventoryBooking.js",
-              "RelativeDocumentMoniker": "src\\components\\inventoryBooking\\InventoryBooking.js",
-              "ToolTip": "C:\\Users\\ky97740\\Repositories\\sistema_mfg_app\\src\\components\\inventoryBooking\\InventoryBooking.js",
-              "RelativeToolTip": "src\\components\\inventoryBooking\\InventoryBooking.js",
-              "ViewState": "AgIAAIIAAAAAAAAAAAAwwJMAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-05-19T03:31:01.156Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Content.js",
-              "DocumentMoniker": "C:\\Users\\ky97740\\Repositories\\sistema_mfg_app\\src\\components\\inventoryBooking\\Content.js",
-              "RelativeDocumentMoniker": "src\\components\\inventoryBooking\\Content.js",
-              "ToolTip": "C:\\Users\\ky97740\\Repositories\\sistema_mfg_app\\src\\components\\inventoryBooking\\Content.js",
-              "RelativeToolTip": "src\\components\\inventoryBooking\\Content.js",
-              "ViewState": "AgIAACEAAAAAAAAAAAAAACMAAAAdAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-05-19T03:18:31.835Z",
+              "WhenOpened": "2025-05-26T00:26:05.264Z",
               "EditorCaption": ""
             }
           ]

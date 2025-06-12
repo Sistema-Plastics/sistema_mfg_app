@@ -3,11 +3,11 @@
     "",
     "\\src",
     "\\src\\assets",
+    "\\src\\assets\\styling",
     "\\src\\components",
     "\\src\\components\\assembly",
     "\\src\\components\\assembly\\assyPages",
     "\\src\\components\\inventoryBooking"
   ],
-  "SelectedNode": "\\src\\components\\assembly\\assyPages\\ProductionBooking.js",
   "PreviewInSolutionExplorer": false
 }
