@@ -633,8 +633,6 @@ export default function ProductionBooking() {
 		});
 	};
 
-	const handleReturnFromBreak = () => {};
-
 	const handleMoveToBreakEnMasse = () => {
 		const emps = datasets.activelabour
 			.filter(

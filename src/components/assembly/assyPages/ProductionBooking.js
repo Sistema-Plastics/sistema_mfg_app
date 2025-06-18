@@ -174,7 +174,7 @@ const AccordionSummary = styled((props) => (
 
 const iconSX = {
 	fontSize: 40,
-	color: sistTheme.palette.sistema.klipit.light,
+	color: sistColours["klipit-Light"],
 };
 
 export default function ProductionBooking() {
@@ -218,6 +218,7 @@ export default function ProductionBooking() {
 		crewonbreak: [],
 	});
 
+	const [selectedEmpIDs, setSelectedEmpIDs] = useState([]);
 	const [readyState, setReadyState] = useState({
 		crewavailable: false,
 		crewclockedin: false,
@@ -367,15 +368,25 @@ export default function ProductionBooking() {
 						}
 						break;
 					case topic.includes(`crew/clockedin`):
+						// Uncomment the next line to print the topic and message for debugging
 						// print(topic, message);
+
+						// Check if there are updates in the crewclockedin dataset
 						hasChanged = hasUpdates(datasets.crewclockedin, msg);
 
+						// Determine if the message has been processed by checking for the presence of "EmpID" in any element
+						const processed = !msg.some((e) =>
+							e.hasOwnProperty("EmpID")
+						);
+
+						// Update the ready state to indicate that the crewclockedin data is ready
 						setReadyState((prevState) => ({
 							...prevState,
 							crewclockedin: true,
 						}));
 
-						if (hasChanged) {
+						// If there are changes and the message has been processed, update the crewclockedin dataset
+						if (hasChanged && processed) {
 							setDatasets((prevState) => ({
 								...prevState,
 								crewclockedin: msg,
@@ -517,7 +528,8 @@ export default function ProductionBooking() {
 		let crewAvailable = employees.filter(
 			(e) =>
 				e.ResourceGrpID === jobSummary.ResourceGrpID &&
-				e.EmpStatus === "A"
+				e.EmpStatus === "A" &&
+				!isNaN(parseInt(e.EmpID))
 		);
 
 		const assignedCrew = new Set([
@@ -526,21 +538,6 @@ export default function ProductionBooking() {
 		]);
 
 		crewAvailable = crewAvailable.filter((e) => !assignedCrew.has(e.EmpID));
-
-		if (
-			hasUpdates(
-				stripRowIdent(crewClockedIn),
-				stripRowIdent(datasets.crewclockedin)
-			)
-		) {
-			setDatasets((prev) => ({
-				...prev,
-				crewclockedin: crewClockedIn,
-			}));
-
-			const topic = `${baseTopic}${jobSummary.ResourceGrpID.toLowerCase()}/${jobSummary.ResourceID.toLowerCase()}/crew/clockedin`;
-			publishMQTT(topic, JSON.stringify(crewClockedIn));
-		}
 
 		if (
 			hasUpdates(
@@ -555,6 +552,21 @@ export default function ProductionBooking() {
 
 			const topic = `${baseTopic}${jobSummary.ResourceGrpID.toLowerCase()}/${jobSummary.ResourceID.toLowerCase()}/crew/available`;
 			publishMQTT(topic, JSON.stringify(crewAvailable));
+		}
+
+		if (
+			hasUpdates(
+				stripRowIdent(crewClockedIn),
+				stripRowIdent(datasets.crewclockedin)
+			)
+		) {
+			setDatasets((prev) => ({
+				...prev,
+				crewclockedin: crewClockedIn,
+			}));
+
+			const topic = `${baseTopic}${jobSummary.ResourceGrpID.toLowerCase()}/${jobSummary.ResourceID.toLowerCase()}/crew/clockedin`;
+			publishMQTT(topic, JSON.stringify(crewClockedIn));
 		}
 
 		setEmployeeColumns((prev) => ({
@@ -575,6 +587,8 @@ export default function ProductionBooking() {
 	}, [
 		datasets.activelabour,
 		datasets.employees,
+		datasets.crewavailable,
+		datasets.crewclockedin,
 		datasets.crewonbreak,
 		jobSummary,
 		allReady,
@@ -713,184 +727,6 @@ export default function ProductionBooking() {
 		}
 	};
 
-	// const handleReturnFromBreakEnMasse = () => {
-	// 	let record = {
-	// 		topic: (
-	// 			baseTopic +
-	// 			`${jobSummary.Cell_c}/${jobSummary.ResourceID}/employees/onbreak`
-	// 		).toLowerCase(),
-	// 		qos: 0,
-	// 		retain: true,
-	// 		payload: "[]",
-	// 		status: "",
-	// 	};
-
-	// 	record.status = 0;
-
-	// 	let { topic, qos, retain, payload } = record;
-	// 	// payload = JSON.stringify(payload);
-	// 	client.publish(
-	// 		topic,
-	// 		payload,
-	// 		{
-	// 			qos,
-	// 			retain,
-	// 		},
-	// 		(error) => {
-	// 			if (error) {
-	// 				console.log("Publish error: ", error);
-	// 			}
-	// 		}
-	// 	);
-	// };
-
-	// const handleReturnFromBreak = () => {};
-
-	// const handleMoveToBreakEnMasse = () => {
-	// 	const emps = datasets.activelabour
-	// 		.filter(
-	// 			(l) =>
-	// 				l.ResourceID === jobSummary.ResourceID &&
-	// 				datasets.onbreak.filter((ob) => l.EmployeeNum === ob.id)
-	// 					.length < 1
-	// 		)
-	// 		.map((e) => ({
-	// 			id: e.EmployeeNum,
-	// 			name: e.Name,
-	// 			timestamp: new Date().getTime(),
-	// 		}))
-	// 		.concat(datasets.onbreak);
-
-	// 	const topic = (
-	// 		baseTopic +
-	// 		`${jobSummary.Cell_c}/${jobSummary.ResourceID}/employees/onbreak`
-	// 	).toLowerCase();
-
-	// 	setDatasets((prevState) => {
-	// 		return {
-	// 			...prevState,
-	// 			onbreak: emps,
-	// 		};
-	// 	});
-
-	// 	const payload = JSON.stringify(emps);
-
-	// 	publishMQTT(topic, payload);
-	// };
-
-	// const handleOnDragEnd = (result) => {
-	// 	console.log("moving ");
-	// 	// Use this to exit if drag n drop is outside of droppable areas
-	// 	try {
-	// 		const t1 = result.source.droppableId;
-	// 		const t2 = result.destination.droppableId;
-	// 	} catch (error) {
-	// 		return;
-	// 	}
-
-	// 	const { source, destination } = result;
-
-	// 	const from = source.droppableId;
-	// 	const to = destination.droppableId;
-
-	// 	let currONB = [];
-	// 	if (source.droppableId == destination.droppableId) {
-	// 		const column = employeeColumns[source.droppableId];
-	// 		const copiedItems = [...column.items];
-	// 		const [removed] = copiedItems.splice(source.index, 1);
-	// 		copiedItems.splice(destination.index, 0, removed);
-	// 		setEmployeeColumns({
-	// 			...employeeColumns,
-	// 			[source.droppableId]: {
-	// 				...column,
-	// 				items: copiedItems,
-	// 			},
-	// 		});
-	// 	} else {
-	// 		let pyld = {}; //`{"JobNum":"${jobSummary.JobNum}", "AssemblySeq":"${jobSummary.AssemblySeq}", "OprSeq":"${jobSummary.OprSeq}"}`
-
-	// 		pyld.EmpID = result.draggableId;
-	// 		pyld.JobNum = jobSummary.JobNum;
-	// 		pyld.Company = jobSummary.Company;
-	// 		pyld.AssemblySeq = jobSummary.AssemblySeq;
-	// 		pyld.OprSeq = jobSummary.OprSeq;
-	// 		pyld.JCDept = jobSummary.JCDept;
-	// 		pyld.ResourceID = jobSummary.ResourceID;
-	// 		pyld.ResourceGrpID = jobSummary.ResourceGrpID;
-	// 		pyld.OpCode = jobSummary.OpCode;
-	// 		pyld.JCDeptDescription = jobSummary.JCDeptDescription;
-	// 		pyld.OpCodeOpDesc = jobSummary.OpCodeOpDesc;
-
-	// 		let topic =
-	// 			baseTopic +
-	// 			`${jobSummary.ResourceGrpID}/${jobSummary.ResourceID}/employees`;
-
-	// 		const sourceColumn = employeeColumns[source.droppableId];
-	// 		const destColumn = employeeColumns[destination.droppableId];
-	// 		const sourceItems = [...sourceColumn.items];
-	// 		const destItems = [...destColumn.items];
-	// 		const [removed] = sourceItems.splice(source.index, 1);
-	// 		destItems.splice(destination.index, 0, removed);
-	// 		setEmployeeColumns({
-	// 			...employeeColumns,
-	// 			[source.droppableId]: {
-	// 				...sourceColumn,
-	// 				items: sourceItems,
-	// 			},
-	// 			[destination.droppableId]: {
-	// 				...destColumn,
-	// 				items: destItems,
-	// 			},
-	// 		});
-
-	// 		if (from === "available") {
-	// 			if (to === "clockedin") {
-	// 				//map to avoid byref copy
-	// 				// const emp = datasets.employees.filter(
-	// 				// (a) => a.EmpID === result.draggableId
-	// 				// )
-	// 				console.log("clocking in");
-	// 				topic += "/clockin";
-	// 			} else {
-	// 				console.log("cant move avail to break or back to itsel");
-	// 			}
-	// 		} else if (from === "onbreak") {
-	// 		} else {
-	// 			//only option left is from clocked in
-	// 		}
-
-	// 		// if (from === "clockedin" && to === "onbreak") {
-	// 		// //map to avoid byref copy
-	// 		// const emp = datasets.activelabour.filter(
-	// 		// (a) => a.EmployeeNum === result.draggableId
-	// 		// )[0];
-
-	// 		// currONB = [
-	// 		// ...datasets.onbreak,
-	// 		// {
-	// 		// id: result.draggableId,
-	// 		// name: emp.Name,
-	// 		// timestamp: new Date().getTime(),
-	// 		// },
-	// 		// ];
-	// 		// } else if (from === "onbreak" && to === "clockedin") {
-	// 		// currONB = datasets.onbreak.filter((ob) => ob.id !== result.draggableId);
-	// 		// }
-	// 		// else if (from === "cell" && to === "clockedin") {}
-	// 		// const topic = (
-	// 		// baseTopic +
-	// 		// `${jobSummary.ResourceGrpID}/${jobSummary.ResourceID}/employees/onbreak`
-	// 		// ).toLowerCase();
-	// 		// const payload = JSON.stringify(currONB);
-
-	// 		const payload = JSON.stringify(pyld);
-	// 		publishMQTT(topic, payload);
-	// 	}
-	// 	console.log("moved");
-	// };
-
-	const onDragEnd = (result, employeeColumns, setEmployeeColumns) => {};
-
 	const displayError = (msg) => {
 		return (
 			<ThemeProvider theme={sistemaTheme}>
@@ -903,15 +739,15 @@ export default function ProductionBooking() {
 	};
 
 	const publishMQTT = (topic, payload) => {
-		const qos = 0;
-		const retain = true;
+		//const qos = 0;
+		//const retain = true;
 
 		client.publish(
 			topic.toLowerCase(),
 			payload,
 			{
-				qos,
-				retain,
+				qos: 0,
+				retain: true,
 			},
 			(error) => {
 				if (error) {
@@ -920,114 +756,282 @@ export default function ProductionBooking() {
 			}
 		);
 	};
+
+	const getKey = (droppableId) =>
+		droppableId === "clockedin" ? "EmployeeNum" : "EmpID";
+
+	const handleClick = (e, id) => {
+		if (e.ctrlKey || e.metaKey) {
+			setSelectedEmpIDs((prev) =>
+				prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+			);
+		} else {
+			setSelectedEmpIDs([id]);
+		}
+	};
+
 	const handleOnDragEnd = (result) => {
 		if (!result.destination) return;
 
-		const { source, destination } = result;
+		const { source, destination, draggableId } = result;
 		const from = source.droppableId;
 		const to = destination.droppableId;
 
 		if (from === to) return;
+		if (!validMoves[from]?.includes(to)) return;
 
-		// Move between columns
-		const sourceColumn = employeeColumns[from];
-		const destColumn = employeeColumns[to];
-		const sourceItems = Array.from(sourceColumn.items);
-		const destItems = Array.from(destColumn.items);
-		const [movedItem] = sourceItems.splice(source.index, 1);
-		destItems.splice(destination.index, 0, movedItem);
+		moveSelectedItems(from, to, draggableId);
+	};
 
-		//setDatasets(prevState=> ...prevState);
-		setEmployeeColumns((prev) => ({
+	const moveSelectedItems = (from, to, fallbackID) => {
+		const fromItems = Array.from(datasets[`crew${from}`] || []);
+		const toItems = Array.from(datasets[`crew${to}`] || []);
+
+		const fromIdKey = getKey(from);
+
+		const idsToMove =
+			selectedEmpIDs.length > 0 ? selectedEmpIDs : [fallbackID];
+
+		const itemsToMove =
+			fromItems.filter((item) =>
+				idsToMove.includes(String(item[fromIdKey]))
+			) || [];
+		if (itemsToMove.length === 0) return;
+		const remainingFromItems =
+			fromItems.filter(
+				(item) => !idsToMove.includes(String(item[fromIdKey]))
+			) || [];
+
+		const newToItems = [...toItems, ...itemsToMove] || [];
+
+		setDatasets((prev) => ({
 			...prev,
-			[from]: {
-				...prev[from],
-				items: sourceItems,
-			},
-			[to]: {
-				...prev[to],
-				items: destItems,
-			},
+			[`crew${from}`]: remainingFromItems,
+			[`crew${to}`]: newToItems,
 		}));
 
-		// MQTT Payload
-		let topic = `${baseTopic}${jobSummary.ResourceGrpID}/${jobSummary.ResourceID}/crew`;
-		const pyld = {
-			EmpID: result.draggableId,
-			JobNum: jobSummary.JobNum,
-			Company: jobSummary.Company,
-			AssemblySeq: jobSummary.AssemblySeq,
-			OprSeq: jobSummary.OprSeq,
-			JCDept: jobSummary.JCDept,
-			ResourceID: jobSummary.ResourceID,
-			ResourceGrpID: jobSummary.ResourceGrpID,
-			OpCode: jobSummary.OpCode,
-			JCDeptDescription: jobSummary.JCDeptDescription,
-			OpCodeOpDesc: jobSummary.OpCodeOpDesc,
+		if (to === "clockedin") {
+			const topic = `${baseTopic}${jobSummary.ResourceGrpID.toLowerCase()}/${jobSummary.ResourceID.toLowerCase()}/crew/clockedin`;
+			if (
+				hasUpdates(
+					stripRowIdent(newToItems),
+					stripRowIdent(datasets.crewclockedin)
+				)
+			) {
+				publishMQTT(topic, JSON.stringify(newToItems));
+			}
+		} else if (from === "clockedin") {
+			const topic = `${baseTopic}${jobSummary.ResourceGrpID.toLowerCase()}/${jobSummary.ResourceID.toLowerCase()}/crew/clockedin`;
+			if (
+				hasUpdates(
+					stripRowIdent(remainingFromItems),
+					stripRowIdent(datasets.crewclockedin)
+				)
+			) {
+				publishMQTT(topic, JSON.stringify(remainingFromItems));
+			}
+		}
+
+		if (to === "onbreak") {
+			const topic = `${baseTopic}${jobSummary.ResourceGrpID.toLowerCase()}/${jobSummary.ResourceID.toLowerCase()}/crew/onbreak`;
+			if (
+				hasUpdates(
+					stripRowIdent(newToItems),
+					stripRowIdent(datasets.crewonbreak)
+				)
+			) {
+				publishMQTT(topic, JSON.stringify(newToItems));
+			}
+		} else if (from === "onbreak") {
+			const topic = `${baseTopic}${jobSummary.ResourceGrpID.toLowerCase()}/${jobSummary.ResourceID.toLowerCase()}/crew/onbreak`;
+			if (
+				hasUpdates(
+					stripRowIdent(remainingFromItems),
+					stripRowIdent(datasets.crewonbreak)
+				)
+			) {
+				publishMQTT(topic, JSON.stringify(remainingFromItems));
+			}
+		}
+		setSelectedEmpIDs([]);
+	};
+
+	const moveAllItems = (from, to) => {
+		const fromItems = Array.from(datasets[`crew${from}`] || []);
+		if (fromItems.length === 0) return;
+
+		const toItems = Array.from(datasets[`crew${to}`] || []);
+		const newToItems = [...toItems, ...fromItems];
+
+		setDatasets((prev) => ({
+			...prev,
+			[`crew${from}`]: [],
+			[`crew${to}`]: newToItems,
+		}));
+
+		setSelectedEmpIDs([]);
+	};
+
+	const validMoves = {
+		available: ["clockedin"],
+		clockedin: ["available", "onbreak"],
+		onbreak: ["clockedin"],
+	};
+	const laneColours = {
+		available: sistColours["klipit-Light"],
+		clockedin: "green",
+		onbreak: "orange",
+	};
+
+	const getKeyForLane = (lane) =>
+		lane === "clockedin" ? "EmployeeNum" : "EmpID";
+
+	const renderDroppable = (id, items) => {
+		const key = getKeyForLane(id);
+		const allowedTargets = validMoves[id] || [];
+		const laneColour = laneColours[id] || "#e0f7fa";
+		const droppableLabels = {
+			available: "Available",
+			clockedin: "Clocked In",
+			onbreak: "On Break",
 		};
 
-		if (from === "available" && to === "clockedin") {
-			console.log("🔁 Clocking in employee");
-			topic += "/clockedin";
-			publishMQTT(topic.toLowerCase(), JSON.stringify(pyld));
-		} else if (from === "clockedin" && to === "onbreak") {
-			console.log("⏸️ Sending employee on break");
-			topic += "/onbreak";
-			//publishMQTT(topic.toLowerCase(), JSON.stringify(pyld));
-			//TODO publishMQTT(topic.toLowerCase(), JSON.stringify(pyld));
-		} else if (from === "onbreak" && to === "clockedin") {
-			console.log("🔙 Returning employee from break");
-			topic += "/return";
-			publishMQTT(topic.toLowerCase(), JSON.stringify(pyld));
-		} else {
-			console.warn("🚫 Unsupported move:", from, "→", to);
-			// Rollback move if needed
-		}
-	};
-
-	/* TODO RS displayJobSummary
-	const jobSummaryColumns = [
-		{ field: "Job", headerName: "Job", align: "center", headerAlign: "center", flex: 0.7},
-		{ field: "AssemblySeq", headerName: "ASM", align: "center", headerAlign: "center", flex: 0.7},
-		{ field: "Part", headerName: "Part Number", flex: 1 },
-		{ field: "Description", headerName: "Part Description", flex: 2 },
-		{ field: "RequiredQty", headerName: "Required Qty", flex: 2 },
-		{ field: "Remaining", headerName: "Remaining Qty", flex: 2 },
-	];
-
-	const displayJobSummary = () => {
-		console.log("displayJobSummary datasets:", datasets); // <-- add this line to debug
-
 		return (
-			<React.Fragment>
-				<ThemeProvider theme={sistemaTheme}>
-					<Grid container item xs={8}>
-						<br />
-						<Typography variant='h6'>Assembly Sequence</Typography>
-						<br />
-						<DataGrid
-							rows={datasets?.resourcejobs?.firstjob?.map(
-								(job, index) => ({
-									id: index,
-									Job: job.JobNum.toUpperCase(),
-									AssemblySeq: job.AssemblySeq,
-									Part: job.PartNum.toUpperCase(),
-									Description:
-										job.PartDescription.toUpperCase(),
-									RequiredQty: job.ProdQty,
-									Remaining: job.ProdQty - job.QtyCompleted,
-								})
-							)}
-							columns={jobSummaryColumns}
-							hideFooter
-						/>
-						<br />
-					</Grid>
-				</ThemeProvider>
-			</React.Fragment>
+			<div
+				style={{
+					width: 250,
+					display: "flex",
+					flexDirection: "column",
+					border: "1px solid lightgrey",
+					borderRadius: 4,
+				}}
+			>
+				<div
+					style={{
+						color: "#212121",
+						minHeight: 60,
+						padding: "0.5rem 1rem",
+						backgroundColor: "darkgrey",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+						fontSize: "1.5rem",
+						fontWeight: 600,
+						fontFamily: "inherit",
+					}}
+				>
+					{droppableLabels[id]}
+					<div style={{ display: "flex", gap: "0.5rem" }}>
+						{allowedTargets.map((target) => (
+							<button
+								key={target}
+								onClick={() => moveAllItems(id, target)}
+							>
+								→ {target}
+							</button>
+						))}
+					</div>
+				</div>
+
+				<Droppable droppableId={id}>
+					{(provided, snapshot) => (
+						<div
+							ref={provided.innerRef}
+							{...provided.droppableProps}
+							style={{
+								...provided.droppableProps.style,
+								backgroundColor: snapshot.isDraggingOver
+									? "lightblue"
+									: "lightgrey",
+								minHeight: "70vh",
+								maxHeight: "70vh",
+								overflow: "auto",
+								padding: "0.5rem",
+								flexGrow: 1,
+							}}
+						>
+							{items.map((item, index) => (
+								<Draggable
+									key={item[key]}
+									draggableId={String(item[key])}
+									index={index}
+								>
+									{(provided, snapshot) => {
+										const isSelected =
+											selectedEmpIDs.includes(item[key]);
+										return (
+											<ListItem
+												{...provided.dragHandleProps}
+												{...provided.draggableProps}
+												ref={provided.innerRef}
+												onClick={(e) =>
+													handleClick(e, item[key])
+												}
+												style={{
+													...provided.draggableProps
+														.style,
+													backgroundColor: laneColour,
+													padding: "0.5rem 1rem",
+													border: "1px solid #ccc",
+													borderRadius: 4,
+													cursor: "pointer",
+													userSelect: "none",
+													// Remove position: "relative",
+													zIndex: snapshot.isDragging
+														? 1000
+														: "auto",
+													boxShadow:
+														snapshot.isDragging
+															? "0 4px 8px rgba(0, 0, 0, 0.2)"
+															: "none",
+													opacity:
+														isSelected &&
+														!snapshot.isDragging
+															? 0.5
+															: 1,
+												}}
+											>
+												{item.Name} ({item[key]})
+												{snapshot.isDragging &&
+													selectedEmpIDs.length >
+														1 && (
+														<span
+															style={{
+																position:
+																	"absolute",
+																top: 0,
+																right: 4,
+																background:
+																	"red",
+																color: "white",
+																fontSize:
+																	"0.75rem",
+																fontWeight:
+																	"bold",
+																borderRadius:
+																	"999px",
+																padding:
+																	"0.15rem 0.5rem",
+															}}
+														>
+															+
+															{
+																selectedEmpIDs.length
+															}
+														</span>
+													)}
+											</ListItem>
+										);
+									}}
+								</Draggable>
+							))}
+							{provided.placeholder}
+						</div>
+					)}
+				</Droppable>
+			</div>
 		);
 	};
-	*/
 
 	if (!resourceID) {
 		return displayError(
@@ -1468,530 +1472,24 @@ export default function ProductionBooking() {
 								<Typography variant='h6' textAlign={"center"}>
 									Employees
 								</Typography>
-
-								<Grid container>
-									{" "}
-									<DragDropContext
-										onDragEnd={handleOnDragEnd}
+								<DragDropContext onDragEnd={handleOnDragEnd}>
+									<div
+										style={{ display: "flex", gap: "2rem" }}
 									>
-										{/** assigned employees */}
-										<Grid item xs={3}>
-											<Grid container>
-												<Box
-													display={"flex"}
-													flexDirection={"row"}
-													maxHeight={"80vh"}
-												>
-													<Lane>
-														<Typography
-															variant='body1'
-															sx={{
-																color: grey[900],
-																minHeight: 60,
-																paddingLeft: 2,
-																paddingRight: 2,
-																backgroundColor:
-																	"darkgrey",
-															}}
-														>
-															Assigned Employees
-														</Typography>
-														{/** //TODO  filter by cell && active labour */}
-
-														<Droppable
-															droppableId={
-																"available"
-															}
-														>
-															{(
-																provided,
-																snapshot
-															) => (
-																<List
-																	ref={
-																		provided.innerRef
-																	}
-																	{...provided.droppableProps}
-																	style={{
-																		...provided
-																			.droppableProps
-																			.style,
-																		backgroundColor:
-																			snapshot.isDraggingOver
-																				? "lightblue"
-																				: "lightgrey",
-																		//height: "100%",
-																		minHeight:
-																			"70vh",
-																		maxHeight:
-																			"70vh",
-																		overflow:
-																			"auto",
-																	}}
-																>
-																	{
-																		// datasets.employees
-																		//   .filter(
-																		//     (e) =>
-																		//       e.cell === jobSummary.Cell_c &&
-																		//       datasets.activelabour.filter(
-																		//         (ee) => e.id === ee.EmployeeNum
-																		//       ).length === 0
-																		//   )
-																		employeeColumns.available.items.map(
-																			(
-																				e,
-																				index
-																			) => (
-																				<Draggable
-																					key={
-																						e.EmpID
-																					}
-																					draggableId={
-																						e.EmpID
-																					}
-																					index={
-																						index
-																					}
-																				>
-																					{(
-																						provided,
-																						snapshot
-																					) => (
-																						<ListItem
-																							{...provided.dragHandleProps}
-																							{...provided.draggableProps}
-																							ref={
-																								provided.innerRef
-																							}
-																							style={{
-																								...provided
-																									.draggableProps
-																									.style,
-																								backgroundColor:
-																									snapshot.isDragging
-																										? "darkgrey"
-																										: sistTheme
-																												.palette
-																												.sistema
-																												.freshworks
-																												.main,
-																								// : isclockedin(e)
-																								// ? sistTheme.palette.sistema
-																								//     .freshworks.main
-																								// : sistTheme.palette.sistema
-																								//     .microwave.main,
-																								padding: 0,
-																								// paddingLeft: 5,
-																							}}
-																						>
-																							<ListItemAvatar>
-																								<Avatar
-																									sx={{
-																										margin: 0,
-																										marginTop: 1,
-																									}}
-																								>
-																									<PersonAddAlt1Icon />
-																								</Avatar>
-																							</ListItemAvatar>
-																							<ListItemText
-																								primary={
-																									e.FirstName
-																								}
-																								secondary={
-																									<React.Fragment>
-																										<Typography
-																											sx={{
-																												display:
-																													"inline",
-																											}}
-																											component='span'
-																											variant='body2'
-																											color='lightblue'
-																										>
-																											{
-																												e.EmpID
-																											}
-																										</Typography>
-																									</React.Fragment>
-																								}
-																							/>
-																						</ListItem>
-																					)}
-																				</Draggable>
-																			)
-																		)
-																	}
-																	{
-																		provided.placeholder
-																	}
-																</List>
-															)}
-														</Droppable>
-													</Lane>
-												</Box>
-											</Grid>
-										</Grid>
-										<Grid
-											item
-											xs={1}
-											sx={{
-												display: "flex",
-												flexDirection: "column",
-												justifyContent: "center",
-											}}
-										>
-											<Box
-												sx={{
-													height: "40%",
-													display: "flex",
-													flexDirection: "column",
-													justifyContent:
-														"space-evenly",
-												}}
-											>
-												<Tooltip
-													title='Clockout All Employees'
-													arrow
-												>
-													<ArrowCircleLeftOutlinedIcon
-														sx={{ ...iconSX }}
-													></ArrowCircleLeftOutlinedIcon>
-												</Tooltip>
-											</Box>
-										</Grid>
-										{/**clocked in employees */}
-										<Grid item xs={3}>
-											<Box
-												display={"flex"}
-												flexDirection={"row"}
-												maxHeight={"80vh"}
-											>
-												<Lane>
-													<Typography
-														variant='body1'
-														sx={{
-															color: grey[900],
-															minHeight: 60,
-															paddingLeft: 2,
-															paddingRight: 2,
-															backgroundColor:
-																"darkgrey",
-														}}
-													>
-														Clocked In Employees
-													</Typography>
-
-													<Droppable droppableId='clockedin'>
-														{(
-															provided,
-															snapshot
-														) => (
-															<List
-																ref={
-																	provided.innerRef
-																}
-																{...provided.droppableProps}
-																style={{
-																	...provided
-																		.droppableProps
-																		.style,
-																	backgroundColor:
-																		snapshot.isDraggingOver
-																			? "lightblue"
-																			: "lightgrey",
-																	//height: "100%",
-																	minHeight:
-																		"70vh",
-																	maxHeight:
-																		"70vh",
-																	overflow:
-																		"auto",
-																}}
-															>
-																{
-																	// datasets.activelabour
-																	//   .filter(
-																	//     (l) =>
-																	//       l.ResourceID === jobSummary.ResourceID &&
-																	//       datasets.onbreak.filter(
-																	//         (ob) => l.EmployeeNum === ob.id
-																	//       ).length < 1
-																	//   )
-																	employeeColumns.clockedin.items.map(
-																		(
-																			e,
-																			index
-																		) => (
-																			<Draggable
-																				key={
-																					e.EmployeeNum
-																				}
-																				draggableId={
-																					e.EmployeeNum
-																				}
-																				index={
-																					index
-																				}
-																			>
-																				{(
-																					provided,
-																					snapshot
-																				) => (
-																					<ListItem
-																						{...provided.dragHandleProps}
-																						{...provided.draggableProps}
-																						ref={
-																							provided.innerRef
-																						}
-																						style={{
-																							...provided
-																								.draggableProps
-																								.style,
-																							backgroundColor:
-																								snapshot.isDragging
-																									? "darkgrey"
-																									: sistTheme
-																											.palette
-																											.sistema
-																											.freshworks
-																											.main,
-																							// : isclockedin(e)
-																							// ? sistTheme.palette.sistema
-																							//     .freshworks.main
-																							// : sistTheme.palette.sistema
-																							//     .microwave.main,
-																							padding: 0,
-																							// paddingLeft: 5,
-																						}}
-																					>
-																						<ListItemAvatar>
-																							<Avatar
-																								sx={{
-																									margin: 0,
-																									marginTop: 1,
-																								}}
-																							>
-																								<PersonAddAlt1Icon />
-																							</Avatar>
-																						</ListItemAvatar>
-																						<ListItemText
-																							primary={
-																								e.Name
-																							}
-																							secondary={
-																								<React.Fragment>
-																									<Typography
-																										sx={{
-																											display:
-																												"inline",
-																										}}
-																										component='span'
-																										variant='body2'
-																										color='lightblue'
-																									>
-																										{
-																											e.EmployeeNum
-																										}
-																									</Typography>
-																								</React.Fragment>
-																							}
-																						/>
-																					</ListItem>
-																				)}
-																			</Draggable>
-																		)
-																	)
-																}
-																{
-																	provided.placeholder
-																}
-															</List>
-														)}
-													</Droppable>
-												</Lane>
-											</Box>
-
-											{/**ResourceID */}
-										</Grid>
-										<Grid
-											item
-											xs={1}
-											sx={{
-												display: "flex",
-												flexDirection: "column",
-												justifyContent: "center",
-											}}
-										>
-											{/* <Box
-												sx={{
-													height: "40%",
-													display: "flex",
-													flexDirection: "column",
-													justifyContent:
-														"space-evenly",
-												}}
-											>
-												<Tooltip
-													title='Move Employees to Break'
-													arrow
-												></Tooltip>
-												<Tooltip
-													title='return Employees From Break'
-													arrow
-												>
-													<ArrowCircleLeftOutlinedIcon
-														sx={{ ...iconSX }}
-														onClick={() =>
-															handleReturnFromBreakEnMasse()
-														}
-													></ArrowCircleLeftOutlinedIcon>
-												</Tooltip>
-											</Box> */}
-										</Grid>
-										{/**On Break employees */}
-										<Grid item xs={3}>
-											<Box
-												display={"flex"}
-												flexDirection={"row"}
-												maxHeight={"80vh"}
-											>
-												<Lane>
-													<Typography
-														variant='body1'
-														sx={{
-															color: grey[900],
-															minHeight: 60,
-															paddingLeft: 2,
-															paddingRight: 2,
-															backgroundColor:
-																"darkgrey",
-														}}
-													>
-														Employees On Break
-													</Typography>
-
-													<Droppable
-														droppableId={"onbreak"}
-													>
-														{(
-															provided,
-															snapshot
-														) => (
-															<List
-																ref={
-																	provided.innerRef
-																}
-																{...provided.droppableProps}
-																style={{
-																	...provided
-																		.droppableProps
-																		.style,
-																	backgroundColor:
-																		snapshot.isDraggingOver
-																			? "lightblue"
-																			: "lightgrey",
-																	//height: "100%",
-																	minHeight:
-																		"70vh",
-																	maxHeight:
-																		"70vh",
-																	overflow:
-																		"auto",
-																}}
-															>
-																{datasets?.crewonbreak?.map(
-																	(
-																		e,
-																		index
-																	) => (
-																		<Draggable
-																			key={
-																				e.id
-																			}
-																			draggableId={
-																				e.id
-																			}
-																			index={
-																				index
-																			}
-																		>
-																			{(
-																				provided,
-																				snapshot
-																			) => (
-																				<ListItem
-																					{...provided.dragHandleProps}
-																					{...provided.draggableProps}
-																					ref={
-																						provided.innerRef
-																					}
-																					style={{
-																						...provided
-																							.draggableProps
-																							.style,
-																						backgroundColor:
-																							snapshot.isDragging
-																								? "darkgrey"
-																								: amber[600],
-																						// : isclockedin(e)
-																						// ? sistTheme.palette.sistema
-																						//     .freshworks.main
-																						// : sistTheme.palette.sistema
-																						//     .microwave.main,
-																						padding: 0,
-																						// paddingLeft: 5,
-																					}}
-																				>
-																					<ListItemAvatar>
-																						<Avatar
-																							sx={{
-																								margin: 0,
-																								marginTop: 1,
-																							}}
-																						>
-																							<PersonAddAlt1Icon />
-																						</Avatar>
-																					</ListItemAvatar>
-																					<ListItemText
-																						primary={
-																							e.name
-																						}
-																						secondary={
-																							<React.Fragment>
-																								<Typography
-																									sx={{
-																										display:
-																											"inline",
-																									}}
-																									component='span'
-																									variant='body2'
-																									color='lightblue'
-																								>
-																									{
-																										e.id
-																									}
-																								</Typography>
-																							</React.Fragment>
-																						}
-																					/>
-																				</ListItem>
-																			)}
-																		</Draggable>
-																	)
-																)}
-																{
-																	provided.placeholder
-																}
-															</List>
-														)}
-													</Droppable>
-												</Lane>
-											</Box>
-										</Grid>
-									</DragDropContext>{" "}
-								</Grid>
+										{renderDroppable(
+											"available",
+											datasets.crewavailable
+										)}
+										{renderDroppable(
+											"clockedin",
+											datasets.crewclockedin
+										)}
+										{renderDroppable(
+											"onbreak",
+											datasets.crewonbreak
+										)}
+									</div>
+								</DragDropContext>
 							</Grid>
 							{/** pallet grid */}
 							<Grid item xs={4}>
