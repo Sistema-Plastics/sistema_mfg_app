@@ -519,23 +519,17 @@ export default function ProductionBooking() {
 
 		const { activelabour, employees, crewonbreak } = datasets;
 
-		const crewClockedIn = activelabour
-			.filter(
-				(e) =>
-					e.JobNum === jobSummary.JobNum &&
-					e.ResourceID === jobSummary.ResourceID
-			)
-			.sort((a, b) => {
-				const idA = Number(a.EmployeeID || a.EmployeeNum);
-				const idB = Number(b.EmployeeID || b.EmployeeNum);
-				return idA - idB;
-			});
+		const crewClockedIn = activelabour.filter(
+			(e) =>
+				e.JobNum === jobSummary.JobNum &&
+				e.ResourceID === jobSummary.ResourceID
+		);
 
 		let crewAvailable = employees.filter(
 			(e) =>
 				e.ResourceGrpID === jobSummary.ResourceGrpID &&
 				e.EmpStatus === "A" &&
-				!isNaN(parseInt(e.EmpID)) //Erp.BO.Labor methods error when EmployeeNum field is not numeric
+				!isNaN(parseInt(e.EmpID))
 		);
 
 		const assignedCrew = new Set([
@@ -543,9 +537,7 @@ export default function ProductionBooking() {
 			...(crewonbreak ?? []).map((e) => e.EmpID),
 		]);
 
-		crewAvailable = crewAvailable
-			.filter((e) => !assignedCrew.has(e.EmpID))
-			.sort((a, b) => a.EmpID - b.EmpID);
+		crewAvailable = crewAvailable.filter((e) => !assignedCrew.has(e.EmpID));
 
 		if (
 			hasUpdates(
@@ -598,9 +590,6 @@ export default function ProductionBooking() {
 		datasets.crewavailable,
 		datasets.crewclockedin,
 		datasets.crewonbreak,
-		employeeColumns.clockedin.items,
-		employeeColumns.available.items,
-		employeeColumns.onbreak.items,
 		jobSummary,
 		allReady,
 	]);
@@ -804,16 +793,14 @@ export default function ProductionBooking() {
 			selectedEmpIDs.length > 0 ? selectedEmpIDs : [fallbackID];
 
 		const itemsToMove =
-			fromItems
-				.filter((item) => idsToMove.includes(String(item[fromIdKey])))
-				.sort((a, b) => a[fromIdKey] - b[fromIdKey]) || [];
-
+			fromItems.filter((item) =>
+				idsToMove.includes(String(item[fromIdKey]))
+			) || [];
 		if (itemsToMove.length === 0) return;
-
 		const remainingFromItems =
-			fromItems
-				.filter((item) => !idsToMove.includes(String(item[fromIdKey])))
-				.sort((a, b) => a[fromIdKey] - b[fromIdKey]) || [];
+			fromItems.filter(
+				(item) => !idsToMove.includes(String(item[fromIdKey]))
+			) || [];
 
 		const newToItems = [...toItems, ...itemsToMove] || [];
 
@@ -829,11 +816,11 @@ export default function ProductionBooking() {
 			},
 		}));
 
-		// setDatasets((prev) => ({
-		// 	...prev,
-		// 	[`crew${from}`]: remainingFromItems,
-		// 	[`crew${to}`]: newToItems,
-		// }));
+		setDatasets((prev) => ({
+			...prev,
+			[`crew${from}`]: remainingFromItems,
+			[`crew${to}`]: newToItems,
+		}));
 
 		if (to === "clockedin") {
 			const topic = `${baseTopic}${jobSummary.ResourceGrpID.toLowerCase()}/${jobSummary.ResourceID.toLowerCase()}/crew/clockedin`;
@@ -900,7 +887,7 @@ export default function ProductionBooking() {
 	const validMoves = {
 		available: ["clockedin"],
 		clockedin: ["available", "onbreak"],
-		onbreak: ["clockedin", "available"],
+		onbreak: ["clockedin"],
 	};
 	const laneColours = {
 		available: sistColours["klipit-Light"],
@@ -909,8 +896,7 @@ export default function ProductionBooking() {
 	};
 
 	const getKeyForLane = (lane) =>
-		//lane === "clockedin" ? "EmployeeNum" : "EmpID";
-		lane === "available" ? "EmpID" : "EmployeeNum";
+		lane === "clockedin" ? "EmployeeNum" : "EmpID";
 
 	const renderDroppable = (id, items) => {
 		const key = getKeyForLane(id);
@@ -934,10 +920,10 @@ export default function ProductionBooking() {
 			>
 				<div
 					style={{
-						color: sistColours["klipit-Light"],
+						color: "#212121",
 						minHeight: 60,
 						padding: "0.5rem 1rem",
-						backgroundColor: sistColours.lightgreybackground,
+						backgroundColor: "darkgrey",
 						display: "flex",
 						alignItems: "center",
 						justifyContent: "space-between",
@@ -947,31 +933,18 @@ export default function ProductionBooking() {
 					}}
 				>
 					{droppableLabels[id]}
+					<div style={{ display: "flex", gap: "0.5rem" }}>
+						{allowedTargets.map((target) => (
+							<button
+								key={target}
+								onClick={() => moveAllItems(id, target)}
+							>
+								→ {target}
+							</button>
+						))}
+					</div>
 				</div>
-				<div
-					style={{
-						display: "flex",
-						gap: "0.5rem",
-					}}
-				>
-					{allowedTargets.map((target) => (
-						<button
-							key={target}
-							onClick={() => moveAllItems(id, target)}
-							style={{
-								backgroundColor: "pink",
-								color: "white",
-								border: "none",
-								padding: "0.4rem 0.75rem",
-								borderRadius: "4px",
-								cursor: "pointer",
-								fontWeight: "bold",
-							}}
-						>
-							→ {target}
-						</button>
-					))}
-				</div>
+
 				<Droppable droppableId={id}>
 					{(provided, snapshot) => (
 						<div
@@ -980,8 +953,8 @@ export default function ProductionBooking() {
 							style={{
 								...provided.droppableProps.style,
 								backgroundColor: snapshot.isDraggingOver
-									? sistColours["klipit-Text"]
-									: sistColours.lightgreybackground,
+									? "lightblue"
+									: "lightgrey",
 								minHeight: "70vh",
 								maxHeight: "70vh",
 								overflow: "auto",
